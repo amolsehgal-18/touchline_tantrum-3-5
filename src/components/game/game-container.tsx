@@ -1,14 +1,15 @@
 "use client"
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, getLeagueTable, CAREER_MODES, CareerMode } from '@/lib/game-logic';
-import { SlantedContainer, SlantedButton } from './slanted-elements';
+import { SlantedButton } from './slanted-elements';
 import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
 import { TensionArcs } from './tension-arcs';
 import { SwipeCard } from './swipe-card';
 import { SeasonSummary } from './season-summary';
-import { getAiScenarioPresentation, AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
+import { getAiScenarioPresentation } from '@/ai/flows/ai-scenario-presentation-flow';
+import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
 import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -43,7 +44,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       });
       setCurrentScenario(result);
     } catch (err) {
-      setError("Intel transmission failed.");
+      setError("Intel transmission interrupted.");
     } finally {
       setLoading(false);
       isFetchingRef.current = false;
@@ -61,12 +62,12 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
     const impact = side === 'left' ? currentScenario.impactLeft : currentScenario.impactRight;
     
-    const newState = {
+    const newState: GameState = {
       ...state,
       boardSupport: Math.min(1, Math.max(0, state.boardSupport + (impact.board / 100))),
       fanSupport: Math.min(1, Math.max(0, state.fanSupport + (impact.fans / 100))),
       dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
-      aggression: Math.min(1, Math.max(0.1, state.aggression + impact.aggression)),
+      aggression: Math.min(1, Math.max(0.05, state.aggression + impact.aggression)),
       cardsSeen: state.cardsSeen + 1,
       history: [...state.history, currentScenario.scenario],
     };
@@ -78,8 +79,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setState(newState);
     saveGameLocally(newState);
     setCurrentScenario(null);
-
-    // After every card, simulate a match
     setIsSimulating(true);
   };
 
@@ -100,15 +99,11 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       isSeasonEnd: newMatchesPlayed >= config.duration
     };
 
-    // Update league position based on points
     const table = getLeagueTable(newState);
     newState.currentLeaguePosition = table.find(t => t.isUser)?.pos || state.currentLeaguePosition;
 
-    // Check final objective
-    if (newState.isSeasonEnd) {
-      if (newState.currentLeaguePosition > config.target) {
-        newState.isSacked = true;
-      }
+    if (newState.isSeasonEnd && newState.currentLeaguePosition > config.target) {
+      newState.isSacked = true;
     }
 
     setState(newState);
@@ -120,6 +115,22 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setState(newState);
     saveGameLocally(newState);
   };
+
+  // Live windowed league table (4 teams centered on user)
+  const windowedLeagueTable = useMemo(() => {
+    if (!state) return [];
+    const fullTable = getLeagueTable(state);
+    const userIndex = fullTable.findIndex(t => t.isUser);
+    let start = Math.max(0, userIndex - 1);
+    let end = start + 4;
+    
+    if (end > fullTable.length) {
+      end = fullTable.length;
+      start = Math.max(0, end - 4);
+    }
+    
+    return fullTable.slice(start, end);
+  }, [state]);
 
   if (!state) {
     return (
@@ -162,17 +173,16 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   const mood = calculateMood(state);
   const odds = getMatchOdds(state.aggression);
-  const leagueTable = getLeagueTable(state);
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
-      {/* Live League Table Header */}
+      {/* Live Windowed League Table */}
       <div className="bg-black/60 border-b border-white/10 p-4 z-40 backdrop-blur-md">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
-            <RefreshCw className="w-3 h-3 animate-spin" /> Live Table
+            <RefreshCw className="w-3 h-3 animate-spin" /> Live Standings
           </span>
-          <span className="text-[10px] font-headline uppercase opacity-50">Matchday {config!.startGW + state.matchesPlayed} / 38</span>
+          <span className="text-[10px] font-headline uppercase opacity-50">Matchday {config!.startGW + state.matchesPlayed}</span>
         </div>
         <div className="flex flex-col gap-1">
           <div className="grid grid-cols-4 text-[8px] font-headline uppercase opacity-40 px-2 pb-1 border-b border-white/5">
@@ -181,7 +191,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             <span className="text-center">GP</span>
             <span className="text-right">Pts</span>
           </div>
-          {leagueTable.map((team) => (
+          {windowedLeagueTable.map((team) => (
             <div 
               key={team.team} 
               className={cn(
@@ -215,12 +225,15 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         ) : (
           <div className="w-full flex-1 flex items-center justify-center relative">
             {loading ? (
-              <RefreshCw className="w-12 h-12 animate-spin text-primary" />
+              <div className="text-center space-y-4">
+                <RefreshCw className="w-12 h-12 animate-spin text-primary mx-auto" />
+                <p className="text-[10px] font-headline uppercase tracking-[0.3em] opacity-40">Decrypting Comms...</p>
+              </div>
             ) : error ? (
               <div className="text-center space-y-4">
                 <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
                 <p className="text-xs uppercase font-headline opacity-50">{error}</p>
-                <SlantedButton onClick={fetchScenario}>Retry</SlantedButton>
+                <SlantedButton onClick={fetchScenario}>Retry Decryption</SlantedButton>
               </div>
             ) : currentScenario ? (
               <SwipeCard 
@@ -236,7 +249,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       <div className="p-6 premium-glass bg-black/60 border-t border-white/10 z-30">
         <div className="flex justify-between items-end mb-4">
           <div className="space-y-1">
-            <div className="text-[10px] font-headline uppercase opacity-50">Match Odds</div>
+            <div className="text-[10px] font-headline uppercase opacity-50">Victory Probability</div>
             <div className="font-headline text-xl flex items-center gap-2">
               <span className="text-blue-400">{odds.win}</span>
               <span className="text-white/20">|</span>
@@ -246,7 +259,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             </div>
           </div>
           <div className="text-right space-y-1">
-            <div className="text-[10px] font-headline uppercase opacity-50">Aggression</div>
+            <div className="text-[10px] font-headline uppercase opacity-50">Squad Aggression</div>
             <div className="text-xl font-headline text-primary font-bold">{Math.round(state.aggression * 100)}%</div>
           </div>
         </div>
