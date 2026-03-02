@@ -2,31 +2,31 @@
   "placeholderImages": [
     {
       "id": "manager-happy",
-      "description": "A successful football manager celebrating a massive victory with fans",
+      "description": "A successful football manager celebrating a victory",
       "imageUrl": "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?q=80&w=2073&auto=format&fit=crop",
       "imageHint": "celebrating manager"
     },
     {
       "id": "manager-neutral",
-      "description": "A composed, professional manager in a dark suit on the touchline",
+      "description": "A composed, professional manager in a dark suit",
       "imageUrl": "https://images.unsplash.com/photo-1519766428916-217059f7395c?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "composed coach"
     },
     {
       "id": "manager-stressed",
-      "description": "A stressed manager checking his watch anxiously on the touchline",
+      "description": "A stressed manager checking his watch on the touchline",
       "imageUrl": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "stressed coach"
     },
     {
       "id": "manager-angry",
-      "description": "A manager shouting tactical instructions to his team in frustration",
+      "description": "An intense, angry manager shouting tactical instructions",
       "imageUrl": "https://images.unsplash.com/photo-1599586120536-a7966465495e?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "angry manager"
     },
     {
       "id": "manager-sacked",
-      "description": "A dejected manager leaving the training ground after dismissal",
+      "description": "A dejected manager leaving the stadium after dismissal",
       "imageUrl": "https://images.unsplash.com/photo-1563257263-1e354cbf41b0?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "sad coach"
     }
