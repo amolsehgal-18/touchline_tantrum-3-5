@@ -32,7 +32,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   const activeConfig = state ? CAREER_MODES[state.mode].durations[state.durationIndex] : null;
 
-  // Decision Logic
   const handleDecision = useCallback((side: 'left' | 'right') => {
     if (!currentScenario || !state) return;
 
@@ -56,9 +55,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setState(newState);
     saveGameLocally(newState);
     setCurrentScenario(null);
-    setTimeLeft(15); // Reset timer
+    setTimeLeft(15);
 
-    // If 3rd card, trigger match after a brief period (allow user to see impacts)
     if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
       const table = getLeagueTable(newState);
       const possibleOpponents = table.filter(t => !t.isUser);
@@ -66,7 +64,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setOpponentName(opp);
       setPendingResult(calculateMatchResult(newState));
       
-      // Brief transition period
       setMatchIntro(true);
       setTimeout(() => {
         setMatchIntro(false);
@@ -75,14 +72,13 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     }
   }, [currentScenario, state]);
 
-  // Timer Effect
   useEffect(() => {
     if (!currentScenario || isSimulating || matchIntro || loading || error || state?.isSacked || state?.isSeasonEnd) return;
 
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          handleDecision('left'); // Auto-reject on timeout
+          handleDecision('left');
           return 15;
         }
         return prev - 1;

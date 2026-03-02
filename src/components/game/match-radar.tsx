@@ -34,9 +34,9 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   }, [result]);
 
   const getCommentary = (t: number) => {
-    if (t > 4) return "KICK OFF: The teams are out. A huge atmosphere here today...";
-    if (t > 3) return "15': Tactical pressing from " + userTeam + ". Testing the backline...";
-    if (t > 2) return "HT: Tactical regrouping in the dugout. Scores level...";
+    if (t > 4) return "KICK OFF: High pressure from both sides...";
+    if (t > 3) return "15': Tactical battle in the midfield. Looking for an opening...";
+    if (t > 2) return "HT: Managers making quick adjustments on the touchline...";
     if (t > 1) return "75': Tensions boiling over! The referee manages the conflict...";
     if (t > 0) return "FINAL MINUTES! Every tackle counts as the tension rises...";
     return "FULL TIME: The final whistle goes!";
@@ -50,19 +50,22 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
     let animationFrame: number;
     const players = Array.from({ length: 22 }, (_, i) => ({
-      x: Math.random() * canvas.width,
+      x: i < 11 ? 50 + Math.random() * 50 : canvas.width - 100 + Math.random() * 50,
       y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 1.5,
-      vy: (Math.random() - 0.5) * 1.5,
-      // User = Red (#ef4444), Opponent = Blue (#226be0)
-      color: i < 11 ? '#ef4444' : '#226be0',
+      vx: 0,
+      vy: 0,
+      team: i < 11 ? 'user' : 'opp',
+      color: i < 11 ? '#ef4444' : '#226be0', // User = Red, Opponent = Blue
+      baseX: i < 11 ? 50 + Math.random() * 100 : canvas.width - 150 + Math.random() * 100,
+      baseY: Math.random() * canvas.height,
     }));
 
     const ball = {
       x: canvas.width / 2,
       y: canvas.height / 2,
-      vx: (Math.random() - 0.5) * 5,
-      vy: (Math.random() - 0.5) * 5,
+      vx: (Math.random() - 0.5) * 2,
+      vy: (Math.random() - 0.5) * 2,
+      possessorIndex: -1,
     };
 
     const animate = () => {
@@ -76,28 +79,93 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.moveTo(canvas.width / 2, 5);
       ctx.lineTo(canvas.width / 2, canvas.height - 5);
       ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, 30, 0, Math.PI * 2);
+      ctx.stroke();
 
-      // Players
-      players.forEach(p => {
+      // Ball Physics & Logic
+      if (ball.possessorIndex !== -1) {
+        const p = players[ball.possessorIndex];
+        ball.x = p.x + 4;
+        ball.y = p.y;
+        
+        // Move towards opponent goal
+        const targetX = p.team === 'user' ? canvas.width - 10 : 10;
+        const dx = targetX - p.x;
+        const dy = (canvas.height / 2) - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        p.vx = (dx / dist) * 1.5;
+        p.vy = (dy / dist) * 1.5;
+
+        // Kick logic
+        if (Math.random() < 0.05) {
+          ball.possessorIndex = -1;
+          ball.vx = (p.team === 'user' ? 5 : -5) + (Math.random() - 0.5) * 2;
+          ball.vy = (Math.random() - 0.5) * 4;
+        }
+      } else {
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+        ball.vx *= 0.98; // Friction
+        ball.vy *= 0.98;
+
+        // Bounce off walls
+        if (ball.x < 10 || ball.x > canvas.width - 10) ball.vx *= -1;
+        if (ball.y < 10 || ball.y > canvas.height - 10) ball.vy *= -1;
+
+        // Interception
+        players.forEach((p, idx) => {
+          const dx = ball.x - p.x;
+          const dy = ball.y - p.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 10) {
+            ball.possessorIndex = idx;
+          }
+        });
+      }
+
+      // Players Logic
+      players.forEach((p, idx) => {
+        if (ball.possessorIndex !== idx) {
+          // Move towards ball or stay near base
+          const targetX = Math.abs(ball.x - p.x) < 100 ? ball.x : p.baseX;
+          const targetY = Math.abs(ball.y - p.y) < 100 ? ball.y : p.baseY;
+          
+          const dx = targetX - p.x;
+          const dy = targetY - p.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist > 2) {
+            p.vx = (dx / dist) * 1.2;
+            p.vy = (dy / dist) * 1.2;
+          } else {
+            p.vx *= 0.8;
+            p.vy *= 0.8;
+          }
+        }
+
         p.x += p.vx;
         p.y += p.vy;
-        if (p.x < 10 || p.x > canvas.width - 10) p.vx *= -1;
-        if (p.y < 10 || p.y > canvas.height - 10) p.vy *= -1;
+
+        // Draw Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
         ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
       });
 
-      // Ball = Yellow (#ffff00)
-      ball.x += ball.vx;
-      ball.y += ball.vy;
-      if (ball.x < 10 || ball.x > canvas.width - 10) ball.vx *= -1;
-      if (ball.y < 10 || ball.y > canvas.height - 10) ball.vy *= -1;
+      // Draw Ball (Yellow)
       ctx.fillStyle = '#ffff00';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 2.5, 0, Math.PI * 2);
       ctx.fill();
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
 
       animationFrame = requestAnimationFrame(animate);
     };
