@@ -14,8 +14,8 @@ export const CAREER_MODES: Record<CareerMode, CareerConfig> = {
     description: "Win the league or you're out. Zero tolerance.",
     durations: [
       { label: "Final Push (6)", matches: 6, target: 1, startGW: 33 },
-      { label: "Title Charge (10)", matches: 10, target: 1, startGW: 29 },
-      { label: "Full Campaign", matches: 38, target: 1, startGW: 1 }
+      { label: "Title Charge (8)", matches: 8, target: 1, startGW: 31 },
+      { label: "Title Race (10)", matches: 10, target: 1, startGW: 29 }
     ]
   },
   top4: { 
@@ -23,9 +23,9 @@ export const CAREER_MODES: Record<CareerMode, CareerConfig> = {
     name: "Top 4 $$", 
     description: "Champions League qualification is the only goal.",
     durations: [
-      { label: "Final Stretch (8)", matches: 8, target: 4, startGW: 31 },
-      { label: "Race for CL (15)", matches: 15, target: 4, startGW: 24 },
-      { label: "Long Haul (38)", matches: 38, target: 4, startGW: 1 }
+      { label: "Final Stretch (6)", matches: 6, target: 4, startGW: 33 },
+      { label: "Race for CL (8)", matches: 8, target: 4, startGW: 31 },
+      { label: "Euro Hunt (10)", matches: 10, target: 4, startGW: 29 }
     ]
   },
   relegation: { 
@@ -34,8 +34,8 @@ export const CAREER_MODES: Record<CareerMode, CareerConfig> = {
     description: "Keep them up by any means necessary.",
     durations: [
       { label: "Great Escape (6)", matches: 6, target: 17, startGW: 33 },
-      { label: "Survival Run (12)", matches: 12, target: 17, startGW: 27 },
-      { label: "Bottom Half Fight", matches: 20, target: 17, startGW: 19 }
+      { label: "Survival Run (8)", matches: 8, target: 17, startGW: 31 },
+      { label: "The Fight (10)", matches: 10, target: 17, startGW: 29 }
     ]
   },
   season: { 
@@ -132,9 +132,9 @@ export function calculateMood(state: GameState): ManagerMood {
 
 export function getMatchOdds(aggression: number) {
   // Aggression "Sweet Spot" is 0.5. Deviating from it makes odds worse.
-  const win = (2.20 - (aggression * 0.8)).toFixed(2);
-  const draw = "3.40";
-  const loss = (2.40 + (aggression * 1.2)).toFixed(2);
+  const win = (0.35 + (0.15 * (1 - Math.abs(0.5 - aggression) * 2))).toFixed(2);
+  const draw = "0.25";
+  const loss = (1 - parseFloat(win) - 0.25).toFixed(2);
   return { win, draw, loss };
 }
 
@@ -185,13 +185,13 @@ export function getLeagueTable(state: GameState): LeagueTeam[] {
 
 export function saveGameLocally(state: GameState) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('tt_save_v3', JSON.stringify(state));
+    localStorage.setItem('tt_save_v4', JSON.stringify(state));
   }
 }
 
 export function loadGameLocally(): GameState | null {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('tt_save_v3');
+    const saved = localStorage.getItem('tt_save_v4');
     try {
       return saved ? JSON.parse(saved) : null;
     } catch {

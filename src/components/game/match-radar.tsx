@@ -1,21 +1,42 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { Shield, Target } from 'lucide-react';
 
 interface MatchRadarProps {
+  userTeam: string;
+  opponentTeam: string;
   result: 'win' | 'draw' | 'loss' | null;
   onComplete: () => void;
 }
 
-export const MatchRadar = ({ result, onComplete }: MatchRadarProps) => {
+export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: MatchRadarProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [timer, setTimer] = useState(5);
   const [showFinal, setShowFinal] = useState(false);
 
+  // Generate a realistic score based on the result
+  const score = useMemo(() => {
+    if (result === 'win') {
+      const g1 = Math.floor(Math.random() * 3) + 1;
+      const g2 = Math.floor(Math.random() * g1);
+      return { user: g1, opp: g2 };
+    } else if (result === 'draw') {
+      const g = Math.floor(Math.random() * 3);
+      return { user: g, opp: g };
+    } else {
+      const g2 = Math.floor(Math.random() * 3) + 1;
+      const g1 = Math.floor(Math.random() * g2);
+      return { user: g1, opp: g2 };
+    }
+  }, [result]);
+
   const getCommentary = (t: number) => {
-    if (t > 3) return "Opening exchanges. High intensity pressing from the start...";
-    if (t > 1) return "HT: Tactical regrouping in the dugout. Scores level...";
+    if (t > 4) return "KICK OFF: The teams are out. A huge atmosphere here today...";
+    if (t > 3) return "15': Tactical pressing from United FC. Testing the backline...";
+    if (t > 2) return "HT: Tactical regrouping in the dugout. Scores level...";
+    if (t > 1) return "75': Tensions boiling over! The referee manages the conflict...";
     if (t > 0) return "FINAL MINUTES! Every tackle counts as the tension rises...";
     return "FULL TIME: The final whistle goes!";
   };
@@ -102,13 +123,13 @@ export const MatchRadar = ({ result, onComplete }: MatchRadarProps) => {
     if (showFinal) {
       const timeout = setTimeout(() => {
         onComplete();
-      }, 3000);
+      }, 4000);
       return () => clearTimeout(timeout);
     }
   }, [showFinal, onComplete]);
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full px-4 py-8">
+    <div className="flex flex-col items-center gap-4 w-full px-4 py-4">
       <div className="text-xl font-headline text-accent animate-pulse uppercase font-black tracking-tighter">
         MATCH SIMULATION
       </div>
@@ -117,20 +138,45 @@ export const MatchRadar = ({ result, onComplete }: MatchRadarProps) => {
         <canvas ref={canvasRef} width={300} height={200} className="w-full h-full rounded bg-black/40" />
         
         {showFinal && (
-          <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500 z-50">
-            <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-white/40 mb-2">Full Time Result</div>
-            <div className={cn(
-              "text-5xl font-headline font-black uppercase italic tracking-tighter scale-110",
-              result === 'win' ? "text-primary" : result === 'draw' ? "text-white/60" : "text-destructive"
-            )}>
-              {result === 'win' ? "VICTORY" : result === 'draw' ? "STALEMATE" : "DEFEAT"}
+          <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500 z-50 p-6">
+            <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-white/40 mb-6">Full Time Result</div>
+            
+            <div className="flex items-center justify-between w-full gap-2">
+              <div className="flex flex-col items-center gap-2 flex-1">
+                <div className="w-10 h-10 rounded bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(34,107,224,0.3)]">
+                  <Shield className="w-6 h-6 text-primary" />
+                </div>
+                <div className="text-[10px] font-headline font-black uppercase text-center truncate w-full">{userTeam}</div>
+              </div>
+
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-5xl font-headline font-black italic tracking-tighter flex items-center gap-3">
+                  <span className={cn(result === 'win' ? "text-primary" : "text-white")}>{score.user}</span>
+                  <span className="text-white/20">-</span>
+                  <span className={cn(result === 'loss' ? "text-destructive" : "text-white")}>{score.opp}</span>
+                </div>
+                <div className={cn(
+                  "text-[9px] font-headline font-black uppercase px-2 py-0.5 slanted-container",
+                  result === 'win' ? "bg-primary text-white" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-destructive text-white"
+                )}>
+                  {result === 'win' ? "VICTORY" : result === 'draw' ? "STALEMATE" : "DEFEAT"}
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center gap-2 flex-1">
+                <div className="w-10 h-10 rounded bg-white/5 border border-white/10 flex items-center justify-center">
+                  <Target className="w-6 h-6 text-white/40" />
+                </div>
+                <div className="text-[10px] font-headline font-black uppercase text-center truncate w-full">{opponentTeam}</div>
+              </div>
             </div>
-            <div className="mt-6 flex gap-6 text-sm font-headline font-black uppercase opacity-90">
-              <span className={result === 'win' ? "text-primary" : ""}>3 PTS</span>
+
+            <div className="mt-8 flex gap-6 text-[10px] font-headline font-black uppercase opacity-60">
+              <span className={result === 'win' ? "text-primary" : ""}>+3 PTS</span>
               <span className="opacity-20">|</span>
-              <span className={result === 'draw' ? "text-white" : ""}>1 PT</span>
+              <span className={result === 'draw' ? "text-white" : ""}>+1 PT</span>
               <span className="opacity-20">|</span>
-              <span className={result === 'loss' ? "text-destructive" : ""}>0 PTS</span>
+              <span className={result === 'loss' ? "text-destructive" : ""}>+0 PTS</span>
             </div>
           </div>
         )}

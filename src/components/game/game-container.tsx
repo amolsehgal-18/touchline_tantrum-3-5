@@ -20,6 +20,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [loading, setLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [pendingResult, setPendingResult] = useState<'win' | 'draw' | 'loss' | null>(null);
+  const [opponentName, setOpponentName] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const isFetchingRef = useRef(false);
 
@@ -85,6 +86,10 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
     // Every 3 swipes (6 days) triggers a match
     if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
+      const table = getLeagueTable(newState);
+      const possibleOpponents = table.filter(t => !t.isUser);
+      const opp = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)].team;
+      setOpponentName(opp);
       setPendingResult(calculateMatchResult(newState));
       setIsSimulating(true);
     }
@@ -221,7 +226,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
-      {/* Table at the very top */}
       <div className="bg-black/60 border-b border-white/10 p-3 z-40 backdrop-blur-md">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
@@ -253,7 +257,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
-      {/* Tension arcs and mood on a clean horizontal grid */}
       <div className="p-4 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30 min-h-[140px]">
         <div className="flex justify-center items-center border-r border-white/5">
           <TensionArcs board={state.boardSupport} fans={state.fanSupport} />
@@ -265,7 +268,12 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4 relative overflow-hidden">
         {isSimulating ? (
-          <MatchRadar result={pendingResult} onComplete={onMatchComplete} />
+          <MatchRadar 
+            userTeam={state.userTeam}
+            opponentTeam={opponentName}
+            result={pendingResult} 
+            onComplete={onMatchComplete} 
+          />
         ) : (
           <div className="w-full flex-1 flex items-center justify-center relative">
             {loading ? (
@@ -289,17 +297,16 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
       </div>
 
-      {/* Footer stats with Aggression and Odds */}
       <div className="p-4 premium-glass bg-black/60 border-t border-white/10 z-30">
         <div className="flex justify-between items-end mb-3">
           <div className="space-y-1">
-            <div className="text-[10px] font-headline uppercase opacity-50">Win Odds</div>
+            <div className="text-[10px] font-headline uppercase opacity-50">Win Probability</div>
             <div className="font-headline text-lg flex items-center gap-2">
-              <span className="text-blue-400">{odds.win}</span>
+              <span className="text-blue-400">{Math.round(parseFloat(odds.win) * 100)}%</span>
               <span className="text-white/20">|</span>
-              <span className="text-white/40">{odds.draw}</span>
+              <span className="text-white/40">{Math.round(parseFloat(odds.draw) * 100)}%</span>
               <span className="text-white/20">|</span>
-              <span className="text-orange-400">{odds.loss}</span>
+              <span className="text-orange-400">{Math.round(parseFloat(odds.loss) * 100)}%</span>
             </div>
           </div>
           <div className="text-right space-y-1">
