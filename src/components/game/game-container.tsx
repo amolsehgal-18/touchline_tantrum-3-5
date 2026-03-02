@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -116,17 +117,18 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     saveGameLocally(newState);
   };
 
-  // Live windowed league table (4 teams centered on user)
+  // Live windowed league table (3 teams centered on user)
   const windowedLeagueTable = useMemo(() => {
     if (!state) return [];
     const fullTable = getLeagueTable(state);
     const userIndex = fullTable.findIndex(t => t.isUser);
+    
     let start = Math.max(0, userIndex - 1);
-    let end = start + 4;
+    let end = start + 3;
     
     if (end > fullTable.length) {
       end = fullTable.length;
-      start = Math.max(0, end - 4);
+      start = Math.max(0, end - 3);
     }
     
     return fullTable.slice(start, end);
@@ -176,16 +178,16 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
-      {/* Live Windowed League Table */}
-      <div className="bg-black/60 border-b border-white/10 p-4 z-40 backdrop-blur-md">
-        <div className="flex items-center justify-between mb-3">
+      {/* Live Windowed League Table (Compact 3-Team View) */}
+      <div className="bg-black/60 border-b border-white/10 p-3 z-40 backdrop-blur-md">
+        <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
             <RefreshCw className="w-3 h-3 animate-spin" /> Live Standings
           </span>
           <span className="text-[10px] font-headline uppercase opacity-50">Matchday {config!.startGW + state.matchesPlayed}</span>
         </div>
-        <div className="flex flex-col gap-1">
-          <div className="grid grid-cols-4 text-[8px] font-headline uppercase opacity-40 px-2 pb-1 border-b border-white/5">
+        <div className="flex flex-col gap-0.5">
+          <div className="grid grid-cols-4 text-[7px] font-headline uppercase opacity-40 px-2 pb-1 border-b border-white/5">
             <span>Pos</span>
             <span>Team</span>
             <span className="text-center">GP</span>
@@ -195,7 +197,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             <div 
               key={team.team} 
               className={cn(
-                "grid grid-cols-4 items-center px-2 py-1 rounded text-[10px] transition-colors border",
+                "grid grid-cols-4 items-center px-2 py-0.5 rounded text-[9px] transition-colors border",
                 team.isUser ? "bg-primary/20 border-primary/50" : "bg-white/5 border-transparent"
               )}
             >
@@ -209,29 +211,29 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       </div>
 
       {/* Tension Dashboard */}
-      <div className="p-4 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30">
-        <div className="flex justify-center items-center border-r border-white/5 pr-4">
+      <div className="p-2 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30">
+        <div className="flex justify-center items-center border-r border-white/5">
           <TensionArcs board={state.boardSupport} fans={state.fanSupport} />
         </div>
-        <div className="flex justify-center items-center pl-4">
+        <div className="flex justify-center items-center">
           <ManagerMoodView mood={mood} />
         </div>
       </div>
 
       {/* Main Game Interface */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 relative">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4 relative overflow-hidden">
         {isSimulating ? (
           <MatchRadar onComplete={onMatchComplete} />
         ) : (
           <div className="w-full flex-1 flex items-center justify-center relative">
             {loading ? (
               <div className="text-center space-y-4">
-                <RefreshCw className="w-12 h-12 animate-spin text-primary mx-auto" />
+                <RefreshCw className="w-10 h-10 animate-spin text-primary mx-auto" />
                 <p className="text-[10px] font-headline uppercase tracking-[0.3em] opacity-40">Decrypting Comms...</p>
               </div>
             ) : error ? (
               <div className="text-center space-y-4">
-                <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
+                <AlertTriangle className="w-10 h-10 text-destructive mx-auto" />
                 <p className="text-xs uppercase font-headline opacity-50">{error}</p>
                 <SlantedButton onClick={fetchScenario}>Retry Decryption</SlantedButton>
               </div>
@@ -246,11 +248,11 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       </div>
 
       {/* Stats Footer */}
-      <div className="p-6 premium-glass bg-black/60 border-t border-white/10 z-30">
-        <div className="flex justify-between items-end mb-4">
+      <div className="p-4 premium-glass bg-black/60 border-t border-white/10 z-30">
+        <div className="flex justify-between items-end mb-3">
           <div className="space-y-1">
-            <div className="text-[10px] font-headline uppercase opacity-50">Victory Probability</div>
-            <div className="font-headline text-xl flex items-center gap-2">
+            <div className="text-[10px] font-headline uppercase opacity-50">Win Probability</div>
+            <div className="font-headline text-lg flex items-center gap-2">
               <span className="text-blue-400">{odds.win}</span>
               <span className="text-white/20">|</span>
               <span className="text-white/40">{odds.draw}</span>
@@ -260,10 +262,10 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           </div>
           <div className="text-right space-y-1">
             <div className="text-[10px] font-headline uppercase opacity-50">Squad Aggression</div>
-            <div className="text-xl font-headline text-primary font-bold">{Math.round(state.aggression * 100)}%</div>
+            <div className="text-lg font-headline text-primary font-bold">{Math.round(state.aggression * 100)}%</div>
           </div>
         </div>
-        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
           <div 
             className="h-full bg-primary transition-all duration-1000" 
             style={{ width: `${state.aggression * 100}%` }} 

@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface TensionArcsProps {
@@ -6,8 +7,8 @@ interface TensionArcsProps {
 }
 
 export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
-  const size = 180;
-  const strokeWidth = 12;
+  const size = 140;
+  const strokeWidth = 10;
   const center = size / 2;
   
   const drawArc = (value: number, radius: number, color: string, id: string) => {
@@ -48,19 +49,19 @@ export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
 
   return (
     <div className="relative flex flex-col items-center" style={{ width: size }}>
-      <svg width={size} height={size / 2 + 10} className="overflow-visible">
-        {drawArc(board, 70, "#3b82f6", "board")}
-        {drawArc(fans, 50, "#f97316", "fans")}
+      <svg width={size} height={size / 2 + 5} className="overflow-visible">
+        {drawArc(board, 55, "#3b82f6", "board")}
+        {drawArc(fans, 40, "#f97316", "fans")}
       </svg>
       
-      <div className="grid grid-cols-2 gap-4 text-[8px] font-headline uppercase tracking-widest opacity-60 mt-4 w-full px-4">
-        <div className="flex flex-col items-center gap-1 border-r border-white/10 pr-4">
-          <span className="text-blue-400 font-bold text-xs">{Math.round(board * 100)}%</span>
-          <span className="opacity-50">Board</span>
+      <div className="grid grid-cols-2 gap-2 text-[8px] font-headline uppercase tracking-widest opacity-60 mt-2 w-full px-2">
+        <div className="flex flex-col items-center border-r border-white/10">
+          <span className="text-blue-400 font-bold">{Math.round(board * 100)}%</span>
+          <span className="opacity-50 text-[6px]">Board</span>
         </div>
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-orange-400 font-bold text-xs">{Math.round(fans * 100)}%</span>
-          <span className="opacity-50">Fans</span>
+        <div className="flex flex-col items-center">
+          <span className="text-orange-400 font-bold">{Math.round(fans * 100)}%</span>
+          <span className="opacity-50 text-[6px]">Fans</span>
         </div>
       </div>
     </div>
