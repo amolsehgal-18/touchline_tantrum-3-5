@@ -192,7 +192,7 @@ Stadium safety inspectors find critical structural issues.,Close the stadium for
 Fans organize a full boycott over ownership issues.,Meet with protest leaders immediately.,Ignore them and focus on football.,-30,20,0,fan_protest,performance_low,press,0
 A key player is arrested in a serious criminal investigation.,Suspend him indefinitely.,Support him as innocent until proven.,-35,10,8,legal,any_time,locker,0
 The club faces expulsion from the league for rule violations.,Appeal and fight the decision.,Accept responsibility and rebuild.,-40,5,2,legal,any_time,press,0
-A doping scandal implicates multiple first-team players.,Suspend all involved immediately.,Defend players until investigation complete.,-30,15,-2,doping,any_time,training,0
+A doping scandal implicates multiple first-team players.,Suspend all involved immediately.,Defend players until investigation complete.,-30,15,-2,doping,any_time,training,1
 Natural disaster damages training facilities beyond repair.,Demand immediate board investment.,Use local facilities temporarily.,-20,10,-5,stadium_safety,any_time,training,0
 Match-fixing allegations surface from years ago.,Cooperate fully with investigation.,Deny everything and protect club legacy.,-25,5,2,legal,any_time,press,0
 Tax authorities launch a major investigation into club finances.,Make full transparency immediately.,Hire expensive lawyers to fight.,-35,0,2,finance,any_time,press,0
@@ -284,7 +284,7 @@ A player wants to use cold plunge at unusual times.,Set strict schedule for all 
 The team's travel includes unnecessary luxury stops.,Cut luxury for efficiency.,Keep luxury for player morale.,-5,2,0,board_pressure,away_game,press,0
 Players are using smart rings to monitor sleep/data.,Make it mandatory for all players.,Keep as personal choice.,-3,0,2,training_ground,any_time,training,0
 A player's celebrity friendships distract from football.,Advise reducing public appearances.,Embrace celebrity connections.,-5,8,5,player_ego,any_time,locker,0
-The board wants you to attend all youth team matches.,Delegate to assistants.,Make time for youth development.,5,-2,-2,board_pressure,any_time,stadium,0
+The board wants you to attend all youth team matches.,Delegate to assistants.,Make time for youth development.,5,-2,-2,board_pressure,any_time,press,0
 Training lacks specific set-piece focus.,Increase set-piece training time.,Keep balanced training approach.,0,0,-5,training_ground,set_piece_weak,training,0
 A player wants to use advanced biometric monitoring.,Invest in monitoring technology.,Trust traditional coaching methods.,-12,0,-2,training_ground,any_time,training,0
 The team's hotel choices are consistently poor.,Take personal control of bookings.,Delegate to travel team.,-5,0,2,training_ground,away_game,training,0
@@ -335,7 +335,7 @@ const aiScenarioPresentationPrompt = ai.definePrompt({
     })
   },
   output: {schema: AiScenarioPresentationOutputSchema},
-  model: 'gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-flash',
   prompt: `You are a football manager simulator AI. Your task is to present a critical scenario to the manager, along with two distinct options and their pre-calculated impacts. The manager will choose one of these options.
 
 You are currently managing {{{userTeam}}}, sitting at position {{{currentLeaguePosition}}} in the league.
