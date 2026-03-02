@@ -301,8 +301,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
               <span>Name</span>
             </div>
             <div className="flex gap-6 pr-1">
-              <span>G</span>
-              <span>P</span>
+              <span className="w-4 text-center">G</span>
+              <span className="w-4 text-center">P</span>
             </div>
           </div>
           {windowedLeagueTable.map((team) => (
@@ -318,7 +318,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
                 <span className={cn("font-bold truncate max-w-[120px]", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
               </div>
               <div className="flex items-center gap-6 pr-1">
-                <span className="opacity-40">{team.gp}</span>
+                <span className="opacity-40 w-4 text-center">{team.gp}</span>
                 <span className="font-bold w-4 text-right">{team.pts}</span>
               </div>
             </div>

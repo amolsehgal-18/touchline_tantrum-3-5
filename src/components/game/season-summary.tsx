@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { GameState, CAREER_MODES } from '@/lib/game-logic';
 import { SlantedContainer, SlantedButton } from './slanted-elements';
-import { Trophy, XCircle, Share2, Users, Briefcase, Heart, CloudUpload } from 'lucide-react';
+import { Trophy, XCircle, Users, Briefcase, Heart, CloudUpload } from 'lucide-react';
 import { getSeasonFeedback, type FeedbackOutput } from '@/ai/flows/season-feedback-flow';
 import { useFirestore, useUser, setDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
