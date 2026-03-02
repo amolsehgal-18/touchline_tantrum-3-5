@@ -1,14 +1,25 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
 import { GameContainer } from '@/components/game/game-container';
 import { loadGameLocally, GameState } from '@/lib/game-logic';
-import { SlantedButton, SlantedContainer } from '@/components/game/slanted-elements';
-import { Trophy, Play, Info } from 'lucide-react';
+import { SlantedButton } from '@/components/game/slanted-elements';
+import { GlobalLeaderboard } from '@/components/game/global-leaderboard';
+import { Trophy, Play, Info, Users, Shield } from 'lucide-react';
+import { useAuth, initiateAnonymousSignIn, FirebaseClientProvider } from '@/firebase';
 
-export default function Home() {
+function MainMenuContent() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [savedGame, setSavedGame] = useState<GameState | null>(null);
+  const { auth, user } = useAuth();
+
+  useEffect(() => {
+    if (auth && !user) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [auth, user]);
 
   useEffect(() => {
     const saved = loadGameLocally();
@@ -19,6 +30,22 @@ export default function Home() {
 
   if (isPlaying) {
     return <GameContainer initialState={savedGame || undefined} />;
+  }
+
+  if (showLeaderboard) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-start p-6 bg-background">
+        <div className="w-full max-w-sm">
+          <button 
+            onClick={() => setShowLeaderboard(false)}
+            className="mb-8 text-accent font-headline uppercase text-xs flex items-center gap-2 hover:opacity-70"
+          >
+            <Shield className="w-4 h-4" /> Back to Base
+          </button>
+          <GlobalLeaderboard />
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -54,19 +81,30 @@ export default function Home() {
           </SlantedButton>
 
           <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 premium-glass slanted-button py-3 text-xs uppercase font-headline">
-              <Trophy className="w-4 h-4 text-accent" /> Cabinet
+            <button 
+              onClick={() => setShowLeaderboard(true)}
+              className="flex items-center justify-center gap-2 premium-glass slanted-button py-3 text-xs uppercase font-headline"
+            >
+              <Trophy className="w-4 h-4 text-accent" /> Rankings
             </button>
             <button className="flex items-center justify-center gap-2 premium-glass slanted-button py-3 text-xs uppercase font-headline">
-              <Info className="w-4 h-4 text-blue-400" /> Tutorial
+              <Info className="w-4 h-4 text-blue-400" /> Help
             </button>
           </div>
         </div>
 
         <div className="text-[10px] font-headline uppercase tracking-[0.3em] opacity-30 mt-8">
-          Powered by Gemini AI Engine v1.5
+          Global Engine v1.5 • {user ? "Secure Session Active" : "Initializing..."}
         </div>
       </div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <FirebaseClientProvider>
+      <MainMenuContent />
+    </FirebaseClientProvider>
   );
 }

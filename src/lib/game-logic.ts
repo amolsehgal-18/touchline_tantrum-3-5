@@ -1,3 +1,4 @@
+
 export type CareerMode = 'title' | 'top4' | 'relegation' | 'season';
 
 export interface CareerConfig {
@@ -58,13 +59,15 @@ export type LeagueTeam = {
 };
 
 export type GameState = {
+  id: string;
+  managerName: string;
+  userTeam: string;
   mode: CareerMode;
   durationIndex: number;
   boardSupport: number;
   fanSupport: number;
   dressingRoom: number;
   aggression: number;
-  userTeam: string;
   currentLeaguePosition: number;
   cardsSeen: number;
   matchesPlayed: number;
@@ -87,7 +90,12 @@ const getPPGForPosition = (pos: number): number => {
   return 0.75;
 };
 
-export const INITIAL_STATE = (mode: CareerMode, durationIndex: number): GameState => {
+export const INITIAL_STATE = (
+  mode: CareerMode, 
+  durationIndex: number, 
+  managerName: string = "Gaffer", 
+  userTeam: string = "United FC"
+): GameState => {
   const config = CAREER_MODES[mode].durations[durationIndex];
   
   let startPos = 10;
@@ -99,13 +107,15 @@ export const INITIAL_STATE = (mode: CareerMode, durationIndex: number): GameStat
   const startingPoints = Math.max(0, Math.floor(getPPGForPosition(startPos) * startGW));
 
   return {
+    id: crypto.randomUUID(),
+    managerName,
+    userTeam,
     mode,
     durationIndex,
     boardSupport: 0.5,
     fanSupport: 0.5,
     dressingRoom: 0.5,
     aggression: 0.3,
-    userTeam: "United FC",
     currentLeaguePosition: startPos,
     cardsSeen: 0,
     matchesPlayed: 0,
@@ -158,9 +168,12 @@ export function getLeagueTable(state: GameState): LeagueTeam[] {
     "Forest", "Foxes", "Bees", "Clarets", "Hatters"
   ];
   
+  // Replace "United FC" with custom team if needed
+  const displayTeams = teams.map(t => t === "United FC" ? state.userTeam : t);
+  
   const currentGW = (config.startGW - 1) + state.matchesPlayed;
   
-  return teams.map((team, i) => {
+  return displayTeams.map((team, i) => {
     const isUser = team === state.userTeam;
     const teamBasePos = i + 1;
     let teamPts = Math.floor(getPPGForPosition(teamBasePos) * currentGW);
@@ -181,13 +194,13 @@ export function getLeagueTable(state: GameState): LeagueTeam[] {
 
 export function saveGameLocally(state: GameState) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('tt_save_v5', JSON.stringify(state));
+    localStorage.setItem('tt_save_v6', JSON.stringify(state));
   }
 }
 
 export function loadGameLocally(): GameState | null {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('tt_save_v5');
+    const saved = localStorage.getItem('tt_save_v6');
     try {
       return saved ? JSON.parse(saved) : null;
     } catch {

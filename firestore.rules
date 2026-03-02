@@ -1,101 +1,25 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * Touchline Tantrum Security Rules
-     *
-     * CORE PHILOSOPHY:
-     * This ruleset enforces a strict user-ownership model where all mutable data is segregated by the 
-     * user's unique Firebase Authentication UID. Static game assets (Scenario Cards) are globally 
-     * accessible to authenticated users but strictly read-only to prevent tampering with game mechanics.
-     *
-     * DATA STRUCTURE:
-     * - /users/{userId}/gameSaves/{gameSaveId}: Private, user-specific game state.
-     * - /users/{userId}/trophyCabinet: Private, user-specific career statistics.
-     * - /scenarioCards/{scenarioCardId}: Global, read-only game templates.
-     *
-     * KEY SECURITY DECISIONS:
-     * - Ownership via Path: Authorization is derived directly from the document path, ensuring high 
-     *   performance and low cost by avoiding `get()` calls for ownership checks.
-     * - Immutability: Critical relational fields (like entity IDs) are enforced as immutable after creation.
-     * - Prototyping Flexibility: Rules focus on "who" can access data rather than strict schema 
-     *   validation of content fields like `boardSupport` or `managerMood`.
-     * - Read-Only Global Data: Scenario templates are protected from all client-side write operations.
-     */
-
-    // --- Global Helper Functions ---
-
-    /** @description Checks if the request is from a signed-in user. */
     function isSignedIn() {
       return request.auth != null;
     }
-
-    /** @description Checks if the authenticated user matches the provided ID. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** @description Combines ownership check with document existence for updates and deletes. */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
-    }
-
-    // --- Collection Rules ---
-
-    /**
-     * @description Rules for individual game save states.
-     * @path /users/{userId}/gameSaves/{gameSaveId}
-     * @allow (create) if auth UID is 'user_123' and path {userId} is 'user_123'.
-     * @deny (list) if auth UID is 'user_123' but path {userId} is 'user_456'.
-     * @principle Restricts access to a user's own data tree and validates document ID consistency.
-     */
     match /users/{userId}/gameSaves/{gameSaveId} {
-      allow get, list: if isOwner(userId);
-      
-      allow create: if isOwner(userId) 
-        && request.resource.data.id == gameSaveId;
-      
-      allow update: if isExistingOwner(userId) 
-        && request.resource.data.id == resource.data.id;
-      
-      allow delete: if isExistingOwner(userId);
+      allow read, write: if isOwner(userId);
     }
 
-    /**
-     * @description Rules for the user's career statistics and achievements.
-     * @path /users/{userId}/trophyCabinet
-     * @allow (get) if auth UID matches the {userId} in the path.
-     * @deny (update) if the user attempts to change the internal 'id' field.
-     * @principle Enforces strict ownership of aggregate player data.
-     */
-    match /users/{userId}/trophyCabinet {
-      allow get, list: if isOwner(userId);
-      
-      allow create: if isOwner(userId) 
-        && request.resource.data.id == userId;
-      
-      allow update: if isExistingOwner(userId) 
-        && request.resource.data.id == resource.data.id;
-      
-      allow delete: if isExistingOwner(userId);
+    match /leaderboard/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
     }
 
-    /**
-     * @description Read-only templates for game scenarios used by the AI engine.
-     * @path /scenarioCards/{scenarioCardId}
-     * @allow (list) if the user is authenticated (any UID).
-     * @deny (create) Always denied; templates are managed by administrative processes.
-     * @principle Structural segregation of static content from user data with auth-guarded reads.
-     */
-    match /scenarioCards/{scenarioCardId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if false;
-    }
-
-    // --- Default Deny ---
-    match /{path=**} {
-      allow read, write: if false;
+    match /scenarioCards/{cardId} {
+      allow read: if isSignedIn();
     }
   }
 }

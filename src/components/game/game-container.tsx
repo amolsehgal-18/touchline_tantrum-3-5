@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, getLeagueTable, CAREER_MODES, CareerMode, calculateMatchResult } from '@/lib/game-logic';
-import { SlantedButton } from './slanted-elements';
+import { SlantedButton, SlantedContainer } from './slanted-elements';
 import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
 import { TensionArcs } from './tension-arcs';
@@ -11,12 +11,15 @@ import { SwipeCard } from './swipe-card';
 import { SeasonSummary } from './season-summary';
 import { getAiScenarioPresentation } from '@/ai/flows/ai-scenario-presentation-flow';
 import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar, ChevronLeft } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar, ChevronLeft, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 export const GameContainer = ({ initialState }: { initialState?: GameState }) => {
   const [state, setState] = useState<GameState | null>(initialState || null);
-  const [selectedMode, setSelectedMode] = useState<CareerMode | null>(null);
+  const [setupMode, setSetupMode] = useState<CareerMode | null>(null);
+  const [managerName, setManagerName] = useState("Gaffer");
+  const [clubName, setClubName] = useState("United FC");
   const [currentScenario, setCurrentScenario] = useState<AiScenarioPresentationOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -127,7 +130,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   };
 
   const startNewCareer = (mode: CareerMode, durationIndex: number) => {
-    const newState = INITIAL_STATE(mode, durationIndex);
+    const newState = INITIAL_STATE(mode, durationIndex, managerName, clubName);
     setState(newState);
     saveGameLocally(newState);
   };
@@ -149,23 +152,54 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   }, [state]);
 
   if (!state) {
-    if (selectedMode) {
-      const mode = CAREER_MODES[selectedMode];
+    if (setupMode) {
+      const mode = CAREER_MODES[setupMode];
       return (
         <div className="flex flex-col h-screen max-w-md mx-auto bg-background p-6 overflow-y-auto">
           <button 
-            onClick={() => setSelectedMode(null)}
+            onClick={() => setSetupMode(null)}
             className="flex items-center gap-2 text-white/50 mb-8 hover:text-accent transition-colors"
           >
             <ChevronLeft className="w-5 h-5" /> Back to Modes
           </button>
-          <h2 className="text-3xl font-headline font-bold mb-2 text-accent uppercase">{mode.name}</h2>
-          <p className="text-white/40 mb-8 text-sm">{mode.description}</p>
+          
+          <div className="space-y-6 mb-8">
+            <h2 className="text-3xl font-headline font-bold text-accent uppercase">{mode.name}</h2>
+            
+            <SlantedContainer className="space-y-4 border-white/5">
+              <div className="space-y-1">
+                <label className="text-[10px] font-headline uppercase opacity-40">Manager Identity</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" />
+                  <Input 
+                    value={managerName} 
+                    onChange={(e) => setManagerName(e.target.value)}
+                    className="pl-10 bg-white/5 border-white/10 font-headline uppercase text-sm"
+                    placeholder="Enter Name..."
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-headline uppercase opacity-40">Club Reputation</label>
+                <div className="relative">
+                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" />
+                  <Input 
+                    value={clubName} 
+                    onChange={(e) => setClubName(e.target.value)}
+                    className="pl-10 bg-white/5 border-white/10 font-headline uppercase text-sm"
+                    placeholder="Enter Club..."
+                  />
+                </div>
+              </div>
+            </SlantedContainer>
+          </div>
+
           <div className="grid gap-4">
+            <label className="text-[10px] font-headline uppercase opacity-40 px-2">Select Campaign Length</label>
             {mode.durations.map((d, i) => (
               <button 
                 key={i}
-                onClick={() => startNewCareer(selectedMode, i)}
+                onClick={() => startNewCareer(setupMode, i)}
                 className="text-left p-6 premium-glass slanted-container border-white/10 hover:border-primary/50 transition-all group"
               >
                 <div className="flex justify-between items-center">
@@ -195,7 +229,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             return (
               <button 
                 key={modeKey}
-                onClick={() => setSelectedMode(modeKey)}
+                onClick={() => setSetupMode(modeKey)}
                 className="text-left p-6 premium-glass slanted-container border-white/10 hover:border-primary/50 transition-all group"
               >
                 <div className="flex items-start gap-4">

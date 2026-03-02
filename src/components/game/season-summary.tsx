@@ -1,14 +1,21 @@
+
 "use client"
 
 import React, { useEffect, useState } from 'react';
 import { GameState, CAREER_MODES } from '@/lib/game-logic';
 import { SlantedContainer, SlantedButton } from './slanted-elements';
-import { Trophy, XCircle, Share2, Users, Briefcase, Heart } from 'lucide-react';
+import { Trophy, XCircle, Share2, Users, Briefcase, Heart, CloudUpload } from 'lucide-react';
 import { getSeasonFeedback, type FeedbackOutput } from '@/ai/flows/season-feedback-flow';
+import { useFirestore, useUser, setDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 export const SeasonSummary = ({ state, onRestart }: { state: GameState, onRestart: () => void }) => {
   const [feedback, setFeedback] = useState<FeedbackOutput | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
+  const { firestore } = useFirestore();
+  const { user } = useUser();
+  
   const config = CAREER_MODES[state.mode];
   const isSuccess = state.currentLeaguePosition <= config.target && !state.isSacked;
 
@@ -37,6 +44,22 @@ export const SeasonSummary = ({ state, onRestart }: { state: GameState, onRestar
     };
     fetchFeedback();
   }, [state, config, isSuccess]);
+
+  const submitToLeaderboard = () => {
+    if (!firestore || !user || submitted) return;
+
+    const entryRef = doc(firestore, 'leaderboard', user.uid);
+    setDocumentNonBlocking(entryRef, {
+      userId: user.uid,
+      managerName: state.managerName,
+      teamName: state.userTeam,
+      totalWins: state.wins,
+      bestPoints: state.points,
+      timestamp: new Date().toISOString()
+    }, { merge: true });
+
+    setSubmitted(true);
+  };
 
   return (
     <div className="min-h-screen bg-background p-6 flex flex-col items-center justify-center gap-6 overflow-y-auto">
@@ -101,9 +124,18 @@ export const SeasonSummary = ({ state, onRestart }: { state: GameState, onRestar
         </SlantedContainer>
 
         <div className="flex flex-col gap-3">
-          <SlantedButton className="w-full bg-accent text-accent-foreground flex items-center justify-center gap-2">
-            <Share2 className="w-4 h-4" /> Share Career Stats
+          <SlantedButton 
+            onClick={submitToLeaderboard}
+            disabled={submitted || !user}
+            className={cn(
+              "w-full flex items-center justify-center gap-2",
+              submitted ? "bg-green-500/20 text-green-500" : "bg-primary text-white"
+            )}
+          >
+            <CloudUpload className="w-4 h-4" /> 
+            {submitted ? "RANKED ON BOARD" : "POST TO LEADERBOARD"}
           </SlantedButton>
+          
           <SlantedButton onClick={onRestart} className="w-full bg-white text-black">
             START NEW CHAPTER
           </SlantedButton>
