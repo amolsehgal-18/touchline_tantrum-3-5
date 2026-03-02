@@ -41,7 +41,8 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
   };
 
   const rotation = dragX / 10;
-  const swipeProgress = Math.min(Math.abs(dragX) / 15, 1); // Colors pop much sooner (15px)
+  // Increase sensitivity: pop at 15px
+  const swipeProgress = Math.min(Math.abs(dragX) / 15, 1);
   const isLeft = dragX < 0;
   const isRight = dragX > 0;
 
@@ -64,36 +65,36 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
         }}
       >
         <SlantedContainer className={cn(
-          "w-full bg-card min-h-[350px] flex flex-col justify-between border-2 transition-all relative group shadow-2xl p-4",
-          dragX < -15 ? "border-destructive shadow-[0_0_30px_rgba(239,68,68,0.3)]" : dragX > 15 ? "border-primary shadow-[0_0_30px_rgba(34,107,224,0.3)]" : "border-white/10"
+          "w-full bg-card min-h-[380px] flex flex-col justify-between border-2 transition-all relative group shadow-2xl p-6",
+          dragX < -15 ? "border-destructive shadow-[0_0_40px_rgba(239,68,68,0.4)]" : dragX > 15 ? "border-primary shadow-[0_0_40px_rgba(34,107,224,0.4)]" : "border-white/10"
         )}>
           {scenario.isBreaking && (
-            <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-4 py-1.5 z-20 skew-x-[-15deg] font-black tracking-widest">
-              URGENT
+            <div className="absolute top-0 right-0 bg-destructive text-white text-[9px] font-headline px-5 py-2 z-20 skew-x-[-15deg] font-black tracking-widest uppercase">
+              Urgent
             </div>
           )}
 
-          <div className="space-y-3">
-            <div className="text-[10px] font-headline uppercase tracking-[0.3em] text-accent font-black opacity-80">Tactical Briefing</div>
-            <p className="text-[13px] leading-snug font-headline font-medium text-white tracking-tight">
+          <div className="space-y-4 pt-2">
+            <p className="text-[15px] leading-relaxed font-headline font-bold text-white tracking-tight">
               {scenario.scenario}
             </p>
           </div>
 
-          <div className="mt-6 flex-1 flex flex-col justify-end">
-            <div className="grid grid-cols-2 gap-3 h-28 relative">
+          <div className="mt-8 flex-1 flex flex-col justify-end">
+            <div className="grid grid-cols-2 gap-4 h-32 relative">
               {/* Left Option */}
               <div 
                 className={cn(
-                  "flex flex-col gap-1 p-2 rounded-lg border transition-all duration-200",
-                  isLeft && dragX < -15 ? "bg-destructive border-white/40 scale-105 shadow-xl z-10" : "bg-white/5 border-transparent"
+                  "flex flex-col gap-2 p-3 rounded-xl border transition-all duration-200",
+                  isLeft && dragX < -15 ? "bg-destructive border-white/60 scale-105 shadow-2xl z-10" : "bg-white/5 border-transparent"
                 )}
-                style={{ opacity: isLeft ? 0.3 + (swipeProgress * 0.7) : 0.05 }}
+                // Increased initial opacity from 0.05 to 0.4
+                style={{ opacity: isLeft ? 0.4 + (swipeProgress * 0.6) : 0.4 }}
               >
-                <div className="flex items-center gap-1 text-white font-headline uppercase text-[10px] font-black italic tracking-tighter">
-                  <ChevronLeft className="w-3 h-3" /> REJECT
+                <div className="flex items-center gap-1.5 text-white font-headline uppercase text-[11px] font-black italic tracking-tighter">
+                  <ChevronLeft className="w-3.5 h-3.5" /> REJECT
                 </div>
-                <div className="text-[10px] font-headline text-white leading-tight">
+                <div className="text-[11px] font-headline font-bold text-white leading-snug">
                   {scenario.leftOption}
                 </div>
               </div>
@@ -101,25 +102,26 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
               {/* Right Option */}
               <div 
                 className={cn(
-                  "flex flex-col gap-1 p-2 rounded-lg border text-right transition-all duration-200",
-                  isRight && dragX > 15 ? "bg-primary border-white/40 scale-105 shadow-xl z-10" : "bg-white/5 border-transparent"
+                  "flex flex-col gap-2 p-3 rounded-xl border text-right transition-all duration-200",
+                  isRight && dragX > 15 ? "bg-primary border-white/60 scale-105 shadow-2xl z-10" : "bg-white/5 border-transparent"
                 )}
-                style={{ opacity: isRight ? 0.3 + (swipeProgress * 0.7) : 0.05 }}
+                // Increased initial opacity from 0.05 to 0.4
+                style={{ opacity: isRight ? 0.4 + (swipeProgress * 0.6) : 0.4 }}
               >
-                <div className="flex items-center gap-1 justify-end text-white font-headline uppercase text-[10px] font-black italic tracking-tighter">
-                  APPROVE <ChevronRight className="w-3 h-3" />
+                <div className="flex items-center gap-1.5 justify-end text-white font-headline uppercase text-[11px] font-black italic tracking-tighter">
+                  APPROVE <ChevronRight className="w-3.5 h-3.5" />
                 </div>
-                <div className="text-[10px] font-headline text-white leading-tight">
+                <div className="text-[11px] font-headline font-bold text-white leading-snug">
                   {scenario.rightOption}
                 </div>
               </div>
             </div>
 
             {Math.abs(dragX) < 15 && (
-              <div className="text-center mt-4 flex items-center justify-center gap-2 animate-pulse opacity-40">
-                <ChevronLeft className="w-3 h-3 text-destructive" />
-                <span className="text-[8px] font-headline uppercase tracking-[0.3em] font-black">Swipe to Act</span>
-                <ChevronRight className="w-3 h-3 text-primary" />
+              <div className="text-center mt-6 flex items-center justify-center gap-3 animate-pulse opacity-60">
+                <ChevronLeft className="w-4 h-4 text-destructive" />
+                <span className="text-[10px] font-headline uppercase tracking-[0.4em] font-black">Swipe to Act</span>
+                <ChevronRight className="w-4 h-4 text-primary" />
               </div>
             )}
           </div>
