@@ -77,8 +77,29 @@ export type GameState = {
   history: string[];
 };
 
+// Realistic PPG based on position (approximate Premier League averages)
+const getPPGForPosition = (pos: number): number => {
+  if (pos === 1) return 2.45;
+  if (pos === 2) return 2.15;
+  if (pos <= 4) return 1.95;
+  if (pos <= 6) return 1.75;
+  if (pos <= 10) return 1.35;
+  if (pos <= 17) return 1.05;
+  return 0.75;
+};
+
 export const INITIAL_STATE = (mode: CareerMode, durationIndex: number): GameState => {
   const config = CAREER_MODES[mode].durations[durationIndex];
+  
+  // Starting positions based on user requirement
+  let startPos = 10;
+  if (mode === 'title') startPos = 2;
+  else if (mode === 'top4') startPos = 5;
+  else if (mode === 'relegation') startPos = 18;
+
+  const startGW = config.startGW - 1; // Points earned BEFORE the game starts
+  const startingPoints = Math.max(0, Math.floor(getPPGForPosition(startPos) * startGW));
+
   return {
     mode,
     durationIndex,
@@ -87,13 +108,13 @@ export const INITIAL_STATE = (mode: CareerMode, durationIndex: number): GameStat
     dressingRoom: 0.5,
     aggression: 0.3,
     userTeam: "United FC",
-    currentLeaguePosition: config.target + 2,
+    currentLeaguePosition: startPos,
     cardsSeen: 0,
     matchesPlayed: 0,
     wins: 0,
     draws: 0,
     losses: 0,
-    points: 0,
+    points: startingPoints,
     isSacked: false,
     isSeasonEnd: false,
     history: [],
@@ -112,7 +133,6 @@ export function calculateMood(state: GameState): ManagerMood {
 }
 
 export function getMatchOdds(aggression: number) {
-  // Purely visual representation of odds based on aggression
   const win = (2.20 - (aggression * 0.8)).toFixed(2);
   const draw = "3.40";
   const loss = (2.40 + (aggression * 1.2)).toFixed(2);
@@ -121,16 +141,11 @@ export function getMatchOdds(aggression: number) {
 
 export function calculateMatchResult(state: GameState): 'win' | 'draw' | 'loss' {
   const mood = calculateMood(state);
-  
-  // Base win probability (starts at 35%)
   let winProb = 0.35;
   
-  // Aggression bonus/penalty (0.0 to 1.0 scale)
-  // Moderate aggression (0.4-0.6) is optimal
   const aggressionEffect = 1 - Math.abs(0.5 - state.aggression) * 0.5;
   winProb *= aggressionEffect;
 
-  // Mood multiplier
   const moodMultipliers = {
     happy: 1.2,
     neutral: 1.0,
@@ -156,12 +171,13 @@ export function getLeagueTable(state: GameState): LeagueTeam[] {
     "Forest", "Foxes", "Bees", "Clarets", "Hatters"
   ];
   
-  const currentGW = config.startGW + state.matchesPlayed;
+  const currentGW = (config.startGW - 1) + state.matchesPlayed;
   
   return teams.map((team, i) => {
     const isUser = team === state.userTeam;
-    const ppg = (20 - i) * 0.12 + 0.5;
-    let teamPts = Math.floor(ppg * currentGW);
+    // Base position for other teams based on original array index
+    const teamBasePos = i + 1;
+    let teamPts = Math.floor(getPPGForPosition(teamBasePos) * currentGW);
     
     if (isUser) {
       teamPts = state.points;

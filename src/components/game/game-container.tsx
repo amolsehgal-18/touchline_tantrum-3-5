@@ -82,7 +82,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     saveGameLocally(newState);
     setCurrentScenario(null);
 
-    // Trigger match every 3 cards
     if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
       setIsSimulating(true);
     }
@@ -223,6 +222,12 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           <span className="text-[10px] font-headline uppercase opacity-50">Matchday {activeConfig!.startGW + state.matchesPlayed}</span>
         </div>
         <div className="flex flex-col gap-0.5">
+          <div className="grid grid-cols-4 items-center px-2 py-1 text-[8px] font-headline uppercase opacity-40 border-b border-white/5 mb-1">
+            <span>#</span>
+            <span>Name</span>
+            <span className="text-center">G</span>
+            <span className="text-right">P</span>
+          </div>
           {windowedLeagueTable.map((team) => (
             <div 
               key={team.team} 
