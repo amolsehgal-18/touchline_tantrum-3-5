@@ -1,8 +1,10 @@
+
 "use client"
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Shield, Target } from 'lucide-react';
+import { SlantedButton } from './slanted-elements';
 
 interface MatchRadarProps {
   userTeam: string;
@@ -33,7 +35,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
   const getCommentary = (t: number) => {
     if (t > 4) return "KICK OFF: The teams are out. A huge atmosphere here today...";
-    if (t > 3) return "15': Tactical pressing from United FC. Testing the backline...";
+    if (t > 3) return "15': Tactical pressing from " + userTeam + ". Testing the backline...";
     if (t > 2) return "HT: Tactical regrouping in the dugout. Scores level...";
     if (t > 1) return "75': Tensions boiling over! The referee manages the conflict...";
     if (t > 0) return "FINAL MINUTES! Every tackle counts as the tension rises...";
@@ -52,7 +54,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       y: Math.random() * canvas.height,
       vx: (Math.random() - 0.5) * 1.5,
       vy: (Math.random() - 0.5) * 1.5,
-      color: i < 11 ? 'hsl(var(--primary))' : '#ffffff',
+      // User = Red, Opponent = Blue
+      color: i < 11 ? '#ef4444' : '#226be0',
     }));
 
     const ball = {
@@ -87,7 +90,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ball.y += ball.vy;
       if (ball.x < 10 || ball.x > canvas.width - 10) ball.vx *= -1;
       if (ball.y < 10 || ball.y > canvas.height - 10) ball.vy *= -1;
-      ctx.fillStyle = 'hsl(var(--accent))';
+      // Ball = Yellow
+      ctx.fillStyle = '#ffab00';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 2.5, 0, Math.PI * 2);
       ctx.fill();
@@ -114,74 +118,63 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     };
   }, []);
 
-  useEffect(() => {
-    if (showFinal) {
-      const timeout = setTimeout(() => {
-        onComplete();
-      }, 4000);
-      return () => clearTimeout(timeout);
-    }
-  }, [showFinal, onComplete]);
-
   return (
-    <div className="flex flex-col items-center gap-4 w-full px-4 py-4">
+    <div className="flex flex-col items-center gap-4 w-full px-4 py-4 h-full justify-center">
       <div className="text-xl font-headline text-accent animate-pulse uppercase font-black tracking-tighter">
         MATCH SIMULATION
       </div>
       
-      <div className="relative premium-glass p-1 slanted-container w-full max-w-[320px] aspect-[3/2] border-white/10 overflow-hidden">
+      <div className="relative premium-glass p-1 slanted-container w-full max-w-[320px] aspect-[3/2] border-white/10 overflow-hidden shadow-2xl">
         <canvas ref={canvasRef} width={300} height={200} className="w-full h-full rounded bg-black/40" />
         
         {showFinal && (
           <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500 z-50 p-6">
             <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-white/40 mb-6">Full Time Result</div>
             
-            <div className="flex items-center justify-between w-full gap-2">
+            <div className="flex items-center justify-between w-full gap-2 mb-8">
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-12 h-12 rounded bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(34,107,224,0.3)]">
-                  <Shield className="w-7 h-7 text-primary" />
+                <div className="w-12 h-12 rounded bg-destructive/20 border border-destructive/50 flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+                  <Shield className="w-7 h-7 text-destructive" />
                 </div>
                 <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full mt-1">{userTeam}</div>
               </div>
 
               <div className="flex flex-col items-center gap-1">
                 <div className="text-5xl font-headline font-black italic tracking-tighter flex items-center gap-3">
-                  <span className={cn(result === 'win' ? "text-primary" : "text-white")}>{score.user}</span>
+                  <span className={cn(result === 'win' ? "text-destructive" : "text-white")}>{score.user}</span>
                   <span className="text-white/20">-</span>
-                  <span className={cn(result === 'loss' ? "text-destructive" : "text-white")}>{score.opp}</span>
+                  <span className={cn(result === 'loss' ? "text-primary" : "text-white")}>{score.opp}</span>
                 </div>
                 <div className={cn(
                   "text-[10px] font-headline font-black uppercase px-3 py-1 slanted-container",
-                  result === 'win' ? "bg-primary text-white" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-destructive text-white"
+                  result === 'win' ? "bg-destructive text-white" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-primary text-white"
                 )}>
                   {result === 'win' ? "VICTORY" : result === 'draw' ? "STALEMATE" : "DEFEAT"}
                 </div>
               </div>
 
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-12 h-12 rounded bg-white/5 border border-white/10 flex items-center justify-center">
-                  <Target className="w-7 h-7 text-white/40" />
+                <div className="w-12 h-12 rounded bg-primary/20 border border-primary/50 flex items-center justify-center">
+                  <Target className="w-7 h-7 text-primary" />
                 </div>
                 <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full mt-1">{opponentTeam}</div>
               </div>
             </div>
 
-            <div className="mt-8 flex gap-6 text-[10px] font-headline font-black uppercase opacity-60">
-              <span className={result === 'win' ? "text-primary" : ""}>+3 PTS</span>
-              <span className="opacity-20">|</span>
-              <span className={result === 'draw' ? "text-white" : ""}>+1 PT</span>
-              <span className="opacity-20">|</span>
-              <span className={result === 'loss' ? "text-destructive" : ""}>+0 PTS</span>
-            </div>
+            <SlantedButton onClick={onComplete} className="w-full py-4 text-xs font-black tracking-widest bg-white text-black hover:bg-white/90">
+              PROCEED TO NEXT WEEK
+            </SlantedButton>
           </div>
         )}
 
-        <div className="absolute top-2 right-4 font-headline text-white/50 text-[10px] font-black uppercase tracking-widest">
-          {timer}S
-        </div>
+        {!showFinal && (
+          <div className="absolute top-2 right-4 font-headline text-white/50 text-[10px] font-black uppercase tracking-widest">
+            {timer}S
+          </div>
+        )}
       </div>
       
-      <div className="text-center min-h-[40px] px-6">
+      <div className="text-center min-h-[40px] px-6 mt-4">
         <p className="text-[11px] font-headline tracking-widest text-white/80 uppercase font-black italic animate-in fade-in slide-in-from-bottom-2 duration-700">
           {getCommentary(timer)}
         </p>

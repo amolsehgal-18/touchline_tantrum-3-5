@@ -11,7 +11,7 @@ import { SwipeCard } from './swipe-card';
 import { SeasonSummary } from './season-summary';
 import { getAiScenarioPresentation } from '@/ai/flows/ai-scenario-presentation-flow';
 import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar, ChevronLeft, User, Users } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar, ChevronLeft, User, Users, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
@@ -26,9 +26,68 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [pendingResult, setPendingResult] = useState<'win' | 'draw' | 'loss' | null>(null);
   const [opponentName, setOpponentName] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState(15);
   const isFetchingRef = useRef(false);
 
   const activeConfig = state ? CAREER_MODES[state.mode].durations[state.durationIndex] : null;
+
+  // Decision Logic
+  const handleDecision = useCallback((side: 'left' | 'right') => {
+    if (!currentScenario || !state) return;
+
+    const impact = side === 'left' ? currentScenario.impactLeft : currentScenario.impactRight;
+    const newCardsSeen = state.cardsSeen + 1;
+    
+    const newState: GameState = {
+      ...state,
+      boardSupport: Math.min(1, Math.max(0, state.boardSupport + (impact.board / 100))),
+      fanSupport: Math.min(1, Math.max(0, state.fanSupport + (impact.fans / 100))),
+      dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
+      aggression: Math.min(1, Math.max(0.05, state.aggression + (impact.aggression || 0))),
+      cardsSeen: newCardsSeen,
+      history: [...state.history, currentScenario.scenario],
+    };
+
+    if (newState.boardSupport <= 0.05 || newState.fanSupport <= 0.05) {
+      newState.isSacked = true;
+    }
+
+    setState(newState);
+    saveGameLocally(newState);
+    setCurrentScenario(null);
+    setTimeLeft(15); // Reset timer
+
+    // If 3rd card, trigger match after a brief period
+    if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
+      const table = getLeagueTable(newState);
+      const possibleOpponents = table.filter(t => !t.isUser);
+      const opp = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)].team;
+      setOpponentName(opp);
+      setPendingResult(calculateMatchResult(newState));
+      
+      // Brief delay before match starts so user sees the final stat impact
+      setTimeout(() => {
+        setIsSimulating(true);
+      }, 1500);
+    }
+  }, [currentScenario, state]);
+
+  // Timer Effect
+  useEffect(() => {
+    if (!currentScenario || isSimulating || loading || error || state?.isSacked || state?.isSeasonEnd) return;
+
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          handleDecision('left'); // Auto-reject on timeout
+          return 15;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [currentScenario, isSimulating, loading, error, state?.isSacked, state?.isSeasonEnd, handleDecision]);
 
   const fetchScenario = useCallback(async () => {
     if (!state || state.isSacked || state.isSeasonEnd || isFetchingRef.current || isSimulating) return;
@@ -63,40 +122,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       fetchScenario();
     }
   }, [state, currentScenario, isSimulating, loading, error, fetchScenario]);
-
-  const handleDecision = (side: 'left' | 'right') => {
-    if (!currentScenario || !state) return;
-
-    const impact = side === 'left' ? currentScenario.impactLeft : currentScenario.impactRight;
-    const newCardsSeen = state.cardsSeen + 1;
-    
-    const newState: GameState = {
-      ...state,
-      boardSupport: Math.min(1, Math.max(0, state.boardSupport + (impact.board / 100))),
-      fanSupport: Math.min(1, Math.max(0, state.fanSupport + (impact.fans / 100))),
-      dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
-      aggression: Math.min(1, Math.max(0.05, state.aggression + (impact.aggression || 0))),
-      cardsSeen: newCardsSeen,
-      history: [...state.history, currentScenario.scenario],
-    };
-
-    if (newState.boardSupport <= 0.05 || newState.fanSupport <= 0.05) {
-      newState.isSacked = true;
-    }
-
-    setState(newState);
-    saveGameLocally(newState);
-    setCurrentScenario(null);
-
-    if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
-      const table = getLeagueTable(newState);
-      const possibleOpponents = table.filter(t => !t.isUser);
-      const opp = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)].team;
-      setOpponentName(opp);
-      setPendingResult(calculateMatchResult(newState));
-      setIsSimulating(true);
-    }
-  };
 
   const onMatchComplete = () => {
     if (!state || !activeConfig || !pendingResult) return;
@@ -329,11 +354,27 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
                 <SlantedButton onClick={fetchScenario}>Retry Decryption</SlantedButton>
               </div>
             ) : currentScenario ? (
-              <SwipeCard 
-                scenario={currentScenario} 
-                onDecision={handleDecision} 
-              />
-            ) : null}
+              <div className="relative w-full h-full flex flex-col items-center justify-center">
+                {/* Visual Timer */}
+                <div className="absolute top-0 left-0 right-0 flex justify-center z-50">
+                   <div className={cn(
+                     "flex items-center gap-2 px-4 py-1 slanted-container text-[10px] font-headline font-black uppercase tracking-widest",
+                     timeLeft <= 5 ? "bg-destructive text-white animate-pulse" : "bg-white/5 text-white/50"
+                   )}>
+                     <Clock className="w-3 h-3" /> {timeLeft}s REMAINING
+                   </div>
+                </div>
+                <SwipeCard 
+                  scenario={currentScenario} 
+                  onDecision={handleDecision} 
+                />
+              </div>
+            ) : (
+              <div className="text-center opacity-30 animate-pulse">
+                <Target className="w-12 h-12 mx-auto mb-2" />
+                <p className="text-[10px] font-headline uppercase tracking-widest">Awaiting Simulation...</p>
+              </div>
+            )}
           </div>
         )}
       </div>
