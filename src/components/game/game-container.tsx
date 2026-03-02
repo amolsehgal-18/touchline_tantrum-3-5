@@ -183,9 +183,11 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       "NEWS: Under-23 coach praised for defensive improvements.",
       "SCOUTING: New wonderkid identified in South America.",
       "WEATHER: Heavy rain expected for the upcoming matchday.",
-      "FINANCE: Club audit reveals tightening budget for next window."
+      "FINANCE: Club audit reveals tightening budget for next window.",
+      "INJURY: Star midfielder sidelined for three weeks with calf strain.",
+      "TAKEOVER: Mystery consortium interested in club acquisition.",
+      "MARKET: Scouting reports suggest lack of depth in defensive areas."
     ];
-    // Double to ensure seamless looping
     return [...items, ...items];
   }, []);
 
@@ -195,21 +197,21 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         <div className="absolute inset-0 bg-primary/5 blur-[100px] pointer-events-none" />
         
         {setupStep === 0 && (
-          <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 text-center">
-            <div className="space-y-2">
-              <h1 className="text-4xl font-headline font-black text-accent uppercase italic">Gaffer Protocol</h1>
-              <p className="text-[10px] font-headline uppercase tracking-[0.4em] opacity-40 font-black">Initialization Stage 01</p>
+          <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-center">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-headline font-black text-accent uppercase italic">Gaffer Protocol</h1>
+              <p className="text-[9px] font-headline uppercase tracking-[0.4em] opacity-40 font-black">Initialization Stage 01</p>
             </div>
             <div className="space-y-4">
               <div className="space-y-1 text-left">
-                <label className="text-[10px] font-headline uppercase font-black opacity-50 tracking-widest px-1">Manager Name</label>
-                <Input value={setupName} onChange={(e) => setSetupName(e.target.value)} className="bg-white/5 h-12 border-white/10 font-bold" />
+                <label className="text-[9px] font-headline uppercase font-black opacity-50 tracking-widest px-1">Manager Name</label>
+                <Input value={setupName} onChange={(e) => setSetupName(e.target.value)} className="bg-white/5 h-11 border-white/10 font-bold text-sm" />
               </div>
               <div className="space-y-1 text-left">
-                <label className="text-[10px] font-headline uppercase font-black opacity-50 tracking-widest px-1">Club Identity</label>
-                <Input value={setupTeam} onChange={(e) => setSetupTeam(e.target.value)} className="bg-white/5 h-12 border-white/10 font-bold" />
+                <label className="text-[9px] font-headline uppercase font-black opacity-50 tracking-widest px-1">Club Identity</label>
+                <Input value={setupTeam} onChange={(e) => setSetupTeam(e.target.value)} className="bg-white/5 h-11 border-white/10 font-bold text-sm" />
               </div>
-              <SlantedButton onClick={() => setSetupStep(1)} className="w-full py-5 bg-white text-black font-black uppercase text-sm tracking-widest mt-4">
+              <SlantedButton onClick={() => setSetupStep(1)} className="w-full py-4 bg-white text-black font-black uppercase text-xs tracking-widest mt-2">
                 Next: Choose Challenge
               </SlantedButton>
             </div>
@@ -217,9 +219,9 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
 
         {setupStep === 1 && (
-          <div className="w-full space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+          <div className="w-full space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center space-y-1">
-              <h2 className="text-3xl font-headline font-black text-primary uppercase italic">The Mission</h2>
+              <h2 className="text-2xl font-headline font-black text-primary uppercase italic">The Mission</h2>
               <p className="text-[9px] font-headline uppercase tracking-[0.3em] opacity-40 font-black">Stage 02: Objectives</p>
             </div>
             <div className="grid gap-2">
@@ -230,10 +232,10 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
                     setSetupMode(mode);
                     setSetupStep(2);
                   }}
-                  className="flex flex-col p-4 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left group"
+                  className="flex flex-col p-3 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left group"
                 >
-                  <span className="font-headline font-black uppercase text-sm group-hover:text-primary">{CAREER_MODES[mode].name}</span>
-                  <span className="text-[10px] opacity-60 mt-1">{CAREER_MODES[mode].description}</span>
+                  <span className="font-headline font-black uppercase text-xs group-hover:text-primary">{CAREER_MODES[mode].name}</span>
+                  <span className="text-[9px] opacity-60 mt-0.5 leading-tight">{CAREER_MODES[mode].description}</span>
                 </button>
               ))}
             </div>
@@ -242,9 +244,9 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
 
         {setupStep === 2 && (
-          <div className="w-full space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+          <div className="w-full space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
              <div className="text-center space-y-1">
-              <h2 className="text-3xl font-headline font-black text-accent uppercase italic">Final Prep</h2>
+              <h2 className="text-2xl font-headline font-black text-accent uppercase italic">Final Prep</h2>
               <p className="text-[9px] font-headline uppercase tracking-[0.3em] opacity-40 font-black">Stage 03: Season Length</p>
             </div>
             <div className="grid gap-2">
@@ -253,12 +255,12 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
                   key={idx}
                   onClick={() => setSetupDuration(idx)}
                   className={cn(
-                    "flex justify-between items-center p-5 rounded border transition-all",
+                    "flex justify-between items-center p-4 rounded border transition-all",
                     setupDuration === idx ? "bg-accent text-black border-accent" : "bg-white/5 border-white/10 opacity-60"
                   )}
                 >
-                  <span className="font-headline font-black uppercase text-xs">{d.label}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span className="font-headline font-black uppercase text-[11px]">{d.label}</span>
+                  <ArrowRight className="w-3 h-3" />
                 </button>
               ))}
             </div>
@@ -269,7 +271,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
                   setState(s);
                   saveGameLocally(s);
                 }} 
-                className="w-full py-6 text-lg font-black tracking-widest uppercase bg-white text-black"
+                className="w-full py-5 text-base font-black tracking-widest uppercase bg-white text-black"
               >
                 Sign Contract
               </SlantedButton>
@@ -291,30 +293,30 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
       {/* Top Header */}
-      <div className="bg-black/95 py-3 border-b border-white/10 text-center z-50">
+      <div className="bg-black/95 py-2.5 border-b border-white/10 text-center z-50">
         <span className="text-white text-[11px] font-headline font-black uppercase tracking-[0.4em]">
           {CAREER_MODES[state.mode].name} | GW {currentGW}
         </span>
       </div>
 
       {/* Docked League Table */}
-      <div className="bg-black/40 border-b border-white/5 p-3 z-40 backdrop-blur-md">
-        <div className="flex items-center justify-between mb-2">
+      <div className="bg-black/40 border-b border-white/5 p-2 z-40 backdrop-blur-md">
+        <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1 font-black">
             <RefreshCw className="w-3 h-3 animate-spin" /> Live Standings
           </span>
           <span className="text-[9px] font-headline uppercase opacity-40 font-black">Matchday {currentGW}</span>
         </div>
-        <div className="flex justify-between items-center px-2 py-1 text-[9px] font-headline uppercase opacity-40 border-b border-white/10 mb-1 font-black">
+        <div className="flex justify-between items-center px-2 py-0.5 text-[8px] font-headline uppercase opacity-40 border-b border-white/10 mb-1 font-black">
           <div className="flex gap-4"><span className="w-3">#</span><span>Name</span></div>
           <div className="flex gap-4 pr-1"><span className="w-3 text-center">G</span><span className="w-4 text-right">P</span></div>
         </div>
         <div className="flex flex-col gap-0.5">
           {windowedLeagueTable.map((team) => (
-            <div key={team.team} className={cn("flex justify-between items-center px-2 py-2 rounded text-[10px] transition-colors", team.isUser ? "bg-primary/20 border-l-2 border-primary" : "bg-white/5")}>
-              <div className="flex items-center gap-4 min-w-0">
+            <div key={team.team} className={cn("flex justify-between items-center px-2 py-1.5 rounded text-[10px] transition-colors", team.isUser ? "bg-primary/20 border-l-2 border-primary" : "bg-white/5")}>
+              <div className="flex items-center gap-3 min-w-0">
                 <span className="font-headline opacity-40 w-3 font-black">{team.pos}</span>
-                <span className={cn("font-black truncate max-w-[120px] uppercase tracking-tight", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
+                <span className={cn("font-black truncate max-w-[120px] uppercase tracking-tight text-[11px]", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
               </div>
               <div className="flex items-center gap-4 pr-1 font-headline font-black">
                 <span className="opacity-40 w-3 text-center">{team.gp}</span>
@@ -326,7 +328,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       </div>
 
       {/* Stats HUD (Layered behind cards) */}
-      <div className="px-4 py-4 grid grid-cols-2 bg-transparent z-10 border-b border-white/5 relative">
+      <div className="px-4 py-2 grid grid-cols-2 bg-transparent z-10 border-b border-white/5 relative -mb-4">
         <div className="flex justify-center items-center"><TensionArcs board={state.boardSupport} fans={state.fanSupport} /></div>
         <div className="flex justify-center items-center"><ManagerMoodView mood={mood} /></div>
       </div>
@@ -367,17 +369,17 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
       {/* Footer Controls */}
       <div className="bg-black/90 border-t border-white/10 z-30">
-        <div className="p-4 space-y-3">
+        <div className="p-4 py-3 space-y-2.5">
           <div className="flex justify-between items-end px-1">
             <div className="flex flex-col gap-0.5">
               <div className="text-[9px] font-headline uppercase opacity-40 font-black tracking-widest">Next Match Odds</div>
-              <div className="text-[12px] font-headline font-black text-white/90 tracking-tighter">
+              <div className="text-[13px] font-headline font-black text-white/90 tracking-tighter">
                 W: {Math.round(parseFloat(odds.win)*100)}% | D: {Math.round(parseFloat(odds.draw)*100)}% | L: {Math.round(parseFloat(odds.loss)*100)}%
               </div>
             </div>
             <div className="flex flex-col items-end gap-0.5">
               <div className="text-[9px] font-headline uppercase opacity-40 font-black tracking-widest">Squad Aggression</div>
-              <div className="text-[12px] font-headline font-black text-accent tracking-tighter">{Math.round(state.aggression * 100)}%</div>
+              <div className="text-[13px] font-headline font-black text-accent tracking-tighter">{Math.round(state.aggression * 100)}%</div>
             </div>
           </div>
           <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
@@ -390,7 +392,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           <div className="bg-destructive text-white text-[10px] font-headline font-black px-4 py-1.5 z-20 absolute left-0 uppercase tracking-tighter flex items-center h-full">Breaking</div>
           <div className="animate-ticker flex items-center gap-20 pl-[100px]">
             {newsItems.map((item, idx) => (
-              <span key={idx} className="text-[10px] font-headline uppercase tracking-[0.2em] text-white/90 whitespace-nowrap font-black italic">{item}</span>
+              <span key={idx} className="text-[11px] font-headline uppercase tracking-[0.2em] text-white/90 whitespace-nowrap font-black italic">{item}</span>
             ))}
           </div>
         </div>

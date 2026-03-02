@@ -38,6 +38,7 @@
       linear-gradient(to bottom, #111315, #0a0b0c);
     min-height: 100vh;
     overflow: hidden;
+    height: 100vh;
   }
 }
 
@@ -80,5 +81,5 @@
 .animate-ticker {
   display: inline-block;
   white-space: nowrap;
-  animation: ticker 40s linear infinite;
+  animation: ticker 80s linear infinite;
 }
