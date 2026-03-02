@@ -7,7 +7,7 @@ import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
 import { TensionArcs } from './tension-arcs';
 import { getAiScenarioPresentation, AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, Share2, AlertTriangle } from 'lucide-react';
+import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const GameContainer = ({ initialState }: { initialState?: GameState }) => {
@@ -49,16 +49,14 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [state.boardSupport, state.fanSupport, state.dressingRoom, state.aggression, state.userTeam, state.currentLeaguePosition, state.sagaObjective, state.objectiveMet, state.history, state.isSacked]);
+  }, [state]);
 
-  // Initial fetch and fetch when scenario is empty
   useEffect(() => {
     if (!currentScenario && !isSimulating && !state.isSacked && !loading && !error) {
       fetchScenario();
     }
   }, [currentScenario, isSimulating, state.isSacked, loading, error, fetchScenario]);
 
-  // Handle timer
   useEffect(() => {
     if (currentScenario && !isSimulating && !loading && !error) {
       const interval = setInterval(() => {
@@ -122,7 +120,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   const mood = calculateMood(state);
   const odds = getMatchOdds(state.aggression);
-  const leagueTable = useMemo(() => getLeagueTable(state), [state]);
+  const leagueTable = useMemo(() => getLeagueTable(state), [state.currentLeaguePosition, state.userTeam]);
 
   if (state.isSacked) {
     return (
@@ -147,9 +145,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         <SlantedButton onClick={() => window.location.reload()} className="bg-white text-black">
           SIGN NEW CONTRACT
         </SlantedButton>
-        <button className="flex items-center gap-2 text-white/50 hover:text-white transition-colors">
-          <Share2 className="w-4 h-4" /> Share Sack Summary
-        </button>
       </div>
     );
   }
@@ -181,7 +176,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
-      {/* Tension Dashboard Section: Tension Arcs (Left) | Manager Mood (Right) */}
+      {/* Tension Dashboard Section */}
       <div className="p-4 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30">
         <div className="flex justify-center items-center border-r border-white/5 pr-4">
           <TensionArcs board={state.boardSupport} fans={state.fanSupport} morale={state.dressingRoom} />
@@ -231,7 +226,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             ) : currentScenario ? (
               <SlantedContainer className="w-full relative scanline animate-in fade-in zoom-in duration-500 shadow-2xl">
                 {currentScenario.isBreaking && (
-                  <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-3 py-1 z-20 skew-x-[-20deg] origin-top-right shadow-lg">
+                  <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-3 py-1 z-20 skew-x-[-20deg] shadow-lg">
                     BREAKING NEWS
                   </div>
                 )}
