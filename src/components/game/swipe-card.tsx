@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef } from 'react';
@@ -46,7 +45,7 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
 
   return (
     <div 
-      className="relative w-full max-w-sm h-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing px-2"
+      className="relative w-full max-w-sm h-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing px-2 py-4"
       onMouseMove={handleTouchMove}
       onMouseDown={handleTouchStart}
       onMouseUp={handleTouchEnd}
@@ -63,38 +62,38 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
         }}
       >
         <SlantedContainer className={cn(
-          "w-full bg-card min-h-[380px] flex flex-col justify-between border-2 transition-all relative group",
-          dragX < -50 ? "border-destructive shadow-[0_0_30px_rgba(239,68,68,0.3)]" : dragX > 50 ? "border-primary shadow-[0_0_30px_rgba(34,107,224,0.3)]" : "border-white/10"
+          "w-full bg-card min-h-[400px] flex flex-col justify-between border-2 transition-all relative group shadow-2xl",
+          dragX < -50 ? "border-destructive shadow-[0_0_40px_rgba(239,68,68,0.4)]" : dragX > 50 ? "border-primary shadow-[0_0_40px_rgba(34,107,224,0.4)]" : "border-white/10"
         )}>
           {scenario.isBreaking && (
-            <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-3 py-1 z-20 skew-x-[-20deg] shadow-lg font-bold">
+            <div className="absolute top-0 right-0 bg-destructive text-white text-[9px] font-headline px-4 py-1.5 z-20 skew-x-[-20deg] shadow-lg font-black tracking-widest">
               BREAKING
             </div>
           )}
 
-          <div className="space-y-4">
-            <div className="text-[10px] font-headline uppercase tracking-[0.3em] opacity-40">Tactical Briefing</div>
-            <p className="text-xl leading-tight font-headline font-bold text-white tracking-tight">
+          <div className="space-y-6">
+            <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-accent font-black">TACTICAL BRIEFING</div>
+            <p className="text-2xl leading-tight font-headline font-black text-white tracking-tight drop-shadow-sm">
               {scenario.scenario}
             </p>
           </div>
 
-          <div className="mt-8 flex-1 flex flex-col justify-end">
-            <div className="grid grid-cols-2 gap-4 h-36 relative overflow-visible">
+          <div className="mt-12 flex-1 flex flex-col justify-end">
+            <div className="grid grid-cols-2 gap-4 h-40 relative overflow-visible">
               {/* Left Option Container */}
               <div 
                 className={cn(
-                  "flex flex-col gap-2 p-4 rounded-lg border transition-all duration-200",
-                  isLeft ? "bg-destructive/30 border-destructive/60 scale-105" : "bg-white/5 border-transparent opacity-20"
+                  "flex flex-col gap-3 p-4 rounded-xl border transition-all duration-300",
+                  isLeft ? "bg-destructive/40 border-destructive/80 scale-110 shadow-lg" : "bg-white/5 border-transparent opacity-20"
                 )}
                 style={{ 
-                  opacity: isLeft ? 0.6 + (swipeProgress * 0.4) : 0.1
+                  opacity: isLeft ? 0.7 + (swipeProgress * 0.3) : 0.05
                 }}
               >
-                <div className="flex items-center gap-1 text-destructive font-headline uppercase text-[12px] font-black italic tracking-tighter">
+                <div className="flex items-center gap-1 text-destructive font-headline uppercase text-[14px] font-black italic tracking-tighter">
                   <ChevronLeft className="w-5 h-5" /> REJECT
                 </div>
-                <div className="text-sm font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
+                <div className="text-sm font-headline text-white leading-tight font-black tracking-tight drop-shadow-lg">
                   {scenario.leftOption}
                 </div>
               </div>
@@ -102,26 +101,26 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
               {/* Right Option Container */}
               <div 
                 className={cn(
-                  "flex flex-col gap-2 p-4 rounded-lg border text-right transition-all duration-200",
-                  !isLeft && dragX > 0 ? "bg-primary/30 border-primary/60 scale-105" : "bg-white/5 border-transparent opacity-20"
+                  "flex flex-col gap-3 p-4 rounded-xl border text-right transition-all duration-300",
+                  !isLeft && dragX > 0 ? "bg-primary/40 border-primary/80 scale-110 shadow-lg" : "bg-white/5 border-transparent opacity-20"
                 )}
                 style={{ 
-                  opacity: !isLeft && dragX > 0 ? 0.6 + (swipeProgress * 0.4) : 0.1
+                  opacity: !isLeft && dragX > 0 ? 0.7 + (swipeProgress * 0.3) : 0.05
                 }}
               >
-                <div className="flex items-center gap-1 justify-end text-primary font-headline uppercase text-[12px] font-black italic tracking-tighter">
+                <div className="flex items-center gap-1 justify-end text-primary font-headline uppercase text-[14px] font-black italic tracking-tighter">
                   APPROVE <ChevronRight className="w-5 h-5" />
                 </div>
-                <div className="text-sm font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
+                <div className="text-sm font-headline text-white leading-tight font-black tracking-tight drop-shadow-lg">
                   {scenario.rightOption}
                 </div>
               </div>
             </div>
 
             {Math.abs(dragX) < 20 && (
-              <div className="text-center mt-6 flex items-center justify-center gap-2 animate-pulse opacity-40">
+              <div className="text-center mt-8 flex items-center justify-center gap-3 animate-pulse opacity-50">
                 <ChevronLeft className="w-4 h-4 text-destructive" />
-                <span className="text-[9px] font-headline uppercase tracking-[0.3em] font-black">Swipe to Decide</span>
+                <span className="text-[10px] font-headline uppercase tracking-[0.4em] font-black text-white">Swipe to Decide</span>
                 <ChevronRight className="w-4 h-4 text-primary" />
               </div>
             )}
@@ -129,8 +128,8 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
         </SlantedContainer>
       </div>
       
-      <div className="mt-8 text-center text-[9px] font-headline uppercase tracking-[0.5em] opacity-30 font-black italic">
-        The clock is ticking...
+      <div className="mt-10 text-center text-[10px] font-headline uppercase tracking-[0.6em] opacity-30 font-black italic text-white/50">
+        THE CLOCK IS TICKING...
       </div>
     </div>
   );

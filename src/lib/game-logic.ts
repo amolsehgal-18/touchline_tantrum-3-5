@@ -13,8 +13,8 @@ export const CAREER_MODES: Record<CareerMode, CareerConfig> = {
     name: "League Title", 
     description: "Win the league or you're out. Zero tolerance.",
     durations: [
-      { label: "Short Burst (5)", matches: 5, target: 1, startGW: 33 },
-      { label: "Final Push (10)", matches: 10, target: 1, startGW: 28 },
+      { label: "Final Push (6)", matches: 6, target: 1, startGW: 33 },
+      { label: "Title Charge (10)", matches: 10, target: 1, startGW: 29 },
       { label: "Full Campaign", matches: 38, target: 1, startGW: 1 }
     ]
   },
@@ -23,8 +23,8 @@ export const CAREER_MODES: Record<CareerMode, CareerConfig> = {
     name: "Top 4 $$", 
     description: "Champions League qualification is the only goal.",
     durations: [
-      { label: "Final Stretch (8)", matches: 8, target: 4, startGW: 30 },
-      { label: "Race for CL (15)", matches: 15, target: 4, startGW: 23 },
+      { label: "Final Stretch (8)", matches: 8, target: 4, startGW: 31 },
+      { label: "Race for CL (15)", matches: 15, target: 4, startGW: 24 },
       { label: "Long Haul (38)", matches: 38, target: 4, startGW: 1 }
     ]
   },
@@ -33,9 +33,9 @@ export const CAREER_MODES: Record<CareerMode, CareerConfig> = {
     name: "Relegation Battle", 
     description: "Keep them up by any means necessary.",
     durations: [
-      { label: "Great Escape (6)", matches: 6, target: 17, startGW: 32 },
-      { label: "Survival Run (12)", matches: 12, target: 17, startGW: 26 },
-      { label: "Bottom Half Fight", matches: 20, target: 17, startGW: 18 }
+      { label: "Great Escape (6)", matches: 6, target: 17, startGW: 33 },
+      { label: "Survival Run (12)", matches: 12, target: 17, startGW: 27 },
+      { label: "Bottom Half Fight", matches: 20, target: 17, startGW: 19 }
     ]
   },
   season: { 
@@ -77,12 +77,11 @@ export type GameState = {
   history: string[];
 };
 
-// Realistic PPG based on position (approximate Premier League averages)
 const getPPGForPosition = (pos: number): number => {
   if (pos === 1) return 2.45;
-  if (pos === 2) return 2.15;
+  if (pos === 2) return 2.20;
   if (pos <= 4) return 1.95;
-  if (pos <= 6) return 1.75;
+  if (pos <= 6) return 1.70;
   if (pos <= 10) return 1.35;
   if (pos <= 17) return 1.05;
   return 0.75;
@@ -91,13 +90,12 @@ const getPPGForPosition = (pos: number): number => {
 export const INITIAL_STATE = (mode: CareerMode, durationIndex: number): GameState => {
   const config = CAREER_MODES[mode].durations[durationIndex];
   
-  // Starting positions based on user requirement
   let startPos = 10;
   if (mode === 'title') startPos = 2;
   else if (mode === 'top4') startPos = 5;
   else if (mode === 'relegation') startPos = 18;
 
-  const startGW = config.startGW - 1; // Points earned BEFORE the game starts
+  const startGW = config.startGW - 1;
   const startingPoints = Math.max(0, Math.floor(getPPGForPosition(startPos) * startGW));
 
   return {
@@ -140,20 +138,12 @@ export function getMatchOdds(aggression: number) {
 }
 
 export function calculateMatchResult(state: GameState): 'win' | 'draw' | 'loss' {
-  const mood = calculateMood(state);
-  let winProb = 0.35;
+  // PRD Formula base: 0.30 + (DressingRoom * 0.20)
+  // Plus the "Sweet Spot" aggression logic: 0.5 is ideal.
+  const aggressionPenalty = Math.abs(0.5 - state.aggression) * 0.5;
+  const adjustedAggressionFactor = (1 - aggressionPenalty) * 0.20;
   
-  const aggressionEffect = 1 - Math.abs(0.5 - state.aggression) * 0.5;
-  winProb *= aggressionEffect;
-
-  const moodMultipliers = {
-    happy: 1.2,
-    neutral: 1.0,
-    stressed: 0.8,
-    angry: 0.6,
-    sacked: 0.0
-  };
-  winProb *= moodMultipliers[mood];
+  const winProb = 0.30 + adjustedAggressionFactor + (state.dressingRoom * 0.20);
 
   const roll = Math.random();
   if (roll < winProb) return 'win';
@@ -175,7 +165,6 @@ export function getLeagueTable(state: GameState): LeagueTeam[] {
   
   return teams.map((team, i) => {
     const isUser = team === state.userTeam;
-    // Base position for other teams based on original array index
     const teamBasePos = i + 1;
     let teamPts = Math.floor(getPPGForPosition(teamBasePos) * currentGW);
     
