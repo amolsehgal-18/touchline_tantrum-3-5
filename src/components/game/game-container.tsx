@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -211,6 +212,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   const mood = calculateMood(state);
   const odds = getMatchOdds(state.aggression);
+  const daysUntilMatch = (3 - (state.cardsSeen % 3)) * 2;
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
@@ -304,8 +306,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           />
         </div>
         <div className="flex justify-center mt-2">
-          <span className="text-[8px] font-headline uppercase opacity-30 tracking-widest">
-            {3 - (state.cardsSeen % 3)} Scenarios until next Match
+          <span className="text-[8px] font-headline uppercase opacity-30 tracking-widest font-bold">
+            {daysUntilMatch} Days until next Match
           </span>
         </div>
       </div>
