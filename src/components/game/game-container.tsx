@@ -25,7 +25,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [error, setError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(15);
   
-  // Setup steps: 0 = Identity, 1 = Challenge, 2 = Duration
   const [setupStep, setSetupStep] = useState(0);
   const [setupMode, setSetupMode] = useState<CareerMode>('season');
   const [setupDuration, setSetupDuration] = useState(0);
@@ -188,6 +187,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       "TAKEOVER: Mystery consortium interested in club acquisition.",
       "MARKET: Scouting reports suggest lack of depth in defensive areas."
     ];
+    // Double items for seamless scrolling
     return [...items, ...items];
   }, []);
 

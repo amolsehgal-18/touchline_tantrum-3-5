@@ -35,19 +35,19 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   }, [result]);
 
   const getCommentary = (t: number) => {
-    if (t > 4) return "08': KICK OFF: Midfield battle heating up!";
-    if (t > 3) return "32': Charging into the final third!";
-    if (t > 2) return "55': GOAL-MOUTH DRAMA! Bodies on the line!";
-    if (t > 1) return "78': The keeper is beaten! It's pure chaos!";
-    if (t > 0) return "89': SCREAMER FROM DISTANCE! Tension absolute!";
-    return "90'+3': FULL TIME: The final whistle blows!";
+    if (t > 4) return "01': KICK OFF: Teams are in formation!";
+    if (t > 3) return "24': Possession battle in the middle third.";
+    if (t > 2) return "52': Tactical push! The defense is stretched.";
+    if (t > 1) return "75': CHANCE! A thunderous strike at goal!";
+    if (t > 0) return "89': DRAMATIC FINISH: Bodies on the line!";
+    return "90'+3': FULL TIME: The whistle echoes!";
   };
 
   const handleVARRequest = () => {
     setIsVARing(true);
     setVarDecision("CHECKING VAR...");
     setTimeout(() => {
-      setVarDecision("DECISION: GOAL STANDS");
+      setVarDecision("DECISION: NO GOAL");
       setTimeout(() => {
         setIsVARing(false);
         setVarDecision(null);
@@ -61,109 +61,140 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrame: number;
-    const players = Array.from({ length: 22 }, (_, i) => ({
-      x: i < 11 ? 50 + Math.random() * 100 : canvas.width - 150 + Math.random() * 100,
-      y: Math.random() * canvas.height,
-      vx: 0,
-      vy: 0,
-      team: i < 11 ? 'user' : 'opp',
-      color: i < 11 ? '#ef4444' : '#226be0',
-      baseX: i < 11 ? 50 + Math.random() * 100 : canvas.width - 150 + Math.random() * 100,
-      baseY: Math.random() * canvas.height,
-    }));
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Standard 4-4-2 Formations
+    const userFormation = [
+      [0.05, 0.5], // GK
+      [0.2, 0.2], [0.2, 0.4], [0.2, 0.6], [0.2, 0.8], // DEF
+      [0.4, 0.2], [0.4, 0.4], [0.4, 0.6], [0.4, 0.8], // MID
+      [0.48, 0.45], [0.48, 0.55] // FWD
+    ];
+
+    const oppFormation = [
+      [0.95, 0.5], // GK
+      [0.8, 0.2], [0.8, 0.4], [0.8, 0.6], [0.8, 0.8], // DEF
+      [0.6, 0.2], [0.6, 0.4], [0.6, 0.6], [0.6, 0.8], // MID
+      [0.52, 0.45], [0.52, 0.55] // FWD
+    ];
+
+    const players = [
+      ...userFormation.map(pos => ({
+        x: pos[0] * width,
+        y: pos[1] * height,
+        vx: 0, vy: 0, team: 'user', color: '#ef4444',
+        baseX: pos[0] * width, baseY: pos[1] * height
+      })),
+      ...oppFormation.map(pos => ({
+        x: pos[0] * width,
+        y: pos[1] * height,
+        vx: 0, vy: 0, team: 'opp', color: '#226be0',
+        baseX: pos[0] * width, baseY: pos[1] * height
+      }))
+    ];
 
     const ball = {
-      x: canvas.width / 2,
-      y: canvas.height / 2,
-      vx: (Math.random() - 0.5) * 10,
-      vy: (Math.random() - 0.5) * 10,
-      possessorIndex: -1,
+      x: width / 2,
+      y: height / 2,
+      vx: (Math.random() - 0.5) * 5,
+      vy: (Math.random() - 0.5) * 5,
+      possessorIndex: -1
     };
 
+    let animationFrame: number;
+
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, width, height);
       
-      // Pitch markings
+      // Pitch Render
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      ctx.fillRect(0, 0, width, height);
       ctx.strokeStyle = 'rgba(255,255,255,0.15)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+      
+      // Boundary
+      ctx.strokeRect(5, 5, width - 10, height - 10);
+      
+      // Half-way
       ctx.beginPath();
-      ctx.moveTo(canvas.width / 2, 10);
-      ctx.lineTo(canvas.width / 2, canvas.height - 10);
+      ctx.moveTo(width / 2, 5);
+      ctx.lineTo(width / 2, height - 5);
       ctx.stroke();
+      
+      // Center Circle
       ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, 30, 0, Math.PI * 2);
+      ctx.arc(width / 2, height / 2, 30, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Ball Physics & Possession
+      // Goal Boxes
+      ctx.strokeRect(5, height / 2 - 40, 30, 80);
+      ctx.strokeRect(width - 35, height / 2 - 40, 30, 80);
+
+      // Ball Physics
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
-        const dribbleAngle = Date.now() / 60;
-        ball.x = p.x + Math.cos(dribbleAngle) * 6;
-        ball.y = p.y + Math.sin(dribbleAngle) * 6;
+        ball.x = p.x + 3;
+        ball.y = p.y;
         
-        // Move towards opponent goal
-        const targetGoalX = p.team === 'user' ? canvas.width - 15 : 15;
-        const dx = targetGoalX - p.x;
-        const dy = (canvas.height / 2) - p.y;
+        // Move towards target goal
+        const targetX = p.team === 'user' ? width - 10 : 10;
+        const dx = targetX - p.x;
+        const dy = (height / 2) - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
-        p.vx = (dx / dist) * 4.5;
-        p.vy = (dy / dist) * 4.5;
+        p.vx = (dx / dist) * 2;
+        p.vy = (dy / dist) * 2 + (Math.random() - 0.5);
 
-        // Chance to lose ball or pass
-        if (Math.random() < 0.2) {
+        // Random Pass or Shot
+        if (Math.random() < 0.03) {
           ball.possessorIndex = -1;
-          ball.vx = (p.team === 'user' ? 14 : -14) + (Math.random() - 0.5) * 8;
-          ball.vy = (Math.random() - 0.5) * 16;
+          ball.vx = (p.team === 'user' ? 8 : -8) + (Math.random() - 0.5) * 4;
+          ball.vy = (Math.random() - 0.5) * 6;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.98;
-        ball.vy *= 0.98;
+        ball.vx *= 0.99;
+        ball.vy *= 0.99;
 
-        if (ball.x < 12 || ball.x > canvas.width - 12) ball.vx *= -1;
-        if (ball.y < 12 || ball.y > canvas.height - 12) ball.vy *= -1;
+        if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
+        if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Pickup logic
+        // Acquisition
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 14) {
-            ball.possessorIndex = idx;
-          }
+          if (dist < 10) ball.possessorIndex = idx;
         });
       }
 
-      // Player Movement
+      // Players chasing or returning to base
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
-          const chaseDist = 140;
           const dxBall = ball.x - p.x;
           const dyBall = ball.y - p.y;
           const distToBall = Math.sqrt(dxBall * dxBall + dyBall * dyBall);
 
-          let targetX = p.baseX;
-          let targetY = p.baseY;
+          let tx = p.baseX;
+          let ty = p.baseY;
 
-          if (distToBall < chaseDist) {
-            targetX = ball.x;
-            targetY = ball.y;
+          // Only chase if ball is within range
+          if (distToBall < 80) {
+            tx = ball.x;
+            ty = ball.y;
           }
+
+          const dtx = tx - p.x;
+          const dty = ty - p.y;
+          const dDist = Math.sqrt(dtx * dtx + dty * dty);
           
-          const dx = targetX - p.x;
-          const dy = targetY - p.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          
-          if (dist > 1.5) {
-            p.vx = (dx / dist) * 4;
-            p.vy = (dy / dist) * 4;
+          if (dDist > 2) {
+            p.vx = (dtx / dDist) * 1.5;
+            p.vy = (dty / dDist) * 1.5;
           } else {
-            p.vx *= 0.8;
-            p.vy *= 0.8;
+            p.vx *= 0.5; p.vy *= 0.5;
           }
         }
 
@@ -173,9 +204,9 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         // Draw Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'white';
+        ctx.strokeStyle = '#fff';
         ctx.lineWidth = 0.5;
         ctx.stroke();
       });
@@ -183,10 +214,10 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       // Draw Ball
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, 3, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 0.5;
       ctx.stroke();
 
       animationFrame = requestAnimationFrame(animate);
@@ -194,75 +225,75 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
     animate();
 
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setTimer(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          setShowFinal(true);
+          setTimeout(() => setShowFinal(true), 500);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-
-    return () => {
-      cancelAnimationFrame(animationFrame);
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full px-2 py-1 h-full justify-center">
-      <div className="text-lg font-headline text-accent animate-pulse uppercase font-black tracking-tighter italic">
-        LIVE MATCH
+    <div className="flex flex-col items-center gap-2 w-full px-2 py-0 h-full justify-center">
+      <div className="text-sm font-headline text-accent animate-pulse uppercase font-black tracking-tighter italic">
+        LIVE MATCH ENGINE
       </div>
       
-      <div className="relative premium-glass p-0.5 slanted-container w-full max-w-[300px] aspect-[4/3] border-white/10 overflow-hidden shadow-xl">
-        <canvas ref={canvasRef} width={300} height={225} className="w-full h-full rounded bg-black/30" />
+      <div className="relative premium-glass p-0.5 slanted-container w-full max-w-[280px] aspect-[4/3] border-white/10 overflow-hidden shadow-2xl">
+        <canvas ref={canvasRef} width={280} height={210} className="w-full h-full rounded bg-black/40" />
         
         {showFinal && (
-          <div className="absolute inset-0 bg-black/98 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 z-50 p-3">
+          <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 z-50 p-4">
             {isVARing ? (
-              <div className="flex flex-col items-center gap-3 text-center">
-                 <Search className="w-10 h-10 text-primary animate-bounce" />
-                 <div className="text-[9px] font-headline uppercase tracking-[0.4em] text-primary font-black">VAR CHECK</div>
-                 <div className="text-lg font-headline font-black text-white italic tracking-tighter">{varDecision}</div>
+              <div className="flex flex-col items-center gap-2 text-center">
+                 <Search className="w-8 h-8 text-primary animate-bounce" />
+                 <div className="text-[8px] font-headline uppercase tracking-[0.4em] text-primary font-black">VAR PANEL</div>
+                 <div className="text-base font-headline font-black text-white italic tracking-tighter">{varDecision}</div>
               </div>
             ) : (
               <>
-                <div className="text-[9px] font-headline uppercase tracking-[0.4em] text-white/40 mb-3 font-black">Full Time Result</div>
+                <div className="text-[8px] font-headline uppercase tracking-[0.4em] text-white/40 mb-2 font-black">Match Conclusion</div>
                 
                 <div className="flex items-center justify-between w-full gap-2 mb-4">
-                  <div className="flex flex-col items-center gap-1 flex-1">
-                    <div className="w-8 h-8 rounded bg-destructive/20 border border-destructive/50 flex items-center justify-center">
-                      <Shield className="w-5 h-5 text-destructive" />
+                  <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                    <div className="w-7 h-7 rounded bg-destructive/10 border border-destructive/30 flex items-center justify-center">
+                      <Shield className="w-4 h-4 text-destructive" />
                     </div>
                     <div className="text-[8px] font-headline font-black uppercase text-center truncate w-full tracking-tight">{userTeam}</div>
                   </div>
 
                   <div className="flex flex-col items-center gap-0.5">
-                    <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-2">
+                    <div className="text-2xl font-headline font-black italic tracking-tighter flex items-center gap-2">
                       <span className={cn(result === 'win' ? "text-destructive" : "text-white")}>{score.user}</span>
                       <span className="text-white/20">-</span>
                       <span className={cn(result === 'loss' ? "text-primary" : "text-white")}>{score.opp}</span>
                     </div>
                     <div className={cn(
-                      "text-[8px] font-headline font-black uppercase px-2 py-0.5 tracking-widest",
+                      "text-[8px] font-headline font-black uppercase px-2 py-0.5 tracking-widest rounded",
                       result === 'win' ? "bg-destructive text-white" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-primary text-white"
                     )}>
                       {result === 'win' ? "WON" : result === 'draw' ? "DRAW" : "LOST"}
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-center gap-1 flex-1">
-                    <div className="w-8 h-8 rounded bg-primary/20 border border-primary/50 flex items-center justify-center">
-                      <Target className="w-5 h-5 text-primary" />
+                  <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                    <div className="w-7 h-7 rounded bg-primary/10 border border-primary/30 flex items-center justify-center">
+                      <Target className="w-4 h-4 text-primary" />
                     </div>
                     <div className="text-[8px] font-headline font-black uppercase text-center truncate w-full tracking-tight">{opponentTeam}</div>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5 w-full max-w-[180px]">
+                <div className="flex flex-col gap-2 w-full max-w-[160px]">
                   {result === 'loss' && (
                     <button 
                       onClick={handleVARRequest}
@@ -287,8 +318,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         )}
       </div>
       
-      <div className="text-center min-h-[36px] px-3">
-        <p className="text-[10px] font-headline tracking-widest text-white/80 uppercase font-black italic animate-in fade-in duration-500">
+      <div className="text-center min-h-[30px] px-3">
+        <p className="text-[10px] font-headline tracking-widest text-white/80 uppercase font-black italic animate-in fade-in duration-300">
           {getCommentary(timer)}
         </p>
       </div>
