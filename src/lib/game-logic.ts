@@ -131,7 +131,6 @@ export function calculateMood(state: GameState): ManagerMood {
 }
 
 export function getMatchOdds(aggression: number) {
-  // Aggression "Sweet Spot" is 0.5. Deviating from it makes odds worse.
   const win = (0.35 + (0.15 * (1 - Math.abs(0.5 - aggression) * 2))).toFixed(2);
   const draw = "0.25";
   const loss = (1 - parseFloat(win) - 0.25).toFixed(2);
@@ -139,11 +138,8 @@ export function getMatchOdds(aggression: number) {
 }
 
 export function calculateMatchResult(state: GameState): 'win' | 'draw' | 'loss' {
-  // The Sweet Spot Math: 0.5 is ideal aggression.
   const aggressionPenalty = Math.abs(0.5 - state.aggression) * 0.5;
   const adjustedAggressionFactor = (1 - aggressionPenalty) * 0.20;
-  
-  // Win probability calculation: Base + Aggression Sweet Spot + Dressing Room Morale
   const winProb = 0.30 + adjustedAggressionFactor + (state.dressingRoom * 0.20);
 
   const roll = Math.random();
@@ -185,13 +181,13 @@ export function getLeagueTable(state: GameState): LeagueTeam[] {
 
 export function saveGameLocally(state: GameState) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('tt_save_v4', JSON.stringify(state));
+    localStorage.setItem('tt_save_v5', JSON.stringify(state));
   }
 }
 
 export function loadGameLocally(): GameState | null {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('tt_save_v4');
+    const saved = localStorage.getItem('tt_save_v5');
     try {
       return saved ? JSON.parse(saved) : null;
     } catch {

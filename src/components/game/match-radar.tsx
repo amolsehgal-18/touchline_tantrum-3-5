@@ -16,7 +16,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   const [timer, setTimer] = useState(5);
   const [showFinal, setShowFinal] = useState(false);
 
-  // Generate a realistic score based on the result
   const score = useMemo(() => {
     if (result === 'win') {
       const g1 = Math.floor(Math.random() * 3) + 1;
@@ -65,8 +64,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Pitch lines
       ctx.strokeStyle = 'rgba(255,255,255,0.1)';
       ctx.lineWidth = 1;
       ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
@@ -75,7 +72,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(canvas.width / 2, canvas.height - 5);
       ctx.stroke();
 
-      // Update Players
       players.forEach(p => {
         p.x += p.vx;
         p.y += p.vy;
@@ -87,7 +83,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.fill();
       });
 
-      // Update Ball
       ball.x += ball.vx;
       ball.y += ball.vy;
       if (ball.x < 10 || ball.x > canvas.width - 10) ball.vx *= -1;
@@ -143,10 +138,10 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
             
             <div className="flex items-center justify-between w-full gap-2">
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-10 h-10 rounded bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(34,107,224,0.3)]">
-                  <Shield className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded bg-primary/20 border border-primary/50 flex items-center justify-center shadow-[0_0_15px_rgba(34,107,224,0.3)]">
+                  <Shield className="w-7 h-7 text-primary" />
                 </div>
-                <div className="text-[10px] font-headline font-black uppercase text-center truncate w-full">{userTeam}</div>
+                <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full mt-1">{userTeam}</div>
               </div>
 
               <div className="flex flex-col items-center gap-1">
@@ -156,7 +151,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
                   <span className={cn(result === 'loss' ? "text-destructive" : "text-white")}>{score.opp}</span>
                 </div>
                 <div className={cn(
-                  "text-[9px] font-headline font-black uppercase px-2 py-0.5 slanted-container",
+                  "text-[10px] font-headline font-black uppercase px-3 py-1 slanted-container",
                   result === 'win' ? "bg-primary text-white" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-destructive text-white"
                 )}>
                   {result === 'win' ? "VICTORY" : result === 'draw' ? "STALEMATE" : "DEFEAT"}
@@ -164,10 +159,10 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
               </div>
 
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-10 h-10 rounded bg-white/5 border border-white/10 flex items-center justify-center">
-                  <Target className="w-6 h-6 text-white/40" />
+                <div className="w-12 h-12 rounded bg-white/5 border border-white/10 flex items-center justify-center">
+                  <Target className="w-7 h-7 text-white/40" />
                 </div>
-                <div className="text-[10px] font-headline font-black uppercase text-center truncate w-full">{opponentTeam}</div>
+                <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full mt-1">{opponentTeam}</div>
               </div>
             </div>
 

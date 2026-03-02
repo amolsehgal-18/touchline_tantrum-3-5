@@ -87,31 +87,31 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
                   isLeft ? "bg-destructive border-white/40 scale-110 shadow-2xl z-10" : "bg-white/5 border-transparent opacity-20"
                 )}
                 style={{ 
-                  opacity: isLeft ? 0.8 + (swipeProgress * 0.2) : 0.05
+                  opacity: isLeft ? 0.9 + (swipeProgress * 0.1) : 0.05
                 }}
               >
                 <div className="flex items-center gap-1 text-white font-headline uppercase text-[16px] font-black italic tracking-tighter">
-                  <ChevronLeft className="w-5 h-5 text-red-200" /> REJECT
+                  <ChevronLeft className="w-5 h-5" /> REJECT
                 </div>
-                <div className="text-[13px] font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
+                <div className="text-[14px] font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
                   {scenario.leftOption}
                 </div>
               </div>
 
-              {/* Right Option Container (White-on-Blue/Approve) */}
+              {/* Right Option Container (Blue/Approve) */}
               <div 
                 className={cn(
                   "flex flex-col gap-3 p-4 rounded-xl border text-right transition-all duration-300",
                   !isLeft && dragX > 0 ? "bg-primary border-white/40 scale-110 shadow-2xl z-10" : "bg-white/5 border-transparent opacity-20"
                 )}
                 style={{ 
-                  opacity: !isLeft && dragX > 0 ? 0.8 + (swipeProgress * 0.2) : 0.05
+                  opacity: !isLeft && dragX > 0 ? 0.9 + (swipeProgress * 0.1) : 0.05
                 }}
               >
                 <div className="flex items-center gap-1 justify-end text-white font-headline uppercase text-[16px] font-black italic tracking-tighter">
-                  APPROVE <ChevronRight className="w-5 h-5 text-blue-200" />
+                  APPROVE <ChevronRight className="w-5 h-5" />
                 </div>
-                <div className="text-[13px] font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
+                <div className="text-[14px] font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
                   {scenario.rightOption}
                 </div>
               </div>
