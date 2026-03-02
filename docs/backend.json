@@ -1,0 +1,232 @@
+{
+  "entities": {
+    "GameSave": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GameSave",
+      "type": "object",
+      "description": "Represents the current state of an ongoing football manager game, saved locally or to cloud for resume functionality. This entity encapsulates all dynamic game data specific to a single play-through.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this specific game save. (Primary Key)"
+        },
+        "boardSupport": {
+          "type": "number",
+          "description": "Current level of support from the club's board, expressed as a decimal value from 0.01 to 1.0 (displayed as 1% to 100%)."
+        },
+        "fanSupport": {
+          "type": "number",
+          "description": "Current level of support from the club's fans, expressed as a decimal value from 0.01 to 1.0 (displayed as 1% to 100%)."
+        },
+        "dressingRoom": {
+          "type": "number",
+          "description": "Current morale and unity of the players in the dressing room (squad), expressed as a decimal value from 0.01 to 1.0 (displayed as 1% to 100%)."
+        },
+        "aggression": {
+          "type": "number",
+          "description": "Current aggression level of the manager, influencing match outcomes and odds, expressed as a decimal value from 0.01 to 1.0."
+        },
+        "managerMood": {
+          "type": "string",
+          "description": "The current visual mood of the manager (e.g., 'happy', 'neutral', 'stressed', 'angry', 'sacked'), dynamically calculated from the Tension Triangle stats and game context."
+        },
+        "currentLeaguePosition": {
+          "type": "number",
+          "description": "The team's current position in the league table during the active season."
+        },
+        "sagaObjective": {
+          "type": "string",
+          "description": "A textual description of the current main objective or saga the manager is facing for the season (e.g., 'Finish Top 4')."
+        },
+        "currentGameWeek": {
+          "type": "number",
+          "description": "The current game week within the season, progressing from 1 onwards."
+        },
+        "lastPlayedDateTime": {
+          "type": "string",
+          "description": "Timestamp indicating when this game save was last accessed or updated.",
+          "format": "date-time"
+        },
+        "scenarioCardIdsPlayed": {
+          "type": "array",
+          "description": "A list of unique identifiers for all `ScenarioCard` templates that have been presented to the player in this specific game save, ensuring no repetition. (Relationship: ScenarioCard N:1 GameSave)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "boardSupport",
+        "fanSupport",
+        "dressingRoom",
+        "aggression",
+        "managerMood",
+        "currentLeaguePosition",
+        "sagaObjective",
+        "currentGameWeek",
+        "lastPlayedDateTime",
+        "scenarioCardIdsPlayed"
+      ]
+    },
+    "TrophyCabinet": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TrophyCabinet",
+      "type": "object",
+      "description": "Stores lifetime aggregate statistics and achievements for the player across all game saves and sessions, synchronized to Cloud Firestore.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Trophy Cabinet, serving as its primary key. This could be linked to an external user ID."
+        },
+        "totalWins": {
+          "type": "number",
+          "description": "The cumulative total number of matches won by the player across all game sessions and saves throughout their manager career."
+        },
+        "totalSackings": {
+          "type": "number",
+          "description": "The cumulative total number of times the player has been sacked by clubs across all game sessions and saves."
+        },
+        "lastSackDate": {
+          "type": "string",
+          "description": "Optional timestamp of the most recent sacking event in the player's career.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "totalWins",
+        "totalSackings"
+      ]
+    },
+    "ScenarioCard": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ScenarioCard",
+      "type": "object",
+      "description": "Represents a pre-defined template for a scenario that the AI can present to the player, including decision options and their corresponding impacts on game stats. These templates inform the AI's dynamic scenario generation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this scenario card template. (Primary Key)"
+        },
+        "scenarioText": {
+          "type": "string",
+          "description": "The main narrative text describing the dilemma or event presented to the manager."
+        },
+        "leftOptionText": {
+          "type": "string",
+          "description": "The description of the decision option available to the player if they choose the 'Left' path."
+        },
+        "rightOptionText": {
+          "type": "string",
+          "description": "The description of the decision option available to the player if they choose the 'Right' path."
+        },
+        "impactLeft": {
+          "type": "array",
+          "description": "An array of four numerical values representing the impacts on [Board Support, Fan Support, Dressing Room, Aggression] if the 'Left' option is chosen. Board, Fan, and Dressing Room impacts are integer percentages (-20 to +15), while Aggression is a decimal shift (-0.1 to +0.1).",
+          "items": {
+            "type": "number"
+          }
+        },
+        "impactRight": {
+          "type": "array",
+          "description": "An array of four numerical values representing the impacts on [Board Support, Fan Support, Dressing Room, Aggression] if the 'Right' option is chosen. Board, Fan, and Dressing Room impacts are integer percentages (-20 to +15), while Aggression is a decimal shift (-0.1 to +0.1).",
+          "items": {
+            "type": "number"
+          }
+        },
+        "imageCategory": {
+          "type": "string",
+          "description": "A category tag used to determine the thematic image or visual style for the scenario (e.g., 'finance', 'player_ego', 'board_pressure')."
+        },
+        "triggerCondition": {
+          "type": "string",
+          "description": "A condition or event in the game that might logically trigger this scenario (e.g., 'transfer_window', 'any_time', 'match_day', 'performance_low')."
+        },
+        "gameCategory": {
+          "type": "string",
+          "description": "The general categorization of the scenario's theme (e.g., 'Foundation', 'Crisis', 'Satirical')."
+        },
+        "isBreaking": {
+          "type": "boolean",
+          "description": "A flag indicating if this scenario is considered a 'breaking news' or critical event that demands immediate attention."
+        }
+      },
+      "required": [
+        "id",
+        "scenarioText",
+        "leftOptionText",
+        "rightOptionText",
+        "impactLeft",
+        "impactRight",
+        "imageCategory",
+        "triggerCondition",
+        "gameCategory",
+        "isBreaking"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/gameSaves/{gameSaveId}",
+        "definition": {
+          "entityName": "GameSave",
+          "schema": {
+            "$ref": "#/backend/entities/GameSave"
+          },
+          "description": "Stores individual game save data for a specific user. This includes the current game state, tension triangle stats, and a list of `scenarioCardIdsPlayed` to prevent scenario repetition. Authorization is path-based: only the authenticated user matching `userId` can access their own game saves.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this game save, derived from `request.auth.uid`."
+            },
+            {
+              "name": "gameSaveId",
+              "description": "The unique identifier for this specific game save document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/trophyCabinet",
+        "definition": {
+          "entityName": "TrophyCabinet",
+          "schema": {
+            "$ref": "#/backend/entities/TrophyCabinet"
+          },
+          "description": "A single document containing lifetime aggregate statistics and achievements for a specific user. Authorization is path-based: only the authenticated user matching `userId` can access their own trophy cabinet.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this trophy cabinet, derived from `request.auth.uid`."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/scenarioCards/{scenarioCardId}",
+        "definition": {
+          "entityName": "ScenarioCard",
+          "schema": {
+            "$ref": "#/backend/entities/ScenarioCard"
+          },
+          "description": "Contains pre-defined templates for all possible game scenarios. This collection is read-only for all authenticated users, providing data to the AI Scenario Engine for dynamic content generation. No authorization dependencies on user data.",
+          "params": [
+            {
+              "name": "scenarioCardId",
+              "description": "The unique identifier for this specific scenario card template."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for 'Touchline Tantrum' prioritizes security, scalability, and debuggability by adhering to the core design principles and mandates. User-specific data is strictly segregated under individual user paths, and global, read-only data is stored in a top-level collection. This design strategy ensures **Authorization Independence** and facilitates robust security rules.\n\n1.  **User-Owned Data (`GameSave`, `TrophyCabinet`):**\n    *   `GameSave` documents are stored under `/users/{userId}/gameSaves/{gameSaveId}`. This path-based ownership ensures that a user can only read or write to their own game saves, directly correlating `request.auth.uid` with the `{userId}` wildcard. Each `GameSave` document contains all necessary dynamic game data, including `scenarioCardIdsPlayed` to track presented scenarios, which is crucial for client-side logic to prevent repetition. This eliminates the need for `get()` calls in security rules to check ownership or parent-document attributes, making operations atomic and easily debuggable.\n    *   `TrophyCabinet` is stored as a single document under `/users/{userId}/trophyCabinet`. Similar to `GameSave`, this structure ties lifetime aggregate statistics directly to the user's UID, providing clear ownership and simplifying security rules. Authorization is independent as the user's UID is part of the document's path.\n\n2.  **Global Read-Only Data (`ScenarioCard`):**\n    *   `ScenarioCard` templates are stored in a top-level collection `/scenarioCards/{scenarioCardId}`. These documents represent static, pre-defined scenario templates used by the AI service. They are designed to be globally readable by any authenticated user, but not writable by ordinary users. This **Structural Segregation** ensures that template data is entirely separate from user-specific game state, preventing unauthorized modification and simplifying rules to `allow read: if request.auth.uid != null;`.\n\n**QAPs (Rules are not Filters) Support:**\n*   For `GameSave`s, querying a user's saves (e.g., `db.collection('users').doc(uid).collection('gameSaves').get()`) is inherently secure. The security rules will only permit access if `request.auth.uid` matches the `uid` in the path, thus the client-side query is automatically filtered by the server based on the authenticated user. No additional filtering logic is needed in rules.\n*   For `ScenarioCard`s, the collection is public read-only. Any authenticated client can list these documents, and the rules permit this explicitly. This satisfies QAPs as the data is intentionally exposed for client-side AI scenario generation without filtering. The AI service will handle the logic for selecting appropriate, non-repeated scenarios based on the game state (e.g., `scenarioCardIdsPlayed` in `GameSave`) and current 'Tension Triangle' stats.\n\nThis structure strongly adheres to **Authorization Independence** by embedding the user ID directly into the paths of user-owned data, eliminating rule dependencies on parent document reads. **Structural Segregation** cleanly separates public templates from private user data, creating homogeneous security postures per collection. This approach results in clear, concise, and highly maintainable Firestore security rules."
+  }
+}
