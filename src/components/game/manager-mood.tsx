@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ManagerMood } from '@/lib/game-logic';
 import Image from 'next/image';
