@@ -1,35 +1,35 @@
 "use client"
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, getLeagueTable } from '@/lib/game-logic';
+import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, getLeagueTable, CAREER_MODES, CareerMode } from '@/lib/game-logic';
 import { SlantedContainer, SlantedButton } from './slanted-elements';
 import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
 import { TensionArcs } from './tension-arcs';
+import { SwipeCard } from './swipe-card';
+import { SeasonSummary } from './season-summary';
 import { getAiScenarioPresentation, AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, AlertTriangle } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const GameContainer = ({ initialState }: { initialState?: GameState }) => {
-  const [state, setState] = useState<GameState>(initialState || INITIAL_STATE);
+  const [state, setState] = useState<GameState | null>(initialState || null);
   const [currentScenario, setCurrentScenario] = useState<AiScenarioPresentationOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
-  const [timer, setTimer] = useState(15);
   const [error, setError] = useState<string | null>(null);
-  
   const isFetchingRef = useRef(false);
 
+  const config = state ? CAREER_MODES[state.mode] : null;
+
   const fetchScenario = useCallback(async () => {
-    if (state.isSacked || isFetchingRef.current) return;
+    if (!state || state.isSacked || state.isSeasonEnd || isFetchingRef.current) return;
     
     isFetchingRef.current = true;
     setLoading(true);
     setError(null);
-    setTimer(15);
 
     try {
-      // getAiScenarioPresentation now has a bulletproof local fallback
       const result = await getAiScenarioPresentation({
         boardSupport: state.boardSupport,
         fanSupport: state.fanSupport,
@@ -37,150 +37,171 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         aggression: state.aggression,
         userTeam: state.userTeam,
         currentLeaguePosition: state.currentLeaguePosition,
-        sagaObjective: state.sagaObjective,
-        objectiveMet: state.objectiveMet,
+        sagaObjective: config?.name || "Season",
+        objectiveMet: state.currentLeaguePosition <= (config?.target || 10),
         excludedScenarioTexts: state.history,
       });
       setCurrentScenario(result);
-      setError(null);
     } catch (err) {
-      console.error("Critical error in scenario fetch", err);
-      setError("Intel transmission failed. Reconnecting...");
+      setError("Intel transmission failed.");
     } finally {
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [state.boardSupport, state.fanSupport, state.dressingRoom, state.aggression, state.userTeam, state.currentLeaguePosition, state.sagaObjective, state.objectiveMet, state.history, state.isSacked]);
+  }, [state, config]);
 
   useEffect(() => {
-    if (!currentScenario && !isSimulating && !state.isSacked && !loading && !error) {
+    if (state && !currentScenario && !isSimulating && !state.isSacked && !state.isSeasonEnd && !loading && !error) {
       fetchScenario();
     }
-  }, [currentScenario, isSimulating, state.isSacked, loading, error, fetchScenario]);
-
-  useEffect(() => {
-    if (currentScenario && !isSimulating && !loading && !error) {
-      const interval = setInterval(() => {
-        setTimer(t => {
-          if (t <= 1) {
-            handleDecision('left');
-            return 15;
-          }
-          return t - 1;
-        });
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [currentScenario, isSimulating, loading, error]);
+  }, [state, currentScenario, isSimulating, loading, error, fetchScenario]);
 
   const handleDecision = (side: 'left' | 'right') => {
-    if (!currentScenario) return;
+    if (!currentScenario || !state) return;
 
     const impact = side === 'left' ? currentScenario.impactLeft : currentScenario.impactRight;
     
-    setState(prev => {
-      const newState = {
-        ...prev,
-        boardSupport: Math.min(1, Math.max(0, prev.boardSupport + (impact.board / 100))),
-        fanSupport: Math.min(1, Math.max(0, prev.fanSupport + (impact.fans / 100))),
-        dressingRoom: Math.min(1, Math.max(0, prev.dressingRoom + (impact.squad / 100))),
-        aggression: Math.min(1, Math.max(0.1, prev.aggression + impact.aggression)),
-        cardsSeen: prev.cardsSeen + 1,
-        history: [...prev.history, currentScenario.scenario],
-      };
+    const newState = {
+      ...state,
+      boardSupport: Math.min(1, Math.max(0, state.boardSupport + (impact.board / 100))),
+      fanSupport: Math.min(1, Math.max(0, state.fanSupport + (impact.fans / 100))),
+      dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
+      aggression: Math.min(1, Math.max(0.1, state.aggression + impact.aggression)),
+      cardsSeen: state.cardsSeen + 1,
+      history: [...state.history, currentScenario.scenario],
+    };
 
-      if (newState.boardSupport <= 0.05 || newState.fanSupport <= 0.05 || newState.dressingRoom <= 0.05) {
-        newState.isSacked = true;
-      }
+    if (newState.boardSupport <= 0.05 || newState.fanSupport <= 0.05) {
+      newState.isSacked = true;
+    }
 
-      saveGameLocally(newState);
-      return newState;
-    });
-
+    setState(newState);
+    saveGameLocally(newState);
     setCurrentScenario(null);
 
-    if ((state.cardsSeen + 1) % 3 === 0) {
-      setIsSimulating(true);
-    }
+    // After every card, simulate a match
+    setIsSimulating(true);
   };
 
   const onMatchComplete = (result: 'win' | 'draw' | 'loss') => {
+    if (!state || !config) return;
+
     setIsSimulating(false);
-    setState(prev => {
-      const newState = {
-        ...prev,
-        wins: result === 'win' ? prev.wins + 1 : prev.wins,
-        draws: result === 'draw' ? prev.draws + 1 : prev.draws,
-        losses: result === 'loss' ? prev.losses + 1 : prev.losses,
-        currentLeaguePosition: result === 'win' ? Math.max(1, prev.currentLeaguePosition - 1) : result === 'loss' ? Math.min(20, prev.currentLeaguePosition + 1) : prev.currentLeaguePosition
-      };
-      saveGameLocally(newState);
-      return newState;
-    });
+    const newMatchesPlayed = state.matchesPlayed + 1;
+    const ptsEarned = result === 'win' ? 3 : result === 'draw' ? 1 : 0;
+    
+    const newState: GameState = {
+      ...state,
+      matchesPlayed: newMatchesPlayed,
+      wins: result === 'win' ? state.wins + 1 : state.wins,
+      draws: result === 'draw' ? state.draws + 1 : state.draws,
+      losses: result === 'loss' ? state.losses + 1 : state.losses,
+      points: state.points + ptsEarned,
+      isSeasonEnd: newMatchesPlayed >= config.duration
+    };
+
+    // Update league position based on points
+    const table = getLeagueTable(newState);
+    newState.currentLeaguePosition = table.find(t => t.isUser)?.pos || state.currentLeaguePosition;
+
+    // Check final objective
+    if (newState.isSeasonEnd) {
+      if (newState.currentLeaguePosition > config.target) {
+        newState.isSacked = true;
+      }
+    }
+
+    setState(newState);
+    saveGameLocally(newState);
   };
 
-  const mood = calculateMood(state);
-  const odds = getMatchOdds(state.aggression);
-  const leagueTable = useMemo(() => getLeagueTable(state), [state.currentLeaguePosition, state.userTeam]);
+  const startNewCareer = (mode: CareerMode) => {
+    const newState = INITIAL_STATE(mode);
+    setState(newState);
+    saveGameLocally(newState);
+  };
 
-  if (state.isSacked) {
+  if (!state) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-6 gap-8 text-center bg-black/40">
-        <ManagerMoodView mood="sacked" />
-        <div className="space-y-2">
-          <h1 className="text-4xl font-headline text-destructive uppercase">YOU ARE SACKED</h1>
-          <p className="text-white/60">The board has terminated your contract with immediate effect.</p>
+      <div className="flex flex-col h-screen max-w-md mx-auto bg-background p-6 overflow-y-auto">
+        <h2 className="text-3xl font-headline font-bold mb-8 text-accent">SELECT CAREER PATH</h2>
+        <div className="grid gap-4">
+          {(Object.keys(CAREER_MODES) as CareerMode[]).map((modeKey) => {
+            const m = CAREER_MODES[modeKey];
+            const Icon = modeKey === 'title' ? Trophy : modeKey === 'top4' ? Target : modeKey === 'relegation' ? Shield : Calendar;
+            return (
+              <button 
+                key={modeKey}
+                onClick={() => startNewCareer(modeKey)}
+                className="text-left p-6 premium-glass slanted-container border-white/10 hover:border-primary/50 transition-all group"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-white/5 rounded-lg group-hover:bg-primary/20 transition-colors">
+                    <Icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-headline font-bold uppercase">{m.name}</h3>
+                    <p className="text-xs text-white/50 mb-2">{m.description}</p>
+                    <div className="flex gap-4 text-[10px] font-headline opacity-40 uppercase">
+                      <span>{m.duration} Matches</span>
+                      <span>Target: Top {m.target}</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            )
+          })}
         </div>
-        <SlantedContainer className="w-full max-w-sm border-destructive/50">
-          <div className="grid grid-cols-2 gap-4 text-left">
-            <div>
-              <div className="text-[10px] opacity-50 uppercase font-headline">Wins</div>
-              <div className="text-2xl font-headline">{state.wins}</div>
-            </div>
-            <div>
-              <div className="text-[10px] opacity-50 uppercase font-headline">Losses</div>
-              <div className="text-2xl font-headline">{state.losses}</div>
-            </div>
-          </div>
-        </SlantedContainer>
-        <SlantedButton onClick={() => window.location.reload()} className="bg-white text-black">
-          SIGN NEW CONTRACT
-        </SlantedButton>
       </div>
     );
   }
 
+  if (state.isSeasonEnd || state.isSacked) {
+    return <SeasonSummary state={state} onRestart={() => setState(null)} />;
+  }
+
+  const mood = calculateMood(state);
+  const odds = getMatchOdds(state.aggression);
+  const leagueTable = getLeagueTable(state);
+
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
       {/* Live League Table Header */}
-      <div className="bg-black/60 border-b border-white/10 p-2 z-40 backdrop-blur-md">
-        <div className="flex items-center justify-between px-2 mb-2">
+      <div className="bg-black/60 border-b border-white/10 p-4 z-40 backdrop-blur-md">
+        <div className="flex items-center justify-between mb-4">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
-            <RefreshCw className="w-3 h-3 animate-spin" /> Live League Standing
+            <RefreshCw className="w-3 h-3 animate-spin" /> Live Table
           </span>
-          <span className="text-[10px] font-headline uppercase opacity-50">Matchday {Math.floor(state.cardsSeen / 3) + 1}</span>
+          <span className="text-[10px] font-headline uppercase opacity-50">Matchday {config!.startGW + state.matchesPlayed} / 38</span>
         </div>
-        <div className="grid grid-cols-5 gap-1">
+        <div className="flex flex-col gap-1">
+          <div className="grid grid-cols-4 text-[8px] font-headline uppercase opacity-40 px-2 pb-1 border-b border-white/5">
+            <span>Pos</span>
+            <span>Team</span>
+            <span className="text-center">GP</span>
+            <span className="text-right">Pts</span>
+          </div>
           {leagueTable.map((team) => (
             <div 
               key={team.team} 
               className={cn(
-                "flex flex-col items-center py-1 rounded text-[10px] transition-colors border",
+                "grid grid-cols-4 items-center px-2 py-1 rounded text-[10px] transition-colors border",
                 team.isUser ? "bg-primary/20 border-primary/50" : "bg-white/5 border-transparent"
               )}
             >
               <span className="font-headline opacity-50">{team.pos}</span>
-              <span className={cn("font-bold truncate w-full text-center px-1", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
-              <span className="text-[8px] opacity-40">{team.pts}P</span>
+              <span className={cn("font-bold truncate", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
+              <span className="text-center opacity-40">{team.gp}</span>
+              <span className="text-right font-bold">{team.pts}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Tension Dashboard Section */}
+      {/* Tension Dashboard */}
       <div className="p-4 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30">
         <div className="flex justify-center items-center border-r border-white/5 pr-4">
-          <TensionArcs board={state.boardSupport} fans={state.fanSupport} morale={state.dressingRoom} />
+          <TensionArcs board={state.boardSupport} fans={state.fanSupport} />
         </div>
         <div className="flex justify-center items-center pl-4">
           <ManagerMoodView mood={mood} />
@@ -188,111 +209,52 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       </div>
 
       {/* Main Game Interface */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 overflow-y-auto relative bg-gradient-to-b from-transparent to-black/20">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 relative">
         {isSimulating ? (
           <MatchRadar onComplete={onMatchComplete} />
         ) : (
-          <div className="w-full min-h-[360px] flex items-center justify-center">
-            {loading || error ? (
-              <SlantedContainer className="w-full h-full flex flex-col items-center justify-center gap-4 border-white/10 bg-white/5">
-                {error ? (
-                  <>
-                    <AlertTriangle className="w-12 h-12 text-destructive animate-pulse" />
-                    <div className="space-y-4 text-center">
-                      <span className="text-sm font-headline uppercase tracking-[0.2em] text-destructive block">
-                        Transmission Cut
-                      </span>
-                      <p className="text-[10px] opacity-40 uppercase font-headline">
-                        Intel feed interrupted. Re-syncing with HQ...
-                      </p>
-                      <SlantedButton onClick={() => fetchScenario()} className="bg-destructive/20 text-destructive text-[10px] px-4 py-2 mt-4">
-                        RECONNECT MANUALLY
-                      </SlantedButton>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-12 h-12 animate-spin text-primary" />
-                    <div className="space-y-2 text-center">
-                      <span className="text-sm font-headline uppercase tracking-[0.2em] text-primary block">
-                        Transmitting Intel
-                      </span>
-                      <p className="text-[10px] opacity-40 uppercase font-headline">
-                        Parsing Squad Tension Triangle...
-                      </p>
-                    </div>
-                  </>
-                )}
-              </SlantedContainer>
+          <div className="w-full flex-1 flex items-center justify-center relative">
+            {loading ? (
+              <RefreshCw className="w-12 h-12 animate-spin text-primary" />
+            ) : error ? (
+              <div className="text-center space-y-4">
+                <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
+                <p className="text-xs uppercase font-headline opacity-50">{error}</p>
+                <SlantedButton onClick={fetchScenario}>Retry</SlantedButton>
+              </div>
             ) : currentScenario ? (
-              <SlantedContainer className="w-full relative scanline animate-in fade-in zoom-in duration-500 shadow-2xl">
-                {currentScenario.isBreaking && (
-                  <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-3 py-1 z-20 skew-x-[-20deg] shadow-lg">
-                    BREAKING NEWS
-                  </div>
-                )}
-                <div className="space-y-8">
-                  <p className="text-xl leading-relaxed font-headline font-medium tracking-tight border-l-2 border-accent pl-4">{currentScenario.scenario}</p>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-[8px] font-headline uppercase opacity-40">
-                      <span>Tactical Window</span>
-                      <span>{timer}s</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-accent transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(255,173,31,0.5)]" 
-                        style={{ width: `${(timer / 15) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-4">
-                    <SlantedButton 
-                      onClick={() => handleDecision('left')}
-                      className="bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-left justify-start py-5 h-auto transition-all active:scale-95"
-                    >
-                      {currentScenario.leftOption}
-                    </SlantedButton>
-                    <SlantedButton 
-                      onClick={() => handleDecision('right')}
-                      className="bg-primary/10 hover:bg-primary/20 border border-primary/30 text-xs text-left justify-start py-5 h-auto transition-all active:scale-95"
-                    >
-                      {currentScenario.rightOption}
-                    </SlantedButton>
-                  </div>
-                </div>
-              </SlantedContainer>
+              <SwipeCard 
+                scenario={currentScenario} 
+                onDecision={handleDecision} 
+              />
             ) : null}
           </div>
         )}
       </div>
 
-      {/* Bottom Bar: Stats & Aggression */}
-      <div className="p-6 premium-glass mt-auto bg-black/60 border-t border-white/10 z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
-        <div className="flex flex-col gap-5">
-          <div className="flex justify-between items-end">
-            <div className="space-y-1">
-              <div className="text-[10px] font-headline uppercase opacity-50 tracking-[0.2em]">Predicted Outcome</div>
-              <div className="font-headline text-2xl tracking-tighter flex items-center">
-                <span className="text-blue-400 font-bold">{odds.win}</span>
-                <span className="mx-3 text-white/5">/</span>
-                <span className="text-white/30">{odds.draw}</span>
-                <span className="mx-3 text-white/5">/</span>
-                <span className="text-orange-400 font-bold">{odds.loss}</span>
-              </div>
-            </div>
-            <div className="text-right space-y-1">
-              <div className="text-[10px] font-headline uppercase opacity-50 tracking-[0.2em]">Squad Aggression</div>
-              <div className="text-2xl font-headline text-primary font-bold drop-shadow-sm">{Math.round(state.aggression * 100)}%</div>
+      {/* Stats Footer */}
+      <div className="p-6 premium-glass bg-black/60 border-t border-white/10 z-30">
+        <div className="flex justify-between items-end mb-4">
+          <div className="space-y-1">
+            <div className="text-[10px] font-headline uppercase opacity-50">Match Odds</div>
+            <div className="font-headline text-xl flex items-center gap-2">
+              <span className="text-blue-400">{odds.win}</span>
+              <span className="text-white/20">|</span>
+              <span className="text-white/40">{odds.draw}</span>
+              <span className="text-white/20">|</span>
+              <span className="text-orange-400">{odds.loss}</span>
             </div>
           </div>
-          <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-             <div 
-              className="h-full bg-primary transition-all duration-1000 shadow-[0_0_15px_rgba(34,107,224,0.5)]" 
-              style={{ width: `${state.aggression * 100}%` }} 
-             />
+          <div className="text-right space-y-1">
+            <div className="text-[10px] font-headline uppercase opacity-50">Aggression</div>
+            <div className="text-xl font-headline text-primary font-bold">{Math.round(state.aggression * 100)}%</div>
           </div>
+        </div>
+        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-primary transition-all duration-1000" 
+            style={{ width: `${state.aggression * 100}%` }} 
+          />
         </div>
       </div>
     </div>
