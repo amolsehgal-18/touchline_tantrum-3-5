@@ -79,39 +79,39 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
           </div>
 
           <div className="mt-12 flex-1 flex flex-col justify-end">
-            <div className="grid grid-cols-2 gap-4 h-40 relative overflow-visible">
-              {/* Left Option Container */}
+            <div className="grid grid-cols-2 gap-4 h-44 relative overflow-visible">
+              {/* Left Option Container (Red/Reject) */}
               <div 
                 className={cn(
                   "flex flex-col gap-3 p-4 rounded-xl border transition-all duration-300",
-                  isLeft ? "bg-destructive/40 border-destructive/80 scale-110 shadow-lg" : "bg-white/5 border-transparent opacity-20"
+                  isLeft ? "bg-destructive border-white/40 scale-110 shadow-2xl z-10" : "bg-white/5 border-transparent opacity-20"
                 )}
                 style={{ 
-                  opacity: isLeft ? 0.7 + (swipeProgress * 0.3) : 0.05
+                  opacity: isLeft ? 0.8 + (swipeProgress * 0.2) : 0.05
                 }}
               >
-                <div className="flex items-center gap-1 text-destructive font-headline uppercase text-[14px] font-black italic tracking-tighter">
-                  <ChevronLeft className="w-5 h-5" /> REJECT
+                <div className="flex items-center gap-1 text-white font-headline uppercase text-[16px] font-black italic tracking-tighter">
+                  <ChevronLeft className="w-5 h-5 text-red-200" /> REJECT
                 </div>
-                <div className="text-sm font-headline text-white leading-tight font-black tracking-tight drop-shadow-lg">
+                <div className="text-[13px] font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
                   {scenario.leftOption}
                 </div>
               </div>
 
-              {/* Right Option Container */}
+              {/* Right Option Container (White-on-Blue/Approve) */}
               <div 
                 className={cn(
                   "flex flex-col gap-3 p-4 rounded-xl border text-right transition-all duration-300",
-                  !isLeft && dragX > 0 ? "bg-primary/40 border-primary/80 scale-110 shadow-lg" : "bg-white/5 border-transparent opacity-20"
+                  !isLeft && dragX > 0 ? "bg-primary border-white/40 scale-110 shadow-2xl z-10" : "bg-white/5 border-transparent opacity-20"
                 )}
                 style={{ 
-                  opacity: !isLeft && dragX > 0 ? 0.7 + (swipeProgress * 0.3) : 0.05
+                  opacity: !isLeft && dragX > 0 ? 0.8 + (swipeProgress * 0.2) : 0.05
                 }}
               >
-                <div className="flex items-center gap-1 justify-end text-primary font-headline uppercase text-[14px] font-black italic tracking-tighter">
-                  APPROVE <ChevronRight className="w-5 h-5" />
+                <div className="flex items-center gap-1 justify-end text-white font-headline uppercase text-[16px] font-black italic tracking-tighter">
+                  APPROVE <ChevronRight className="w-5 h-5 text-blue-200" />
                 </div>
-                <div className="text-sm font-headline text-white leading-tight font-black tracking-tight drop-shadow-lg">
+                <div className="text-[13px] font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
                   {scenario.rightOption}
                 </div>
               </div>

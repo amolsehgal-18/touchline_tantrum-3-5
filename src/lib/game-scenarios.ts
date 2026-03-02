@@ -1,3 +1,16 @@
+/**
+ * @fileOverview Scenario data for Touchline Tantrum.
+ * 
+ * Each card defines impacts for:
+ * 1. boardImpact: Integer (e.g. 10 = +10% Board Support)
+ * 2. fanImpact: Integer (e.g. -5 = -5% Fan Support)
+ * 3. dressingRoomImpact: Integer (e.g. 8 = +8% Player Morale)
+ * 4. aggressionImpact: Float (e.g. 0.15 = +15% Tactical Aggression)
+ * 
+ * NOTE: The right-swipe (Approve) uses the exact values provided.
+ * The left-swipe (Reject) uses the negative of these values.
+ */
+
 export interface ScenarioCardData {
   scenarioText: string;
   leftOptionText: string;
@@ -5,7 +18,7 @@ export interface ScenarioCardData {
   boardImpact: number;
   fanImpact: number;
   dressingRoomImpact: number;
-  aggressionImpact: number; // New impact field
+  aggressionImpact: number;
   imageCategory: string;
   triggerCondition: string;
   gameCategory: string;
@@ -32,7 +45,7 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     rightOptionText: "Call a team meeting to address concerns.",
     boardImpact: -5,
     fanImpact: -3,
-    dressingRoomImpact: 5,
+    dressingRoomImpact: 10,
     aggressionImpact: 0.1,
     imageCategory: "player_ego",
     triggerCondition: "performance_low",
@@ -54,8 +67,8 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
   },
   {
     scenarioText: "The board demands you play their expensive new signing.",
-    leftOptionText: "Start him despite poor form.",
-    rightOptionText: "Stick with your in-form player.",
+    leftOptionText: "Stick with your in-form player.",
+    rightOptionText: "Start him despite poor form.",
     boardImpact: 10,
     fanImpact: -8,
     dressingRoomImpact: 2,
@@ -67,8 +80,8 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
   },
   {
     scenarioText: "Two key players clash over a penalty decision during a match.",
-    leftOptionText: "Let the captain decide who takes it.",
-    rightOptionText: "Hold a team vote on penalty duties.",
+    leftOptionText: "Hold a team vote on penalty duties.",
+    rightOptionText: "Let the captain decide who takes it.",
     boardImpact: -3,
     fanImpact: 0,
     dressingRoomImpact: -8,
@@ -93,8 +106,8 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
   },
   {
     scenarioText: "The team's fitness coach recommends dropping an aging star.",
-    leftOptionText: "Follow the medical advice.",
-    rightOptionText: "Keep playing your experienced leader.",
+    leftOptionText: "Keep playing your experienced leader.",
+    rightOptionText: "Follow the medical advice.",
     boardImpact: -5,
     fanImpact: 8,
     dressingRoomImpact: 2,
@@ -106,8 +119,8 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
   },
   {
     scenarioText: "A player is caught partying two nights before a crucial derby.",
-    leftOptionText: "Suspend him for three matches.",
-    rightOptionText: "Give him a stern warning but start him.",
+    leftOptionText: "Give him a stern warning but start him.",
+    rightOptionText: "Suspend him for three matches.",
     boardImpact: -10,
     fanImpact: 5,
     dressingRoomImpact: 8,
@@ -119,8 +132,8 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
   },
   {
     scenarioText: "The board sets unrealistic league position targets mid-season.",
-    leftOptionText: "Publicly commit to the ambitious goal.",
-    rightOptionText: "Push back citing squad limitations.",
+    leftOptionText: "Push back citing squad limitations.",
+    rightOptionText: "Publicly commit to the ambitious goal.",
     boardImpact: -15,
     fanImpact: 10,
     dressingRoomImpact: 2,
@@ -132,8 +145,8 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
   },
   {
     scenarioText: "Your assistant manager leaks team selection to the press.",
-    leftOptionText: "Demand his resignation.",
-    rightOptionText: "Handle it internally with a warning.",
+    leftOptionText: "Handle it internally with a warning.",
+    rightOptionText: "Demand his resignation.",
     boardImpact: -8,
     fanImpact: 0,
     dressingRoomImpact: -2,
@@ -158,8 +171,8 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
   },
   {
     scenarioText: "A financial audit reveals the club has been hiding massive debts.",
-    leftOptionText: "Demand board resignations.",
-    rightOptionText: "Support the board's difficult decisions.",
+    leftOptionText: "Support the board's difficult decisions.",
+    rightOptionText: "Demand board resignations.",
     boardImpact: -20,
     fanImpact: 5,
     dressingRoomImpact: -2,
