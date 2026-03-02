@@ -36,15 +36,17 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         excludedScenarioTexts: state.history,
       });
       setCurrentScenario(result);
-    } catch (error) {
-      console.error("Failed to fetch scenario", error);
+    } catch (err) {
+      console.error("Failed to fetch scenario", err);
       setError("Intel transmission failed. Reconnecting...");
       // Auto-retry after a delay
-      setTimeout(fetchScenario, 3000);
+      setTimeout(() => {
+        if (!state.isSacked) fetchScenario();
+      }, 3000);
     } finally {
       setLoading(false);
     }
-  }, [state, fetchScenario]);
+  }, [state]);
 
   useEffect(() => {
     if (!currentScenario && !isSimulating && !state.isSacked && !loading && !error) {
@@ -175,11 +177,11 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       </div>
 
       {/* Main Dashboard Layout */}
-      <div className="p-4 flex items-center justify-between premium-glass border-b border-white/5 bg-black/20 z-30">
-        <div className="flex-1 flex justify-center">
+      <div className="p-4 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30">
+        <div className="flex justify-center items-center border-r border-white/5">
           <TensionArcs board={state.boardSupport} fans={state.fanSupport} morale={state.dressingRoom} />
         </div>
-        <div className="flex-1 flex justify-center">
+        <div className="flex justify-center items-center">
           <ManagerMoodView mood={mood} />
         </div>
       </div>

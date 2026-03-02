@@ -12,6 +12,7 @@ export const TensionArcs = ({ board, fans, morale }: TensionArcsProps) => {
   const center = size / 2;
   
   const drawArc = (value: number, radius: number, color: string) => {
+    // Semi-circle circumference is PI * radius
     const circumference = Math.PI * radius;
     const dash = value * circumference;
     const gap = circumference - dash;
@@ -26,6 +27,7 @@ export const TensionArcs = ({ board, fans, morale }: TensionArcsProps) => {
         strokeWidth={strokeWidth}
         strokeDasharray={`${dash} ${gap}`}
         strokeLinecap="round"
+        // Rotate 180 to start from the left side of a top-half semi-circle
         transform={`rotate(180 ${center} ${center})`}
         className="transition-all duration-1000 ease-out opacity-80"
       />
@@ -46,8 +48,8 @@ export const TensionArcs = ({ board, fans, morale }: TensionArcsProps) => {
   );
 
   return (
-    <div className="relative" style={{ width: size, height: size / 1.5 }}>
-      <svg width={size} height={size}>
+    <div className="relative flex flex-col items-center" style={{ width: size, height: size / 2 + 30 }}>
+      <svg width={size} height={size / 2 + strokeWidth} className="overflow-visible">
         {/* Board Support Arc (Outer) */}
         {drawBackground(60)}
         {drawArc(board, 60, "#3b82f6")}
@@ -61,10 +63,19 @@ export const TensionArcs = ({ board, fans, morale }: TensionArcsProps) => {
         {drawArc(morale, 30, "#22c55e")}
       </svg>
       
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 text-[8px] font-headline uppercase tracking-tighter opacity-60">
-        <span className="text-blue-400">Board</span>
-        <span className="text-orange-400">Fans</span>
-        <span className="text-green-400">Morale</span>
+      <div className="flex justify-center gap-2 text-[8px] font-headline uppercase tracking-tighter opacity-60 mt-2">
+        <div className="flex items-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+          <span>Board</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+          <span>Fans</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+          <span>Squad</span>
+        </div>
       </div>
     </div>
   );
