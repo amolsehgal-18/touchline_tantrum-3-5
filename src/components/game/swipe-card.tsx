@@ -64,7 +64,7 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
       >
         <SlantedContainer className={cn(
           "w-full bg-card min-h-[380px] flex flex-col justify-between border-2 transition-all relative group",
-          dragX < -50 ? "border-destructive shadow-[0_0_20px_rgba(239,68,68,0.2)]" : dragX > 50 ? "border-primary shadow-[0_0_20px_rgba(34,107,224,0.2)]" : "border-white/10"
+          dragX < -50 ? "border-destructive shadow-[0_0_30px_rgba(239,68,68,0.3)]" : dragX > 50 ? "border-primary shadow-[0_0_30px_rgba(34,107,224,0.3)]" : "border-white/10"
         )}>
           {scenario.isBreaking && (
             <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-3 py-1 z-20 skew-x-[-20deg] shadow-lg font-bold">
@@ -80,22 +80,21 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
           </div>
 
           <div className="mt-8 flex-1 flex flex-col justify-end">
-            <div className="grid grid-cols-2 gap-4 h-32 relative overflow-visible">
+            <div className="grid grid-cols-2 gap-4 h-36 relative overflow-visible">
               {/* Left Option Container */}
               <div 
                 className={cn(
-                  "flex flex-col gap-2 p-3 rounded-lg border transition-all duration-200",
-                  isLeft ? "bg-destructive/20 border-destructive/40" : "bg-white/5 border-transparent opacity-20"
+                  "flex flex-col gap-2 p-4 rounded-lg border transition-all duration-200",
+                  isLeft ? "bg-destructive/30 border-destructive/60 scale-105" : "bg-white/5 border-transparent opacity-20"
                 )}
                 style={{ 
-                  transform: isLeft ? `scale(${1 + swipeProgress * 0.1})` : 'scale(1)',
-                  opacity: isLeft ? 0.4 + (swipeProgress * 0.6) : 0.1
+                  opacity: isLeft ? 0.6 + (swipeProgress * 0.4) : 0.1
                 }}
               >
-                <div className="flex items-center gap-1 text-destructive font-headline uppercase text-[10px] font-black italic">
-                  <ChevronLeft className="w-4 h-4" /> REJECT
+                <div className="flex items-center gap-1 text-destructive font-headline uppercase text-[12px] font-black italic tracking-tighter">
+                  <ChevronLeft className="w-5 h-5" /> REJECT
                 </div>
-                <div className="text-xs font-headline text-white leading-tight font-bold tracking-tight">
+                <div className="text-sm font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
                   {scenario.leftOption}
                 </div>
               </div>
@@ -103,18 +102,17 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
               {/* Right Option Container */}
               <div 
                 className={cn(
-                  "flex flex-col gap-2 p-3 rounded-lg border text-right transition-all duration-200",
-                  !isLeft && dragX > 0 ? "bg-primary/20 border-primary/40" : "bg-white/5 border-transparent opacity-20"
+                  "flex flex-col gap-2 p-4 rounded-lg border text-right transition-all duration-200",
+                  !isLeft && dragX > 0 ? "bg-primary/30 border-primary/60 scale-105" : "bg-white/5 border-transparent opacity-20"
                 )}
                 style={{ 
-                  transform: !isLeft && dragX > 0 ? `scale(${1 + swipeProgress * 0.1})` : 'scale(1)',
-                  opacity: !isLeft && dragX > 0 ? 0.4 + (swipeProgress * 0.6) : 0.1
+                  opacity: !isLeft && dragX > 0 ? 0.6 + (swipeProgress * 0.4) : 0.1
                 }}
               >
-                <div className="flex items-center gap-1 justify-end text-primary font-headline uppercase text-[10px] font-black italic">
-                  APPROVE <ChevronRight className="w-4 h-4" />
+                <div className="flex items-center gap-1 justify-end text-primary font-headline uppercase text-[12px] font-black italic tracking-tighter">
+                  APPROVE <ChevronRight className="w-5 h-5" />
                 </div>
-                <div className="text-xs font-headline text-white leading-tight font-bold tracking-tight">
+                <div className="text-sm font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
                   {scenario.rightOption}
                 </div>
               </div>

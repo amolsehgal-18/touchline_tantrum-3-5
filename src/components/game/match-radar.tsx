@@ -1,10 +1,25 @@
+
 "use client"
 
 import React, { useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
 
-export const MatchRadar = ({ onComplete }: { onComplete: () => void }) => {
+interface MatchRadarProps {
+  result: 'win' | 'draw' | 'loss' | null;
+  onComplete: () => void;
+}
+
+export const MatchRadar = ({ result, onComplete }: MatchRadarProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [timer, setTimer] = useState(5);
+  const [showFinal, setShowFinal] = useState(false);
+
+  const getCommentary = (t: number) => {
+    if (t >= 4) return "Opening exchanges. High intensity pressing from the start...";
+    if (t >= 2) return "HT: Whistle blows. Tactical regrouping in the dugout...";
+    if (t > 0) return "FINAL MINUTES! Every tackle counts as the tension rises...";
+    return "FULL TIME: The final whistle goes!";
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -53,16 +68,11 @@ export const MatchRadar = ({ onComplete }: { onComplete: () => void }) => {
       ctx.arc(canvas.width / 2, canvas.height / 2, 30, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Penalty Areas
-      ctx.strokeRect(10, canvas.height / 2 - 40, 40, 80);
-      ctx.strokeRect(canvas.width - 50, canvas.height / 2 - 40, 40, 80);
-
       // Update Players
       players.forEach(p => {
         p.x += p.vx;
         p.y += p.vy;
         
-        // Simple bounce with pitch constraints
         if (p.x < 15 || p.x > canvas.width - 15) p.vx *= -1;
         if (p.y < 15 || p.y > canvas.height - 15) p.vy *= -1;
 
@@ -71,7 +81,6 @@ export const MatchRadar = ({ onComplete }: { onComplete: () => void }) => {
         ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
         ctx.fill();
         
-        // Add a small glow to team dots
         if (p.color !== '#ffffff') {
           ctx.shadowBlur = 5;
           ctx.shadowColor = p.color;
@@ -80,7 +89,7 @@ export const MatchRadar = ({ onComplete }: { onComplete: () => void }) => {
         }
       });
 
-      // Update Ball (Faster, erratic)
+      // Update Ball
       ball.x += ball.vx;
       ball.y += ball.vy;
       if (ball.x < 12 || ball.x > canvas.width - 12) ball.vx *= -1;
@@ -100,7 +109,7 @@ export const MatchRadar = ({ onComplete }: { onComplete: () => void }) => {
       setTimer(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          onComplete();
+          setShowFinal(true);
           return 0;
         }
         return prev - 1;
@@ -111,16 +120,50 @@ export const MatchRadar = ({ onComplete }: { onComplete: () => void }) => {
       cancelAnimationFrame(animationFrame);
       clearInterval(interval);
     };
-  }, [onComplete]);
+  }, []);
+
+  useEffect(() => {
+    if (showFinal) {
+      const timeout = setTimeout(() => {
+        onComplete();
+      }, 2500);
+      return () => clearTimeout(timeout);
+    }
+  }, [showFinal, onComplete]);
 
   return (
     <div className="flex flex-col items-center gap-4 w-full px-4">
       <div className="text-xl font-headline text-accent animate-pulse uppercase tracking-tighter font-bold">MATCH SIMULATION</div>
-      <div className="relative premium-glass p-1 slanted-container w-full max-w-[320px] aspect-[3/2] border-white/10">
+      <div className="relative premium-glass p-1 slanted-container w-full max-w-[320px] aspect-[3/2] border-white/10 overflow-hidden">
         <canvas ref={canvasRef} width={300} height={200} className="w-full h-full rounded bg-black/40" />
+        
+        {showFinal && (
+          <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 z-50">
+            <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-white/40 mb-2">Full Time Result</div>
+            <div className={cn(
+              "text-4xl font-headline font-black uppercase italic tracking-tighter scale-125",
+              result === 'win' ? "text-primary" : result === 'draw' ? "text-white/60" : "text-destructive"
+            )}>
+              {result === 'win' ? "VICTORY" : result === 'draw' ? "STALEMATE" : "DEFEAT"}
+            </div>
+            <div className="mt-4 flex gap-4 text-xs font-headline font-bold uppercase opacity-80">
+              <span className={result === 'win' ? "text-primary" : ""}>3 PTS</span>
+              <span className="opacity-20">|</span>
+              <span className={result === 'draw' ? "text-white" : ""}>1 PT</span>
+              <span className="opacity-20">|</span>
+              <span className={result === 'loss' ? "text-destructive" : ""}>0 PTS</span>
+            </div>
+          </div>
+        )}
+
         <div className="absolute top-2 right-4 font-headline text-white/50 text-[10px]">{timer}S REMAINING</div>
       </div>
-      <div className="text-[10px] font-headline tracking-widest opacity-50 uppercase">RADIR™ Live Tactical Feed</div>
+      
+      <div className="text-center h-8 flex items-center justify-center">
+        <p className="text-[10px] font-headline tracking-widest text-white/60 uppercase font-black italic animate-in fade-in slide-in-from-bottom-2 duration-700">
+          {getCommentary(timer)}
+        </p>
+      </div>
     </div>
   );
 };

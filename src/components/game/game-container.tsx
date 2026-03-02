@@ -20,6 +20,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [currentScenario, setCurrentScenario] = useState<AiScenarioPresentationOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [pendingResult, setPendingResult] = useState<'win' | 'draw' | 'loss' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const isFetchingRef = useRef(false);
 
@@ -84,15 +85,18 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setCurrentScenario(null);
 
     if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
+      setPendingResult(calculateMatchResult(newState));
       setIsSimulating(true);
     }
   };
 
   const onMatchComplete = () => {
-    if (!state || !activeConfig) return;
+    if (!state || !activeConfig || !pendingResult) return;
 
     setIsSimulating(false);
-    const result = calculateMatchResult(state);
+    const result = pendingResult;
+    setPendingResult(null);
+    
     const newMatchesPlayed = state.matchesPlayed + 1;
     const ptsEarned = result === 'win' ? 3 : result === 'draw' ? 1 : 0;
     
@@ -258,7 +262,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4 relative overflow-hidden">
         {isSimulating ? (
-          <MatchRadar onComplete={onMatchComplete} />
+          <MatchRadar result={pendingResult} onComplete={onMatchComplete} />
         ) : (
           <div className="w-full flex-1 flex items-center justify-center relative">
             {loading ? (
