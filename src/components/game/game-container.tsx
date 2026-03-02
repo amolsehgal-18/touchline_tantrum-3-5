@@ -43,7 +43,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     } finally {
       setLoading(false);
     }
-  }, [state, loading]);
+  }, [state.boardSupport, state.fanSupport, state.dressingRoom, state.aggression, state.userTeam, state.currentLeaguePosition, state.sagaObjective, state.objectiveMet, state.history, state.isSacked, loading]);
 
   useEffect(() => {
     if (!currentScenario && !isSimulating && !state.isSacked && !loading && !error) {
@@ -83,9 +83,9 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setState(prev => {
       const newState = {
         ...prev,
-        boardSupport: Math.min(1, Math.max(0, prev.boardSupport + impact.board / 100)),
-        fanSupport: Math.min(1, Math.max(0, prev.fanSupport + impact.fans / 100)),
-        dressingRoom: Math.min(1, Math.max(0, prev.dressingRoom + impact.squad / 100)),
+        boardSupport: Math.min(1, Math.max(0, prev.boardSupport + (impact.board / 100))),
+        fanSupport: Math.min(1, Math.max(0, prev.fanSupport + (impact.fans / 100))),
+        dressingRoom: Math.min(1, Math.max(0, prev.dressingRoom + (impact.squad / 100))),
         aggression: Math.min(1, Math.max(0.1, prev.aggression + impact.aggression)),
         cardsSeen: prev.cardsSeen + 1,
         history: [...prev.history, currentScenario.scenario],

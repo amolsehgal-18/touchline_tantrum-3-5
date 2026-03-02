@@ -49,7 +49,7 @@ export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentation
 
 // Helper to get a random aggression impact within the specified range (-0.1 to 0.1)
 const getRandomAggressionImpact = (): number => {
-  return Math.random() * 0.2 - 0.1;
+  return (Math.random() * 0.2 - 0.1);
 };
 
 const aiScenarioPresentationPrompt = ai.definePrompt({
@@ -114,6 +114,11 @@ const aiScenarioPresentationFlow = ai.defineFlow(
       (card) => !input.excludedScenarioTexts.includes(card.scenarioText)
     );
 
+    // Fallback: If all scenarios used, reset or pick any
+    if (eligibleScenarios.length === 0) {
+      eligibleScenarios = SCENARIO_CARDS;
+    }
+
     // Apply stat-awareness filtering based on current game state.
     const { boardSupport, dressingRoom } = input;
     let prioritizedScenarios: ScenarioCardData[] = [];
@@ -135,13 +140,7 @@ const aiScenarioPresentationFlow = ai.defineFlow(
     let finalScenarios = prioritizedScenarios.length > 0 ? prioritizedScenarios : eligibleScenarios;
 
     if (finalScenarios.length === 0) {
-      finalScenarios = SCENARIO_CARDS.filter(
-        (card) => !input.excludedScenarioTexts.includes(card.scenarioText)
-      );
-    }
-
-    if (finalScenarios.length === 0) {
-        throw new Error('No eligible scenarios found.');
+      finalScenarios = SCENARIO_CARDS;
     }
 
     const selectedScenario = finalScenarios[Math.floor(Math.random() * finalScenarios.length)];
