@@ -2,32 +2,32 @@
   "placeholderImages": [
     {
       "id": "manager-happy",
-      "description": "A successful football manager celebrating a massive victory",
-      "imageUrl": "https://images.unsplash.com/photo-1590402494628-9b9acf0b90ae?q=80&w=1080&auto=format&fit=crop",
+      "description": "A successful football manager celebrating a massive victory with fans",
+      "imageUrl": "https://images.unsplash.com/photo-1762919097239-8f3a1273c19a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjZWxlYnJhdGluZyUyMG1hbmFnZXJ8ZW58MHx8fHwxNzcyNDg4NDY1fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "celebrating manager"
     },
     {
       "id": "manager-neutral",
-      "description": "A composed manager looking out onto the pitch",
-      "imageUrl": "https://images.unsplash.com/photo-1631490238089-dd6f432133be?q=80&w=1080&auto=format&fit=crop",
+      "description": "A composed manager looking out onto the pitch during a match",
+      "imageUrl": "https://images.unsplash.com/photo-1665822814047-6ef8249da90e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxmb290YmFsbCUyMGNvYWNofGVufDB8fHx8MTc3MjQ4ODQ2NXww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "football coach"
     },
     {
       "id": "manager-stressed",
-      "description": "A stressed manager checking his watch on the touchline",
-      "imageUrl": "https://images.unsplash.com/photo-1686942165866-bf3dc1dfa842?q=80&w=1080&auto=format&fit=crop",
+      "description": "A stressed manager checking his watch anxiously on the touchline",
+      "imageUrl": "https://images.unsplash.com/photo-1750698545009-679820502908?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzdHJlc3NlZCUyMGNvYWNofGVufDB8fHx8MTc3MjQ4NDU5Mnww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "stressed coach"
     },
     {
       "id": "manager-angry",
-      "description": "A manager shouting tactical instructions to his team",
-      "imageUrl": "https://images.unsplash.com/photo-1713947505562-299114c58523?q=80&w=1080&auto=format&fit=crop",
+      "description": "A manager shouting tactical instructions to his team in frustration",
+      "imageUrl": "https://images.unsplash.com/photo-1721734081214-1be31adce713?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhbmdyeSUyMG1hbmFnZXJ8ZW58MHx8fHwxNzcyNDg0NTkyfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "angry manager"
     },
     {
       "id": "manager-sacked",
-      "description": "A dejected manager leaving the training ground for the last time",
-      "imageUrl": "https://images.unsplash.com/photo-1713947505646-64696c21e3ca?q=80&w=1080&auto=format&fit=crop",
+      "description": "A dejected manager leaving the training ground after dismissal",
+      "imageUrl": "https://images.unsplash.com/photo-1563257263-1e354cbf41b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxzYWQlMjBjb2FjaHxlbnwwfHx8fDE3NzI0ODg0NjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "sad coach"
     }
   ]

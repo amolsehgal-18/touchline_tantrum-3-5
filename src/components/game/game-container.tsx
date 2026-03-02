@@ -85,7 +85,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     saveGameLocally(newState);
     setCurrentScenario(null);
 
-    // Every 3 swipes (6 days) triggers a match
     if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
       const table = getLeagueTable(newState);
       const possibleOpponents = table.filter(t => !t.isUser);
@@ -234,24 +233,32 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           <span className="text-[10px] font-headline uppercase opacity-50">Matchday {activeConfig!.startGW + state.matchesPlayed}</span>
         </div>
         <div className="flex flex-col gap-0.5">
-          <div className="grid grid-cols-[30px_1fr_40px_40px] items-center px-2 py-1 text-[8px] font-headline uppercase opacity-40 border-b border-white/5 mb-1">
-            <span>#</span>
-            <span>Name</span>
-            <span className="text-right">G</span>
-            <span className="text-right">P</span>
+          <div className="flex justify-between items-center px-2 py-1 text-[8px] font-headline uppercase opacity-40 border-b border-white/5 mb-1">
+            <div className="flex gap-4">
+              <span className="w-4">#</span>
+              <span>Name</span>
+            </div>
+            <div className="flex gap-6 pr-1">
+              <span>G</span>
+              <span>P</span>
+            </div>
           </div>
           {windowedLeagueTable.map((team) => (
             <div 
               key={team.team} 
               className={cn(
-                "grid grid-cols-[30px_1fr_40px_40px] items-center px-2 py-1 rounded text-[9px] transition-colors border",
+                "flex justify-between items-center px-2 py-1.5 rounded text-[9px] transition-colors border",
                 team.isUser ? "bg-primary/20 border-primary/50" : "bg-white/5 border-transparent"
               )}
             >
-              <span className="font-headline opacity-50">{team.pos}</span>
-              <span className={cn("font-bold truncate", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
-              <span className="text-right opacity-40">{team.gp}</span>
-              <span className="text-right font-bold">{team.pts}</span>
+              <div className="flex items-center gap-4 min-w-0">
+                <span className="font-headline opacity-50 w-4">{team.pos}</span>
+                <span className={cn("font-bold truncate max-w-[120px]", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
+              </div>
+              <div className="flex items-center gap-6 pr-1">
+                <span className="opacity-40">{team.gp}</span>
+                <span className="font-bold w-4 text-right">{team.pts}</span>
+              </div>
             </div>
           ))}
         </div>

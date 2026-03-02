@@ -47,7 +47,8 @@ export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
     <div className="relative flex flex-col items-center" style={{ width: size }}>
       <svg width={size} height={size / 2 + 10} className="overflow-visible">
         {drawArc(board, 50, "hsl(var(--primary))", "board")}
-        {drawArc(fans, 35, "hsl(var(--destructive))", "fans")}
+        {/* Fan support set to Red as requested */}
+        {drawArc(fans, 35, "#ef4444", "fans")}
       </svg>
       
       <div className="grid grid-cols-2 gap-3 text-[10px] font-headline uppercase tracking-wider mt-2 w-full px-1">
@@ -56,7 +57,7 @@ export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
           <span className="opacity-40 text-[7px] font-black">Board</span>
         </div>
         <div className="flex flex-col items-center pl-2">
-          <span className="text-destructive font-black">{Math.round(fans * 100)}%</span>
+          <span className="text-[#ef4444] font-black">{Math.round(fans * 100)}%</span>
           <span className="opacity-40 text-[7px] font-black">Fans</span>
         </div>
       </div>
