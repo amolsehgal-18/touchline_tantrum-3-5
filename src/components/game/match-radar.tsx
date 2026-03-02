@@ -69,7 +69,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       vx: 0,
       vy: 0,
       team: i < 11 ? 'user' : 'opp',
-      color: i < 11 ? '#ef4444' : '#226be0', 
+      color: i < 11 ? '#ef4444' : '#226be0', // Red vs Blue
       baseX: i < 11 ? 50 + Math.random() * 100 : canvas.width - 150 + Math.random() * 100,
       baseY: Math.random() * canvas.height,
     }));
@@ -123,7 +123,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.99; 
+        ball.vx *= 0.99; // Friction
         ball.vy *= 0.99;
 
         if (ball.x < 10 || ball.x > canvas.width - 10) ball.vx *= -1;

@@ -41,7 +41,7 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
   };
 
   const rotation = dragX / 10;
-  const swipeProgress = Math.min(Math.abs(dragX) / 15, 1); // Colors pop sooner (15px)
+  const swipeProgress = Math.min(Math.abs(dragX) / 15, 1); // Colors pop much sooner (15px)
   const isLeft = dragX < 0;
   const isRight = dragX > 0;
 
@@ -75,7 +75,7 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
 
           <div className="space-y-3">
             <div className="text-[10px] font-headline uppercase tracking-[0.3em] text-accent font-black opacity-80">Tactical Briefing</div>
-            <p className="text-sm leading-snug font-headline font-medium text-white tracking-tight">
+            <p className="text-[13px] leading-snug font-headline font-medium text-white tracking-tight">
               {scenario.scenario}
             </p>
           </div>

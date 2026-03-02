@@ -153,12 +153,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     saveGameLocally(newState);
   };
 
-  const startNewCareer = (mode: CareerMode, durationIndex: number) => {
-    const newState = INITIAL_STATE(mode, durationIndex, managerName, clubName);
-    setState(newState);
-    saveGameLocally(newState);
-  };
-
   const windowedLeagueTable = useMemo(() => {
     if (!state) return [];
     const fullTable = getLeagueTable(state);
@@ -184,99 +178,16 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   ], [state]);
 
   if (!state) {
-    if (setupMode) {
-      const mode = CAREER_MODES[setupMode];
-      return (
-        <div className="flex flex-col h-screen max-w-md mx-auto bg-background p-6 overflow-y-auto">
-          <button 
-            onClick={() => setSetupMode(null)}
-            className="flex items-center gap-2 text-white/50 mb-8 hover:text-accent transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" /> Back to Modes
-          </button>
-          
-          <div className="space-y-6 mb-8">
-            <h2 className="text-3xl font-headline font-bold text-accent uppercase">{mode.name}</h2>
-            
-            <SlantedContainer className="space-y-4 border-white/5">
-              <div className="space-y-1">
-                <label className="text-[10px] font-headline uppercase opacity-40">Manager Identity</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" />
-                  <Input 
-                    value={managerName} 
-                    onChange={(e) => setManagerName(e.target.value)}
-                    className="pl-10 bg-white/5 border-white/10 font-headline uppercase text-sm"
-                    placeholder="Enter Name..."
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-headline uppercase opacity-40">Club Reputation</label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" />
-                  <Input 
-                    value={clubName} 
-                    onChange={(e) => setClubName(e.target.value)}
-                    className="pl-10 bg-white/5 border-white/10 font-headline uppercase text-sm"
-                    placeholder="Enter Club..."
-                  />
-                </div>
-              </div>
-            </SlantedContainer>
-          </div>
-
-          <div className="grid gap-4">
-            <label className="text-[10px] font-headline uppercase opacity-40 px-2">Select Campaign Length</label>
-            {mode.durations.map((d, i) => (
-              <button 
-                key={i}
-                onClick={() => startNewCareer(setupMode, i)}
-                className="text-left p-6 premium-glass slanted-container border-white/10 hover:border-primary/50 transition-all group"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-lg font-headline font-bold uppercase">{d.label}</h3>
-                    <div className="flex gap-4 text-[10px] font-headline opacity-40 uppercase mt-2">
-                      <span>{d.matches} Matches</span>
-                      <span>Target: Top {d.target}</span>
-                    </div>
-                  </div>
-                  <Calendar className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
     return (
-      <div className="flex flex-col h-screen max-w-md mx-auto bg-background p-6 overflow-y-auto">
-        <h2 className="text-3xl font-headline font-bold mb-8 text-accent uppercase">Select Career Path</h2>
-        <div className="grid gap-4">
-          {(Object.keys(CAREER_MODES) as CareerMode[]).map((modeKey) => {
-            const m = CAREER_MODES[modeKey];
-            const Icon = modeKey === 'title' ? Trophy : modeKey === 'top4' ? Target : modeKey === 'relegation' ? Shield : Calendar;
-            return (
-              <button 
-                key={modeKey}
-                onClick={() => setSetupMode(modeKey)}
-                className="text-left p-6 premium-glass slanted-container border-white/10 hover:border-primary/50 transition-all group"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-white/5 rounded-lg group-hover:bg-primary/20 transition-colors">
-                    <Icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-headline font-bold uppercase">{m.name}</h3>
-                    <p className="text-xs text-white/50">{m.description}</p>
-                  </div>
-                </div>
-              </button>
-            )
-          })}
-        </div>
+      <div className="flex flex-col h-screen max-w-md mx-auto bg-background p-6 items-center justify-center">
+        <h1 className="text-4xl font-headline font-bold text-accent uppercase mb-8">Touchline Tantrum</h1>
+        <SlantedButton onClick={() => {
+          const s = INITIAL_STATE('season', 0);
+          setState(s);
+          saveGameLocally(s);
+        }} className="w-full">
+          Start Career
+        </SlantedButton>
       </div>
     );
   }
@@ -305,6 +216,19 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           </span>
           <span className="text-[10px] font-headline uppercase opacity-50">Matchday {currentGW}</span>
         </div>
+        
+        {/* Table Headers */}
+        <div className="flex justify-between items-center px-2 py-1 text-[8px] font-headline uppercase opacity-40 border-b border-white/5 mb-1">
+          <div className="flex gap-3">
+            <span className="w-3">#</span>
+            <span>Name</span>
+          </div>
+          <div className="flex gap-5 pr-1">
+            <span className="w-3 text-center">G</span>
+            <span className="w-4 text-right">P</span>
+          </div>
+        </div>
+
         <div className="flex flex-col gap-0.5">
           {windowedLeagueTable.map((team) => (
             <div 
@@ -397,7 +321,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         <div className="p-4 space-y-2">
           <div className="flex justify-between items-center px-1">
             <div className="text-[10px] font-headline uppercase opacity-50 font-black">Squad Aggression</div>
-            <div className="text-[10px] font-headline uppercase opacity-50 font-black">Tactical Window</div>
+            <div className="text-[10px] font-headline uppercase opacity-50 font-black">Decision Window</div>
           </div>
 
           {/* 15-Second Progress Timer Bar */}
