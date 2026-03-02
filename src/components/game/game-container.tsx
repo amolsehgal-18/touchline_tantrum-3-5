@@ -11,7 +11,7 @@ import { SwipeCard } from './swipe-card';
 import { SeasonSummary } from './season-summary';
 import { getAiScenarioPresentation } from '@/ai/flows/ai-scenario-presentation-flow';
 import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar, ChevronLeft, User, Users, Clock } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar, ChevronLeft, User, Users, Clock, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
@@ -23,6 +23,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [currentScenario, setCurrentScenario] = useState<AiScenarioPresentationOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [matchIntro, setMatchIntro] = useState(false);
   const [pendingResult, setPendingResult] = useState<'win' | 'draw' | 'loss' | null>(null);
   const [opponentName, setOpponentName] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -65,16 +66,18 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setOpponentName(opp);
       setPendingResult(calculateMatchResult(newState));
       
-      // Brief delay before match starts so user sees the final stat impact
+      // Brief transition period
+      setMatchIntro(true);
       setTimeout(() => {
+        setMatchIntro(false);
         setIsSimulating(true);
-      }, 1500);
+      }, 2000);
     }
   }, [currentScenario, state]);
 
   // Timer Effect
   useEffect(() => {
-    if (!currentScenario || isSimulating || loading || error || state?.isSacked || state?.isSeasonEnd) return;
+    if (!currentScenario || isSimulating || matchIntro || loading || error || state?.isSacked || state?.isSeasonEnd) return;
 
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
@@ -87,10 +90,10 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [currentScenario, isSimulating, loading, error, state?.isSacked, state?.isSeasonEnd, handleDecision]);
+  }, [currentScenario, isSimulating, matchIntro, loading, error, state?.isSacked, state?.isSeasonEnd, handleDecision]);
 
   const fetchScenario = useCallback(async () => {
-    if (!state || state.isSacked || state.isSeasonEnd || isFetchingRef.current || isSimulating) return;
+    if (!state || state.isSacked || state.isSeasonEnd || isFetchingRef.current || isSimulating || matchIntro) return;
     
     isFetchingRef.current = true;
     setLoading(true);
@@ -115,13 +118,13 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [state, activeConfig, isSimulating]);
+  }, [state, activeConfig, isSimulating, matchIntro]);
 
   useEffect(() => {
-    if (state && !currentScenario && !isSimulating && !state.isSacked && !state.isSeasonEnd && !loading && !error) {
+    if (state && !currentScenario && !isSimulating && !matchIntro && !state.isSacked && !state.isSeasonEnd && !loading && !error) {
       fetchScenario();
     }
-  }, [state, currentScenario, isSimulating, loading, error, fetchScenario]);
+  }, [state, currentScenario, isSimulating, matchIntro, loading, error, fetchScenario]);
 
   const onMatchComplete = () => {
     if (!state || !activeConfig || !pendingResult) return;
@@ -333,6 +336,29 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4 relative overflow-hidden">
+        {matchIntro && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/90 backdrop-blur-xl animate-in fade-in duration-500">
+             <div className="space-y-2 text-center">
+                <Zap className="w-12 h-12 text-accent mx-auto animate-bounce" />
+                <h2 className="text-4xl font-headline font-black uppercase italic text-white tracking-tighter">
+                  MATCHDAY
+                </h2>
+                <div className="text-[10px] font-headline uppercase tracking-[0.5em] text-accent/80">Preparing Tactics</div>
+             </div>
+             <div className="mt-8 flex items-center gap-4">
+                <div className="text-right">
+                  <div className="text-[10px] font-headline uppercase opacity-40">Opponent</div>
+                  <div className="text-lg font-headline font-black uppercase text-white">{opponentName}</div>
+                </div>
+                <div className="w-px h-10 bg-white/10" />
+                <div className="text-left">
+                  <div className="text-[10px] font-headline uppercase opacity-40">Location</div>
+                  <div className="text-lg font-headline font-black uppercase text-accent">Away Grounds</div>
+                </div>
+             </div>
+          </div>
+        )}
+
         {isSimulating ? (
           <MatchRadar 
             userTeam={state.userTeam}
@@ -355,7 +381,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
               </div>
             ) : currentScenario ? (
               <div className="relative w-full h-full flex flex-col items-center justify-center">
-                {/* Visual Timer */}
                 <div className="absolute top-0 left-0 right-0 flex justify-center z-50">
                    <div className={cn(
                      "flex items-center gap-2 px-4 py-1 slanted-container text-[10px] font-headline font-black uppercase tracking-widest",
