@@ -49,7 +49,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [state]);
+  }, [state.boardSupport, state.fanSupport, state.dressingRoom, state.aggression, state.userTeam, state.currentLeaguePosition, state.sagaObjective, state.objectiveMet, state.history, state.isSacked]);
 
   useEffect(() => {
     if (!currentScenario && !isSimulating && !state.isSacked && !loading && !error) {
