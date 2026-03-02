@@ -1,12 +1,13 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, calculateWinProbability } from '@/lib/game-logic';
+import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds } from '@/lib/game-logic';
 import { SlantedContainer, StatBar, SlantedButton } from './slanted-elements';
 import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
 import { getAiScenarioPresentation, AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { Trophy, RefreshCw, AlertTriangle, ShieldCheck, Share2 } from 'lucide-react';
+import { RefreshCw, Share2 } from 'lucide-react';
 
 export const GameContainer = ({ initialState }: { initialState?: GameState }) => {
   const [state, setState] = useState<GameState>(initialState || INITIAL_STATE);
@@ -14,7 +15,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [loading, setLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [timer, setTimer] = useState(15);
-  const [lastMatchResult, setLastMatchResult] = useState<'win' | 'draw' | 'loss' | null>(null);
 
   const fetchScenario = useCallback(async () => {
     if (state.isSacked) return;
@@ -41,13 +41,13 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   }, [state]);
 
   useEffect(() => {
-    if (!currentScenario && !isSimulating && !state.isSacked) {
+    if (!currentScenario && !isSimulating && !state.isSacked && !loading) {
       fetchScenario();
     }
-  }, [currentScenario, isSimulating, state.isSacked, fetchScenario]);
+  }, [currentScenario, isSimulating, state.isSacked, fetchScenario, loading]);
 
   useEffect(() => {
-    if (currentScenario && !isSimulating) {
+    if (currentScenario && !isSimulating && !loading) {
       const interval = setInterval(() => {
         setTimer(t => {
           if (t <= 1) {
@@ -59,7 +59,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [currentScenario, isSimulating]);
+  }, [currentScenario, isSimulating, loading]);
 
   const handleDecision = (side: 'left' | 'right') => {
     if (!currentScenario) return;
@@ -95,7 +95,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   const onMatchComplete = (result: 'win' | 'draw' | 'loss') => {
     setIsSimulating(false);
-    setLastMatchResult(result);
     setState(prev => {
       const newState = {
         ...prev,
@@ -142,9 +141,9 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   }
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden">
+    <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background">
       {/* Header / Tension Triangle */}
-      <div className="p-4 space-y-4 premium-glass border-b border-white/5 bg-black/20">
+      <div className="p-4 space-y-4 premium-glass border-b border-white/5 bg-black/20 z-30">
         <div className="flex justify-between items-center">
           <div className="font-headline text-lg tracking-tight uppercase">Dashboard</div>
           <div className="flex gap-4">
@@ -162,83 +161,93 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 overflow-y-auto">
         {isSimulating ? (
           <MatchRadar onComplete={onMatchComplete} />
         ) : (
           <>
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-4 transition-all duration-500">
               <ManagerMoodView mood={mood} />
               <div className="text-center">
-                <h2 className="font-headline text-xl text-white uppercase">{state.userTeam}</h2>
-                <div className="text-[10px] font-headline text-accent uppercase tracking-widest">
+                <h2 className="font-headline text-xl text-white uppercase tracking-tight">{state.userTeam}</h2>
+                <div className="text-[10px] font-headline text-accent uppercase tracking-[0.2em] opacity-80">
                   Position {state.currentLeaguePosition} • {state.sagaObjective}
                 </div>
               </div>
             </div>
 
-            {loading ? (
-              <div className="flex flex-col items-center gap-2">
-                <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-                <span className="text-[10px] font-headline uppercase opacity-50">Transmitting Intel...</span>
-              </div>
-            ) : currentScenario ? (
-              <SlantedContainer className="w-full relative scanline">
-                {currentScenario.isBreaking && (
-                  <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-2 py-0.5 z-20">BREAKING NEWS</div>
-                )}
-                <div className="space-y-4">
-                  <p className="text-lg leading-tight font-medium">{currentScenario.scenario}</p>
-                  
-                  <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-accent transition-all duration-1000" 
-                      style={{ width: `${(timer / 15) * 100}%` }}
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <SlantedButton 
-                      onClick={() => handleDecision('left')}
-                      className="bg-white/10 hover:bg-white/20 border border-white/20 text-xs text-left justify-start"
-                    >
-                      {currentScenario.leftOption}
-                    </SlantedButton>
-                    <SlantedButton 
-                      onClick={() => handleDecision('right')}
-                      className="bg-primary/20 hover:bg-primary/30 border border-primary/50 text-xs text-left justify-start"
-                    >
-                      {currentScenario.rightOption}
-                    </SlantedButton>
+            <div className="w-full min-h-[320px] flex items-center justify-center">
+              {loading ? (
+                <div className="flex flex-col items-center gap-4 p-8 bg-white/5 rounded-xl border border-white/10 w-full animate-pulse">
+                  <RefreshCw className="w-10 h-10 animate-spin text-primary" />
+                  <div className="space-y-2 text-center">
+                    <span className="text-xs font-headline uppercase tracking-widest text-primary">Transmitting Intel</span>
+                    <p className="text-[10px] opacity-40 uppercase font-headline">Analyzing Squad Morale & Board Trust...</p>
                   </div>
                 </div>
-              </SlantedContainer>
-            ) : null}
+              ) : currentScenario ? (
+                <SlantedContainer className="w-full relative scanline animate-in fade-in zoom-in duration-300">
+                  {currentScenario.isBreaking && (
+                    <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-3 py-1 z-20 skew-x-[-20deg] origin-top-right">
+                      BREAKING NEWS
+                    </div>
+                  )}
+                  <div className="space-y-6">
+                    <p className="text-lg leading-snug font-medium tracking-tight">{currentScenario.scenario}</p>
+                    
+                    <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-accent transition-all duration-1000 ease-linear" 
+                        style={{ width: `${(timer / 15) * 100}%` }}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                      <SlantedButton 
+                        onClick={() => handleDecision('left')}
+                        className="bg-white/5 hover:bg-white/15 border border-white/10 text-xs text-left justify-start py-4 h-auto"
+                      >
+                        {currentScenario.leftOption}
+                      </SlantedButton>
+                      <SlantedButton 
+                        onClick={() => handleDecision('right')}
+                        className="bg-primary/10 hover:bg-primary/25 border border-primary/30 text-xs text-left justify-start py-4 h-auto"
+                      >
+                        {currentScenario.rightOption}
+                      </SlantedButton>
+                    </div>
+                  </div>
+                </SlantedContainer>
+              ) : null}
+            </div>
           </>
         )}
       </div>
 
       {/* Footer / Aggression & Odds */}
-      <div className="p-6 premium-glass mt-auto bg-black/40">
+      <div className="p-6 premium-glass mt-auto bg-black/40 border-t border-white/5 z-30">
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-end">
             <div>
-              <div className="text-[10px] font-headline uppercase opacity-50">Match Odds</div>
+              <div className="text-[10px] font-headline uppercase opacity-50 tracking-widest">Match Odds</div>
               <div className="font-headline text-lg tracking-tighter">
-                <span className="text-blue-400">{odds.win}</span>
-                <span className="mx-2 text-white/20">|</span>
+                <span className="text-blue-400 font-bold">{odds.win}</span>
+                <span className="mx-2 text-white/10">/</span>
                 <span className="text-white/40">{odds.draw}</span>
-                <span className="mx-2 text-white/20">|</span>
-                <span className="text-orange-400">{odds.loss}</span>
+                <span className="mx-2 text-white/10">/</span>
+                <span className="text-orange-400 font-bold">{odds.loss}</span>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-[10px] font-headline uppercase opacity-50">Tactical Aggression</div>
-              <div className="text-xl font-headline text-primary">{Math.round(state.aggression * 100)}%</div>
+              <div className="text-[10px] font-headline uppercase opacity-50 tracking-widest">Team Aggression</div>
+              <div className="text-xl font-headline text-primary font-bold">{Math.round(state.aggression * 100)}%</div>
             </div>
           </div>
-          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-             <div className="h-full bg-primary" style={{ width: `${state.aggression * 100}%` }} />
+          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+             <div 
+              className="h-full bg-primary transition-all duration-1000" 
+              style={{ width: `${state.aggression * 100}%` }} 
+             />
           </div>
         </div>
       </div>

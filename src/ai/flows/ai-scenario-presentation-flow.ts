@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for generating dynamic, context-aware scenarios for the Touchline Tantrum game.
@@ -115,7 +116,7 @@ const aiScenarioPresentationFlow = ai.defineFlow(
     );
 
     // Apply stat-awareness filtering based on current game state.
-    const { boardSupport, dressingRoom, objectiveMet } = input;
+    const { boardSupport, dressingRoom } = input;
     let prioritizedScenarios: ScenarioCardData[] = [];
 
     // Prioritize crises if Board Trust is low
@@ -162,8 +163,8 @@ const aiScenarioPresentationFlow = ai.defineFlow(
 
     const promptInput = {
       scenario: selectedScenario.scenarioText,
-      leftOption: selectedScenario.leftOption,
-      rightOption: selectedScenario.rightOption,
+      leftOption: selectedScenario.leftOptionText,
+      rightOption: selectedScenario.rightOptionText,
       impactLeft: impactLeft,
       impactRight: impactRight,
       imageCategory: selectedScenario.imageCategory,
