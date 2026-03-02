@@ -1,54 +1,51 @@
-export type CareerMode = 'title' | 'top4' | 'relegation' | 'season19' | 'season38';
+export type CareerMode = 'title' | 'top4' | 'relegation' | 'season';
 
 export interface CareerConfig {
   id: CareerMode;
   name: string;
-  duration: number;
-  target: number;
-  startGW: number;
   description: string;
+  durations: { label: string; matches: number; target: number; startGW: number }[];
 }
 
 export const CAREER_MODES: Record<CareerMode, CareerConfig> = {
   title: { 
     id: 'title',
     name: "League Title", 
-    duration: 8, 
-    target: 1, 
-    startGW: 30, 
-    description: "Win the league or you're out. Zero tolerance." 
+    description: "Win the league or you're out. Zero tolerance.",
+    durations: [
+      { label: "Short Burst (5)", matches: 5, target: 1, startGW: 33 },
+      { label: "Final Push (10)", matches: 10, target: 1, startGW: 28 },
+      { label: "Full Campaign", matches: 38, target: 1, startGW: 1 }
+    ]
   },
   top4: { 
     id: 'top4',
     name: "Top 4 $$", 
-    duration: 10, 
-    target: 4, 
-    startGW: 28, 
-    description: "Champions League qualification is the only goal." 
+    description: "Champions League qualification is the only goal.",
+    durations: [
+      { label: "Final Stretch (8)", matches: 8, target: 4, startGW: 30 },
+      { label: "Race for CL (15)", matches: 15, target: 4, startGW: 23 },
+      { label: "Long Haul (38)", matches: 38, target: 4, startGW: 1 }
+    ]
   },
   relegation: { 
     id: 'relegation',
     name: "Relegation Battle", 
-    duration: 6, 
-    target: 17, 
-    startGW: 32, 
-    description: "Keep them up by any means necessary." 
+    description: "Keep them up by any means necessary.",
+    durations: [
+      { label: "Great Escape (6)", matches: 6, target: 17, startGW: 32 },
+      { label: "Survival Run (12)", matches: 12, target: 17, startGW: 26 },
+      { label: "Bottom Half Fight", matches: 20, target: 17, startGW: 18 }
+    ]
   },
-  season19: { 
-    id: 'season19',
-    name: "Full Season (Half)", 
-    duration: 19, 
-    target: 10, 
-    startGW: 20, 
-    description: "Take over for the second half of the campaign." 
-  },
-  season38: { 
-    id: 'season38',
-    name: "Full Season (38)", 
-    duration: 38, 
-    target: 10, 
-    startGW: 1, 
-    description: "The long haul. From Matchday 1 to 38." 
+  season: { 
+    id: 'season',
+    name: "Full Season", 
+    description: "Classic managerial campaign.",
+    durations: [
+      { label: "Half Season (19)", matches: 19, target: 10, startGW: 20 },
+      { label: "Full 38 Games", matches: 38, target: 10, startGW: 1 }
+    ]
   },
 };
 
@@ -62,6 +59,7 @@ export type LeagueTeam = {
 
 export type GameState = {
   mode: CareerMode;
+  durationIndex: number;
   boardSupport: number;
   fanSupport: number;
   dressingRoom: number;
@@ -79,24 +77,28 @@ export type GameState = {
   history: string[];
 };
 
-export const INITIAL_STATE = (mode: CareerMode = 'top4'): GameState => ({
-  mode,
-  boardSupport: 0.5,
-  fanSupport: 0.5,
-  dressingRoom: 0.5,
-  aggression: 0.3,
-  userTeam: "United FC",
-  currentLeaguePosition: CAREER_MODES[mode].target + 2,
-  cardsSeen: 0,
-  matchesPlayed: 0,
-  wins: 0,
-  draws: 0,
-  losses: 0,
-  points: 0,
-  isSacked: false,
-  isSeasonEnd: false,
-  history: [],
-});
+export const INITIAL_STATE = (mode: CareerMode, durationIndex: number): GameState => {
+  const config = CAREER_MODES[mode].durations[durationIndex];
+  return {
+    mode,
+    durationIndex,
+    boardSupport: 0.5,
+    fanSupport: 0.5,
+    dressingRoom: 0.5,
+    aggression: 0.3,
+    userTeam: "United FC",
+    currentLeaguePosition: config.target + 2,
+    cardsSeen: 0,
+    matchesPlayed: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    points: 0,
+    isSacked: false,
+    isSeasonEnd: false,
+    history: [],
+  };
+};
 
 export type ManagerMood = 'happy' | 'neutral' | 'stressed' | 'angry' | 'sacked';
 
@@ -117,7 +119,8 @@ export function getMatchOdds(aggression: number) {
 }
 
 export function getLeagueTable(state: GameState): LeagueTeam[] {
-  const config = CAREER_MODES[state.mode];
+  const modeConfig = CAREER_MODES[state.mode];
+  const config = modeConfig.durations[state.durationIndex];
   const teams = [
     "City", "Reds", "London Blue", "North White", "Villa", 
     "Toffees", "Seagulls", "Eagles", "Wolves", "Hammers",
@@ -129,7 +132,6 @@ export function getLeagueTable(state: GameState): LeagueTeam[] {
   
   return teams.map((team, i) => {
     const isUser = team === state.userTeam;
-    // Base points on expected PPG for that position
     const ppg = (20 - i) * 0.12 + 0.5;
     let teamPts = Math.floor(ppg * currentGW);
     

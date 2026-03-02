@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -11,18 +10,19 @@ import { SwipeCard } from './swipe-card';
 import { SeasonSummary } from './season-summary';
 import { getAiScenarioPresentation } from '@/ai/flows/ai-scenario-presentation-flow';
 import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const GameContainer = ({ initialState }: { initialState?: GameState }) => {
   const [state, setState] = useState<GameState | null>(initialState || null);
+  const [selectedMode, setSelectedMode] = useState<CareerMode | null>(null);
   const [currentScenario, setCurrentScenario] = useState<AiScenarioPresentationOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isFetchingRef = useRef(false);
 
-  const config = state ? CAREER_MODES[state.mode] : null;
+  const activeConfig = state ? CAREER_MODES[state.mode].durations[state.durationIndex] : null;
 
   const fetchScenario = useCallback(async () => {
     if (!state || state.isSacked || state.isSeasonEnd || isFetchingRef.current) return;
@@ -39,8 +39,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         aggression: state.aggression,
         userTeam: state.userTeam,
         currentLeaguePosition: state.currentLeaguePosition,
-        sagaObjective: config?.name || "Season",
-        objectiveMet: state.currentLeaguePosition <= (config?.target || 10),
+        sagaObjective: CAREER_MODES[state.mode].name,
+        objectiveMet: state.currentLeaguePosition <= activeConfig!.target,
         excludedScenarioTexts: state.history,
       });
       setCurrentScenario(result);
@@ -50,7 +50,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [state, config]);
+  }, [state, activeConfig]);
 
   useEffect(() => {
     if (state && !currentScenario && !isSimulating && !state.isSacked && !state.isSeasonEnd && !loading && !error) {
@@ -84,7 +84,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   };
 
   const onMatchComplete = (result: 'win' | 'draw' | 'loss') => {
-    if (!state || !config) return;
+    if (!state || !activeConfig) return;
 
     setIsSimulating(false);
     const newMatchesPlayed = state.matchesPlayed + 1;
@@ -97,13 +97,13 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       draws: result === 'draw' ? state.draws + 1 : state.draws,
       losses: result === 'loss' ? state.losses + 1 : state.losses,
       points: state.points + ptsEarned,
-      isSeasonEnd: newMatchesPlayed >= config.duration
+      isSeasonEnd: newMatchesPlayed >= activeConfig.matches
     };
 
     const table = getLeagueTable(newState);
     newState.currentLeaguePosition = table.find(t => t.isUser)?.pos || state.currentLeaguePosition;
 
-    if (newState.isSeasonEnd && newState.currentLeaguePosition > config.target) {
+    if (newState.isSeasonEnd && newState.currentLeaguePosition > activeConfig.target) {
       newState.isSacked = true;
     }
 
@@ -111,13 +111,12 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     saveGameLocally(newState);
   };
 
-  const startNewCareer = (mode: CareerMode) => {
-    const newState = INITIAL_STATE(mode);
+  const startNewCareer = (mode: CareerMode, durationIndex: number) => {
+    const newState = INITIAL_STATE(mode, durationIndex);
     setState(newState);
     saveGameLocally(newState);
   };
 
-  // Live windowed league table (3 teams centered on user)
   const windowedLeagueTable = useMemo(() => {
     if (!state) return [];
     const fullTable = getLeagueTable(state);
@@ -135,6 +134,42 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   }, [state]);
 
   if (!state) {
+    if (selectedMode) {
+      const mode = CAREER_MODES[selectedMode];
+      return (
+        <div className="flex flex-col h-screen max-w-md mx-auto bg-background p-6 overflow-y-auto">
+          <button 
+            onClick={() => setSelectedMode(null)}
+            className="flex items-center gap-2 text-white/50 mb-8 hover:text-accent transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" /> Back to Modes
+          </button>
+          <h2 className="text-3xl font-headline font-bold mb-2 text-accent uppercase">{mode.name}</h2>
+          <p className="text-white/40 mb-8 text-sm">{mode.description}</p>
+          <div className="grid gap-4">
+            {mode.durations.map((d, i) => (
+              <button 
+                key={i}
+                onClick={() => startNewCareer(selectedMode, i)}
+                className="text-left p-6 premium-glass slanted-container border-white/10 hover:border-primary/50 transition-all group"
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-headline font-bold uppercase">{d.label}</h3>
+                    <div className="flex gap-4 text-[10px] font-headline opacity-40 uppercase mt-2">
+                      <span>{d.matches} Matches</span>
+                      <span>Target: Top {d.target}</span>
+                    </div>
+                  </div>
+                  <Calendar className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col h-screen max-w-md mx-auto bg-background p-6 overflow-y-auto">
         <h2 className="text-3xl font-headline font-bold mb-8 text-accent">SELECT CAREER PATH</h2>
@@ -145,7 +180,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             return (
               <button 
                 key={modeKey}
-                onClick={() => startNewCareer(modeKey)}
+                onClick={() => setSelectedMode(modeKey)}
                 className="text-left p-6 premium-glass slanted-container border-white/10 hover:border-primary/50 transition-all group"
               >
                 <div className="flex items-start gap-4">
@@ -154,11 +189,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
                   </div>
                   <div>
                     <h3 className="text-lg font-headline font-bold uppercase">{m.name}</h3>
-                    <p className="text-xs text-white/50 mb-2">{m.description}</p>
-                    <div className="flex gap-4 text-[10px] font-headline opacity-40 uppercase">
-                      <span>{m.duration} Matches</span>
-                      <span>Target: Top {m.target}</span>
-                    </div>
+                    <p className="text-xs text-white/50">{m.description}</p>
                   </div>
                 </div>
               </button>
@@ -178,21 +209,14 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
-      {/* Live Windowed League Table (Compact 3-Team View) */}
       <div className="bg-black/60 border-b border-white/10 p-3 z-40 backdrop-blur-md">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
             <RefreshCw className="w-3 h-3 animate-spin" /> Live Standings
           </span>
-          <span className="text-[10px] font-headline uppercase opacity-50">Matchday {config!.startGW + state.matchesPlayed}</span>
+          <span className="text-[10px] font-headline uppercase opacity-50">Matchday {activeConfig!.startGW + state.matchesPlayed}</span>
         </div>
         <div className="flex flex-col gap-0.5">
-          <div className="grid grid-cols-4 text-[7px] font-headline uppercase opacity-40 px-2 pb-1 border-b border-white/5">
-            <span>Pos</span>
-            <span>Team</span>
-            <span className="text-center">GP</span>
-            <span className="text-right">Pts</span>
-          </div>
           {windowedLeagueTable.map((team) => (
             <div 
               key={team.team} 
@@ -210,8 +234,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
-      {/* Tension Dashboard */}
-      <div className="p-2 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30">
+      <div className="p-4 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30 min-h-[140px]">
         <div className="flex justify-center items-center border-r border-white/5">
           <TensionArcs board={state.boardSupport} fans={state.fanSupport} />
         </div>
@@ -220,7 +243,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
-      {/* Main Game Interface */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4 relative overflow-hidden">
         {isSimulating ? (
           <MatchRadar onComplete={onMatchComplete} />
@@ -247,11 +269,10 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
       </div>
 
-      {/* Stats Footer */}
       <div className="p-4 premium-glass bg-black/60 border-t border-white/10 z-30">
         <div className="flex justify-between items-end mb-3">
           <div className="space-y-1">
-            <div className="text-[10px] font-headline uppercase opacity-50">Win Probability</div>
+            <div className="text-[10px] font-headline uppercase opacity-50">Win Odds</div>
             <div className="font-headline text-lg flex items-center gap-2">
               <span className="text-blue-400">{odds.win}</span>
               <span className="text-white/20">|</span>
@@ -261,7 +282,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             </div>
           </div>
           <div className="text-right space-y-1">
-            <div className="text-[10px] font-headline uppercase opacity-50">Squad Aggression</div>
+            <div className="text-[10px] font-headline uppercase opacity-50">Aggression</div>
             <div className="text-lg font-headline text-primary font-bold">{Math.round(state.aggression * 100)}%</div>
           </div>
         </div>
