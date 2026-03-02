@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, getLeagueTable, CAREER_MODES, CareerMode } from '@/lib/game-logic';
+import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, getLeagueTable, CAREER_MODES, CareerMode, calculateMatchResult } from '@/lib/game-logic';
 import { SlantedButton } from './slanted-elements';
 import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
@@ -25,7 +25,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const activeConfig = state ? CAREER_MODES[state.mode].durations[state.durationIndex] : null;
 
   const fetchScenario = useCallback(async () => {
-    if (!state || state.isSacked || state.isSeasonEnd || isFetchingRef.current) return;
+    if (!state || state.isSacked || state.isSeasonEnd || isFetchingRef.current || isSimulating) return;
     
     isFetchingRef.current = true;
     setLoading(true);
@@ -50,7 +50,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [state, activeConfig]);
+  }, [state, activeConfig, isSimulating]);
 
   useEffect(() => {
     if (state && !currentScenario && !isSimulating && !state.isSacked && !state.isSeasonEnd && !loading && !error) {
@@ -62,14 +62,15 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     if (!currentScenario || !state) return;
 
     const impact = side === 'left' ? currentScenario.impactLeft : currentScenario.impactRight;
+    const newCardsSeen = state.cardsSeen + 1;
     
     const newState: GameState = {
       ...state,
       boardSupport: Math.min(1, Math.max(0, state.boardSupport + (impact.board / 100))),
       fanSupport: Math.min(1, Math.max(0, state.fanSupport + (impact.fans / 100))),
       dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
-      aggression: Math.min(1, Math.max(0.05, state.aggression + impact.aggression)),
-      cardsSeen: state.cardsSeen + 1,
+      aggression: Math.min(1, Math.max(0.05, state.aggression + (impact.aggression || 0))),
+      cardsSeen: newCardsSeen,
       history: [...state.history, currentScenario.scenario],
     };
 
@@ -80,13 +81,18 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setState(newState);
     saveGameLocally(newState);
     setCurrentScenario(null);
-    setIsSimulating(true);
+
+    // Trigger match every 3 cards
+    if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
+      setIsSimulating(true);
+    }
   };
 
-  const onMatchComplete = (result: 'win' | 'draw' | 'loss') => {
+  const onMatchComplete = () => {
     if (!state || !activeConfig) return;
 
     setIsSimulating(false);
+    const result = calculateMatchResult(state);
     const newMatchesPlayed = state.matchesPlayed + 1;
     const ptsEarned = result === 'win' ? 3 : result === 'draw' ? 1 : 0;
     
@@ -172,7 +178,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
     return (
       <div className="flex flex-col h-screen max-w-md mx-auto bg-background p-6 overflow-y-auto">
-        <h2 className="text-3xl font-headline font-bold mb-8 text-accent">SELECT CAREER PATH</h2>
+        <h2 className="text-3xl font-headline font-bold mb-8 text-accent uppercase">Select Career Path</h2>
         <div className="grid gap-4">
           {(Object.keys(CAREER_MODES) as CareerMode[]).map((modeKey) => {
             const m = CAREER_MODES[modeKey];
@@ -291,6 +297,11 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             className="h-full bg-primary transition-all duration-1000" 
             style={{ width: `${state.aggression * 100}%` }} 
           />
+        </div>
+        <div className="flex justify-center mt-2">
+          <span className="text-[8px] font-headline uppercase opacity-30 tracking-widest">
+            {3 - (state.cardsSeen % 3)} Scenarios until next Match
+          </span>
         </div>
       </div>
     </div>

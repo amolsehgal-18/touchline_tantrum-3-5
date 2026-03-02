@@ -112,10 +112,38 @@ export function calculateMood(state: GameState): ManagerMood {
 }
 
 export function getMatchOdds(aggression: number) {
+  // Purely visual representation of odds based on aggression
   const win = (2.20 - (aggression * 0.8)).toFixed(2);
   const draw = "3.40";
   const loss = (2.40 + (aggression * 1.2)).toFixed(2);
   return { win, draw, loss };
+}
+
+export function calculateMatchResult(state: GameState): 'win' | 'draw' | 'loss' {
+  const mood = calculateMood(state);
+  
+  // Base win probability (starts at 35%)
+  let winProb = 0.35;
+  
+  // Aggression bonus/penalty (0.0 to 1.0 scale)
+  // Moderate aggression (0.4-0.6) is optimal
+  const aggressionEffect = 1 - Math.abs(0.5 - state.aggression) * 0.5;
+  winProb *= aggressionEffect;
+
+  // Mood multiplier
+  const moodMultipliers = {
+    happy: 1.2,
+    neutral: 1.0,
+    stressed: 0.8,
+    angry: 0.6,
+    sacked: 0.0
+  };
+  winProb *= moodMultipliers[mood];
+
+  const roll = Math.random();
+  if (roll < winProb) return 'win';
+  if (roll < winProb + 0.25) return 'draw';
+  return 'loss';
 }
 
 export function getLeagueTable(state: GameState): LeagueTeam[] {
