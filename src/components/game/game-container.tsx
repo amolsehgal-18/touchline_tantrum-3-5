@@ -286,18 +286,18 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   }
 
   const mood = calculateMood(state);
-  const odds = getMatchOdds(state.aggression);
   const currentGW = activeConfig ? activeConfig.startGW + state.matchesPlayed : 0;
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
-      {/* Top Header: Game Mode & GW */}
+      {/* Top Header: Centered White Info */}
       <div className="bg-black/80 py-2 border-b border-white/5 text-center z-50">
         <span className="text-white text-[10px] font-headline font-black uppercase tracking-[0.4em]">
           {CAREER_MODES[state.mode].name} | GW {currentGW}
         </span>
       </div>
 
+      {/* Docked League Table */}
       <div className="bg-black/40 border-b border-white/5 p-3 z-40 backdrop-blur-md">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
@@ -327,6 +327,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
+      {/* Stats Area: Transparent Backgrounds */}
       <div className="p-4 grid grid-cols-2 bg-transparent z-30 min-h-[140px] border-b border-white/5">
         <div className="flex justify-center items-center">
           <TensionArcs board={state.boardSupport} fans={state.fanSupport} />
@@ -336,6 +337,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
+      {/* Main Gameplay Interaction */}
       <div className="flex-1 flex flex-col items-center justify-center p-2 gap-2 relative overflow-hidden">
         {matchIntro && (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-500">
@@ -390,31 +392,16 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
       </div>
 
-      {/* Bottom Section: Timer & Odds & News Ticker */}
-      <div className="bg-black/80 border-t border-white/10 z-30">
-        <div className="p-4 space-y-4">
+      {/* Bottom Section: Timer Bar & News Ticker */}
+      <div className="bg-black/80 border-t border-white/10 z-30 pb-0">
+        <div className="p-4 space-y-2">
           <div className="flex justify-between items-center px-1">
-            <div className="space-y-1">
-              <div className="text-[10px] font-headline uppercase opacity-50 font-black">Tactical Confidence</div>
-              <div className="font-headline text-sm flex items-center gap-2">
-                <span className="text-blue-400">W {Math.round(parseFloat(odds.win) * 100)}%</span>
-                <span className="text-white/40">D {Math.round(parseFloat(odds.draw) * 100)}%</span>
-                <span className="text-orange-400">L {Math.round(parseFloat(odds.loss) * 100)}%</span>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-[10px] font-headline uppercase opacity-50 font-black">Decision Time</div>
-              <div className={cn(
-                "text-lg font-headline font-black",
-                timeLeft <= 5 ? "text-destructive animate-pulse" : "text-white"
-              )}>
-                {timeLeft}s
-              </div>
-            </div>
+            <div className="text-[10px] font-headline uppercase opacity-50 font-black">Squad Aggression</div>
+            <div className="text-[10px] font-headline uppercase opacity-50 font-black">Tactical Window</div>
           </div>
 
           {/* 15-Second Progress Timer Bar */}
-          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
             <div 
               className={cn(
                 "h-full transition-all duration-1000 ease-linear",

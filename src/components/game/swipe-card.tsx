@@ -41,8 +41,7 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
   };
 
   const rotation = dragX / 10;
-  // Color pops up much sooner (15px threshold)
-  const swipeProgress = Math.min(Math.abs(dragX) / 40, 1);
+  const swipeProgress = Math.min(Math.abs(dragX) / 15, 1); // Colors pop sooner (15px)
   const isLeft = dragX < 0;
   const isRight = dragX > 0;
 
@@ -65,7 +64,7 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
         }}
       >
         <SlantedContainer className={cn(
-          "w-full bg-card min-h-[380px] flex flex-col justify-between border-2 transition-all relative group shadow-2xl p-6",
+          "w-full bg-card min-h-[350px] flex flex-col justify-between border-2 transition-all relative group shadow-2xl p-4",
           dragX < -15 ? "border-destructive shadow-[0_0_30px_rgba(239,68,68,0.3)]" : dragX > 15 ? "border-primary shadow-[0_0_30px_rgba(34,107,224,0.3)]" : "border-white/10"
         )}>
           {scenario.isBreaking && (
@@ -74,27 +73,27 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="text-[10px] font-headline uppercase tracking-[0.3em] text-accent font-black opacity-80">Tactical Briefing</div>
-            <p className="text-lg md:text-xl leading-tight font-headline font-black text-white tracking-tight">
+            <p className="text-sm leading-snug font-headline font-medium text-white tracking-tight">
               {scenario.scenario}
             </p>
           </div>
 
-          <div className="mt-8 flex-1 flex flex-col justify-end">
-            <div className="grid grid-cols-2 gap-3 h-32 relative">
+          <div className="mt-6 flex-1 flex flex-col justify-end">
+            <div className="grid grid-cols-2 gap-3 h-28 relative">
               {/* Left Option */}
               <div 
                 className={cn(
-                  "flex flex-col gap-2 p-3 rounded-lg border transition-all duration-200",
+                  "flex flex-col gap-1 p-2 rounded-lg border transition-all duration-200",
                   isLeft && dragX < -15 ? "bg-destructive border-white/40 scale-105 shadow-xl z-10" : "bg-white/5 border-transparent"
                 )}
-                style={{ opacity: isLeft ? 0.4 + (swipeProgress * 0.6) : 0.1 }}
+                style={{ opacity: isLeft ? 0.3 + (swipeProgress * 0.7) : 0.05 }}
               >
-                <div className="flex items-center gap-1 text-white font-headline uppercase text-[12px] font-black italic tracking-tighter">
-                  <ChevronLeft className="w-4 h-4" /> REJECT
+                <div className="flex items-center gap-1 text-white font-headline uppercase text-[10px] font-black italic tracking-tighter">
+                  <ChevronLeft className="w-3 h-3" /> REJECT
                 </div>
-                <div className="text-[11px] font-headline text-white leading-tight font-black">
+                <div className="text-[10px] font-headline text-white leading-tight">
                   {scenario.leftOption}
                 </div>
               </div>
@@ -102,33 +101,29 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
               {/* Right Option */}
               <div 
                 className={cn(
-                  "flex flex-col gap-2 p-3 rounded-lg border text-right transition-all duration-200",
+                  "flex flex-col gap-1 p-2 rounded-lg border text-right transition-all duration-200",
                   isRight && dragX > 15 ? "bg-primary border-white/40 scale-105 shadow-xl z-10" : "bg-white/5 border-transparent"
                 )}
-                style={{ opacity: isRight ? 0.4 + (swipeProgress * 0.6) : 0.1 }}
+                style={{ opacity: isRight ? 0.3 + (swipeProgress * 0.7) : 0.05 }}
               >
-                <div className="flex items-center gap-1 justify-end text-white font-headline uppercase text-[12px] font-black italic tracking-tighter">
-                  APPROVE <ChevronRight className="w-4 h-4" />
+                <div className="flex items-center gap-1 justify-end text-white font-headline uppercase text-[10px] font-black italic tracking-tighter">
+                  APPROVE <ChevronRight className="w-3 h-3" />
                 </div>
-                <div className="text-[11px] font-headline text-white leading-tight font-black">
+                <div className="text-[10px] font-headline text-white leading-tight">
                   {scenario.rightOption}
                 </div>
               </div>
             </div>
 
             {Math.abs(dragX) < 15 && (
-              <div className="text-center mt-6 flex items-center justify-center gap-2 animate-pulse opacity-40">
+              <div className="text-center mt-4 flex items-center justify-center gap-2 animate-pulse opacity-40">
                 <ChevronLeft className="w-3 h-3 text-destructive" />
-                <span className="text-[9px] font-headline uppercase tracking-[0.3em] font-black">Swipe to Act</span>
+                <span className="text-[8px] font-headline uppercase tracking-[0.3em] font-black">Swipe to Act</span>
                 <ChevronRight className="w-3 h-3 text-primary" />
               </div>
             )}
           </div>
         </SlantedContainer>
-      </div>
-      
-      <div className="mt-8 text-center text-[9px] font-headline uppercase tracking-[0.4em] opacity-20 font-black italic">
-        The clock is ticking...
       </div>
     </div>
   );

@@ -14,7 +14,7 @@ export const ManagerMoodView = ({ mood }: { mood: ManagerMood }) => {
       </div>
       <div className="relative w-14 h-14">
         <div className="absolute inset-0 bg-primary/5 rounded-full blur-lg animate-pulse-slow" />
-        <div className="relative w-full h-full rounded-full border border-white/10 overflow-hidden bg-black/20 shadow-xl">
+        <div className="relative w-full h-full rounded-full border border-white/10 overflow-hidden bg-black/10 shadow-xl">
           <Image
             src={image.imageUrl}
             alt={`Manager status: ${mood}`}
