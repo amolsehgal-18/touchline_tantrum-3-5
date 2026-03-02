@@ -185,13 +185,13 @@ export function getLeagueTable(state: GameState): LeagueTeam[] {
 
 export function saveGameLocally(state: GameState) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('tt_save_v2', JSON.stringify(state));
+    localStorage.setItem('tt_save_v3', JSON.stringify(state));
   }
 }
 
 export function loadGameLocally(): GameState | null {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('tt_save_v2');
+    const saved = localStorage.getItem('tt_save_v3');
     try {
       return saved ? JSON.parse(saved) : null;
     } catch {
