@@ -1,3 +1,10 @@
+export type LeagueTeam = {
+  pos: number;
+  team: string;
+  pts: number;
+  isUser: boolean;
+};
+
 export type GameState = {
   boardSupport: number; // 0.01 - 1.0
   fanSupport: number;   // 0.01 - 1.0
@@ -58,6 +65,26 @@ export function getMatchOdds(aggression: number) {
   return { win, draw, loss };
 }
 
+export function getLeagueTable(state: GameState): LeagueTeam[] {
+  // Mock logic to generate a table around the user's position
+  const teams = [
+    "City", "Reds", "London Blue", "North White", "Villa", 
+    "Toffees", "Seagulls", "Eagles", "Wolves", "Hammers",
+    "United FC", "Magpies", "Hornets", "Cherries", "Saints",
+    "Forest", "Foxes", "Bees", "Clarets", "Hatters"
+  ];
+  
+  const pts = teams.map((_, i) => (20 - i) * 3 + Math.floor(Math.random() * 5));
+  pts.sort((a, b) => b - a);
+
+  return teams.map((team, i) => ({
+    pos: i + 1,
+    team: team,
+    pts: pts[i],
+    isUser: team === state.userTeam
+  })).slice(Math.max(0, state.currentLeaguePosition - 3), Math.min(20, state.currentLeaguePosition + 2));
+}
+
 export function saveGameLocally(state: GameState) {
   if (typeof window !== 'undefined') {
     localStorage.setItem('tt_save', JSON.stringify(state));
@@ -67,7 +94,11 @@ export function saveGameLocally(state: GameState) {
 export function loadGameLocally(): GameState | null {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('tt_save');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   }
   return null;
 }

@@ -1,13 +1,14 @@
-
 "use client"
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds } from '@/lib/game-logic';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, getLeagueTable } from '@/lib/game-logic';
 import { SlantedContainer, StatBar, SlantedButton } from './slanted-elements';
 import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
+import { TensionArcs } from './tension-arcs';
 import { getAiScenarioPresentation, AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, Share2 } from 'lucide-react';
+import { RefreshCw, Share2, Trophy, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export const GameContainer = ({ initialState }: { initialState?: GameState }) => {
   const [state, setState] = useState<GameState>(initialState || INITIAL_STATE);
@@ -15,10 +16,12 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [loading, setLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [timer, setTimer] = useState(15);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchScenario = useCallback(async () => {
     if (state.isSacked) return;
     setLoading(true);
+    setError(null);
     setTimer(15);
     try {
       const result = await getAiScenarioPresentation({
@@ -35,16 +38,19 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setCurrentScenario(result);
     } catch (error) {
       console.error("Failed to fetch scenario", error);
+      setError("Intel transmission failed. Reconnecting...");
+      // Auto-retry after a delay
+      setTimeout(fetchScenario, 3000);
     } finally {
       setLoading(false);
     }
-  }, [state]);
+  }, [state, fetchScenario]);
 
   useEffect(() => {
-    if (!currentScenario && !isSimulating && !state.isSacked && !loading) {
+    if (!currentScenario && !isSimulating && !state.isSacked && !loading && !error) {
       fetchScenario();
     }
-  }, [currentScenario, isSimulating, state.isSacked, fetchScenario, loading]);
+  }, [currentScenario, isSimulating, state.isSacked, fetchScenario, loading, error]);
 
   useEffect(() => {
     if (currentScenario && !isSimulating && !loading) {
@@ -87,7 +93,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
     setCurrentScenario(null);
 
-    // Trigger match every 3 cards
     if ((state.cardsSeen + 1) % 3 === 0) {
       setIsSimulating(true);
     }
@@ -101,6 +106,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         wins: result === 'win' ? prev.wins + 1 : prev.wins,
         draws: result === 'draw' ? prev.draws + 1 : prev.draws,
         losses: result === 'loss' ? prev.losses + 1 : prev.losses,
+        currentLeaguePosition: result === 'win' ? Math.max(1, prev.currentLeaguePosition - 1) : result === 'loss' ? Math.min(20, prev.currentLeaguePosition + 1) : prev.currentLeaguePosition
       };
       saveGameLocally(newState);
       return newState;
@@ -109,6 +115,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   const mood = calculateMood(state);
   const odds = getMatchOdds(state.aggression);
+  const leagueTable = useMemo(() => getLeagueTable(state), [state]);
 
   if (state.isSacked) {
     return (
@@ -142,47 +149,62 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background">
-      {/* Header / Tension Triangle */}
-      <div className="p-4 space-y-4 premium-glass border-b border-white/5 bg-black/20 z-30">
-        <div className="flex justify-between items-center">
-          <div className="font-headline text-lg tracking-tight uppercase">Dashboard</div>
-          <div className="flex gap-4">
-            <div className="text-right">
-              <div className="text-[10px] opacity-50 uppercase font-headline">Record</div>
-              <div className="text-sm font-headline">{state.wins}-{state.draws}-{state.losses}</div>
-            </div>
-          </div>
+      {/* Live League Table Header */}
+      <div className="bg-black/40 border-b border-white/5 p-2 z-40 backdrop-blur-md">
+        <div className="flex items-center justify-between px-2 mb-2">
+          <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
+            <RefreshCw className="w-3 h-3 animate-spin" /> Live League Standing
+          </span>
+          <span className="text-[10px] font-headline uppercase opacity-50">Week {Math.floor(state.cardsSeen / 3) + 1}</span>
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          <StatBar label="Board" value={state.boardSupport} colorClass="bg-blue-500" />
-          <StatBar label="Fans" value={state.fanSupport} colorClass="bg-orange-500" />
-          <StatBar label="Morale" value={state.dressingRoom} colorClass="bg-green-500" />
+        <div className="grid grid-cols-5 gap-1">
+          {leagueTable.map((team) => (
+            <div 
+              key={team.team} 
+              className={cn(
+                "flex flex-col items-center py-1 rounded text-[10px] transition-colors",
+                team.isUser ? "bg-primary/20 border border-primary/30" : "bg-white/5"
+              )}
+            >
+              <span className="font-headline opacity-50">{team.pos}</span>
+              <span className={cn("font-bold truncate w-full text-center px-1", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
+              <span className="text-[8px] opacity-40">{team.pts} PTS</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Dashboard Layout */}
+      <div className="p-4 flex items-center justify-between premium-glass border-b border-white/5 bg-black/20 z-30">
+        <div className="flex-1 flex justify-center">
+          <TensionArcs board={state.boardSupport} fans={state.fanSupport} morale={state.dressingRoom} />
+        </div>
+        <div className="flex-1 flex justify-center">
+          <ManagerMoodView mood={mood} />
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 overflow-y-auto relative">
         {isSimulating ? (
           <MatchRadar onComplete={onMatchComplete} />
         ) : (
           <>
-            <div className="flex flex-col items-center gap-4 transition-all duration-500">
-              <ManagerMoodView mood={mood} />
-              <div className="text-center">
-                <h2 className="font-headline text-xl text-white uppercase tracking-tight">{state.userTeam}</h2>
-                <div className="text-[10px] font-headline text-accent uppercase tracking-[0.2em] opacity-80">
-                  Position {state.currentLeaguePosition} • {state.sagaObjective}
-                </div>
-              </div>
-            </div>
-
             <div className="w-full min-h-[320px] flex items-center justify-center">
-              {loading ? (
-                <div className="flex flex-col items-center gap-4 p-8 bg-white/5 rounded-xl border border-white/10 w-full animate-pulse">
-                  <RefreshCw className="w-10 h-10 animate-spin text-primary" />
+              {loading || error ? (
+                <div className="flex flex-col items-center gap-4 p-8 bg-white/5 rounded-xl border border-white/10 w-full">
+                  {error ? (
+                    <AlertTriangle className="w-10 h-10 text-destructive animate-pulse" />
+                  ) : (
+                    <RefreshCw className="w-10 h-10 animate-spin text-primary" />
+                  )}
                   <div className="space-y-2 text-center">
-                    <span className="text-xs font-headline uppercase tracking-widest text-primary">Transmitting Intel</span>
-                    <p className="text-[10px] opacity-40 uppercase font-headline">Analyzing Squad Morale & Board Trust...</p>
+                    <span className="text-xs font-headline uppercase tracking-widest text-primary">
+                      {error ? "Transmission Interrupted" : "Transmitting Intel"}
+                    </span>
+                    <p className="text-[10px] opacity-40 uppercase font-headline">
+                      {error || "Analyzing Squad Morale & Board Trust..."}
+                    </p>
                   </div>
                 </div>
               ) : currentScenario ? (
@@ -239,7 +261,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-[10px] font-headline uppercase opacity-50 tracking-widest">Team Aggression</div>
+              <div className="text-[10px] font-headline uppercase opacity-50 tracking-widest">Aggression</div>
               <div className="text-xl font-headline text-primary font-bold">{Math.round(state.aggression * 100)}%</div>
             </div>
           </div>
