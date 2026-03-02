@@ -21,14 +21,14 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
   const score = useMemo(() => {
     if (result === 'win') {
-      const g1 = Math.floor(Math.random() * 3) + 1;
+      const g1 = Math.floor(Math.random() * 2) + 1;
       const g2 = Math.floor(Math.random() * g1);
       return { user: g1, opp: g2 };
     } else if (result === 'draw') {
-      const g = Math.floor(Math.random() * 3);
+      const g = Math.floor(Math.random() * 2);
       return { user: g, opp: g };
     } else {
-      const g2 = Math.floor(Math.random() * 3) + 1;
+      const g2 = Math.floor(Math.random() * 2) + 1;
       const g1 = Math.floor(Math.random() * g2);
       return { user: g1, opp: g2 };
     }
@@ -68,7 +68,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       vx: 0,
       vy: 0,
       team: i < 11 ? 'user' : 'opp',
-      color: i < 11 ? '#ef4444' : '#226be0', // Red (Home) vs Blue (Away)
+      color: i < 11 ? '#ef4444' : '#226be0',
       baseX: i < 11 ? 50 + Math.random() * 100 : canvas.width - 150 + Math.random() * 100,
       baseY: Math.random() * canvas.height,
     }));
@@ -84,43 +84,41 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Pitch lines
       ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1;
       ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
       ctx.beginPath();
       ctx.moveTo(canvas.width / 2, 10);
       ctx.lineTo(canvas.width / 2, canvas.height - 10);
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, 40, 0, Math.PI * 2);
+      ctx.arc(canvas.width / 2, canvas.height / 2, 30, 0, Math.PI * 2);
       ctx.stroke();
 
-      // High-Intensity Soccer Logic
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
-        const dribbleAngle = Date.now() / 80; // Faster dribble
-        ball.x = p.x + Math.cos(dribbleAngle) * 6;
-        ball.y = p.y + Math.sin(dribbleAngle) * 6;
+        const dribbleAngle = Date.now() / 80;
+        ball.x = p.x + Math.cos(dribbleAngle) * 5;
+        ball.y = p.y + Math.sin(dribbleAngle) * 5;
         
         const targetGoalX = p.team === 'user' ? canvas.width - 15 : 15;
         const dx = targetGoalX - p.x;
         const dy = (canvas.height / 2) - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
-        p.vx = (dx / dist) * 3.2; // Faster players
-        p.vy = (dy / dist) * 3.2;
+        p.vx = (dx / dist) * 3.5;
+        p.vy = (dy / dist) * 3.5;
 
-        if (Math.random() < 0.12) { // More frequent passing
+        if (Math.random() < 0.15) {
           ball.possessorIndex = -1;
-          ball.vx = (p.team === 'user' ? 10 : -10) + (Math.random() - 0.5) * 6;
-          ball.vy = (Math.random() - 0.5) * 12;
+          ball.vx = (p.team === 'user' ? 12 : -12) + (Math.random() - 0.5) * 6;
+          ball.vy = (Math.random() - 0.5) * 14;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.992;
-        ball.vy *= 0.992;
+        ball.vx *= 0.99;
+        ball.vy *= 0.99;
 
         if (ball.x < 10 || ball.x > canvas.width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > canvas.height - 10) ball.vy *= -1;
@@ -129,7 +127,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 14) {
+          if (dist < 12) {
             ball.possessorIndex = idx;
           }
         });
@@ -137,7 +135,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
-          const chaseDist = 140;
+          const chaseDist = 120;
           const dxBall = ball.x - p.x;
           const dyBall = ball.y - p.y;
           const distToBall = Math.sqrt(dxBall * dxBall + dyBall * dyBall);
@@ -154,12 +152,12 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dy = targetY - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           
-          if (dist > 2) {
-            p.vx = (dx / dist) * 2.8;
-            p.vy = (dy / dist) * 2.8;
+          if (dist > 1.5) {
+            p.vx = (dx / dist) * 3;
+            p.vy = (dy / dist) * 3;
           } else {
-            p.vx *= 0.85;
-            p.vy *= 0.85;
+            p.vx *= 0.8;
+            p.vy *= 0.8;
           }
         }
 
@@ -168,20 +166,19 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = 'white';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 0.5;
         ctx.stroke();
       });
 
-      // High-Contrast Yellow Ball
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, 3.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       animationFrame = requestAnimationFrame(animate);
@@ -207,72 +204,67 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full px-4 py-4 h-full justify-center">
-      <div className="text-2xl font-headline text-accent animate-pulse uppercase font-black tracking-tighter italic">
-        LIVE SIMULATION
+    <div className="flex flex-col items-center gap-4 w-full px-2 py-2 h-full justify-center">
+      <div className="text-xl font-headline text-accent animate-pulse uppercase font-black tracking-tighter italic">
+        LIVE MATCH
       </div>
       
-      <div className="relative premium-glass p-1.5 slanted-container w-full max-w-[340px] aspect-[3/2] border-white/20 overflow-hidden shadow-2xl">
-        <canvas ref={canvasRef} width={300} height={200} className="w-full h-full rounded bg-black/50" />
+      <div className="relative premium-glass p-1 slanted-container w-full max-w-[320px] aspect-[4/3] border-white/20 overflow-hidden shadow-xl">
+        <canvas ref={canvasRef} width={300} height={225} className="w-full h-full rounded bg-black/40" />
         
         {showFinal && (
-          <div className="absolute inset-0 bg-black/98 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500 z-50 p-6">
+          <div className="absolute inset-0 bg-black/98 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 z-50 p-4">
             {isVARing ? (
-              <div className="flex flex-col items-center gap-8 text-center">
-                <div className="relative">
-                   <div className="absolute inset-0 bg-primary/30 blur-2xl animate-pulse rounded-full" />
-                   <Search className="w-20 h-20 text-primary relative z-10 animate-bounce" />
-                </div>
-                <div className="space-y-3">
-                  <div className="text-[11px] font-headline uppercase tracking-[0.5em] text-primary font-black">VAR INTERVENTION</div>
-                  <div className="text-3xl font-headline font-black text-white italic tracking-tighter">{varDecision}</div>
-                </div>
+              <div className="flex flex-col items-center gap-4 text-center">
+                 <Search className="w-12 h-12 text-primary animate-bounce" />
+                 <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-primary font-black">VAR CHECK</div>
+                 <div className="text-xl font-headline font-black text-white italic tracking-tighter">{varDecision}</div>
               </div>
             ) : (
               <>
-                <div className="text-[11px] font-headline uppercase tracking-[0.5em] text-white/40 mb-8 font-black">Full Time Result</div>
+                <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-white/40 mb-4 font-black">Full Time Result</div>
                 
-                <div className="flex items-center justify-between w-full gap-4 mb-10">
-                  <div className="flex flex-col items-center gap-3 flex-1">
-                    <div className="w-14 h-14 rounded bg-destructive/20 border-2 border-destructive/50 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.4)]">
-                      <Shield className="w-8 h-8 text-destructive" />
+                <div className="flex items-center justify-between w-full gap-2 mb-6">
+                  <div className="flex flex-col items-center gap-1 flex-1">
+                    <div className="w-10 h-10 rounded bg-destructive/20 border border-destructive/50 flex items-center justify-center">
+                      <Shield className="w-6 h-6 text-destructive" />
                     </div>
-                    <div className="text-[12px] font-headline font-black uppercase text-center truncate w-full mt-1 tracking-tight">{userTeam}</div>
+                    <div className="text-[9px] font-headline font-black uppercase text-center truncate w-full tracking-tight">{userTeam}</div>
                   </div>
 
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="text-6xl font-headline font-black italic tracking-tighter flex items-center gap-4">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="text-4xl font-headline font-black italic tracking-tighter flex items-center gap-2">
                       <span className={cn(result === 'win' ? "text-destructive" : "text-white")}>{score.user}</span>
                       <span className="text-white/20">-</span>
                       <span className={cn(result === 'loss' ? "text-primary" : "text-white")}>{score.opp}</span>
                     </div>
                     <div className={cn(
-                      "text-[11px] font-headline font-black uppercase px-4 py-1.5 slanted-container tracking-widest",
+                      "text-[9px] font-headline font-black uppercase px-2 py-0.5 tracking-widest",
                       result === 'win' ? "bg-destructive text-white" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-primary text-white"
                     )}>
-                      {result === 'win' ? "VICTORY" : result === 'draw' ? "DRAW" : "DEFEAT"}
+                      {result === 'win' ? "WON" : result === 'draw' ? "DRAW" : "LOST"}
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-center gap-3 flex-1">
-                    <div className="w-14 h-14 rounded bg-primary/20 border-2 border-primary/50 flex items-center justify-center">
-                      <Target className="w-8 h-8 text-primary" />
+                  <div className="flex flex-col items-center gap-1 flex-1">
+                    <div className="w-10 h-10 rounded bg-primary/20 border border-primary/50 flex items-center justify-center">
+                      <Target className="w-6 h-6 text-primary" />
                     </div>
-                    <div className="text-[12px] font-headline font-black uppercase text-center truncate w-full mt-1 tracking-tight">{opponentTeam}</div>
+                    <div className="text-[9px] font-headline font-black uppercase text-center truncate w-full tracking-tight">{opponentTeam}</div>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-4 w-full">
+                <div className="flex flex-col gap-2 w-full max-w-[200px]">
                   {result === 'loss' && (
                     <button 
                       onClick={handleVARRequest}
-                      className="w-full py-4 premium-glass slanted-button text-[11px] font-black uppercase tracking-widest text-primary border-primary/40 hover:bg-primary/10 transition-colors"
+                      className="w-full py-2 premium-glass slanted-button text-[9px] font-black uppercase tracking-widest text-primary border-primary/40"
                     >
-                      REQUEST VAR REVIEW
+                      REQUEST VAR
                     </button>
                   )}
-                  <SlantedButton onClick={onComplete} className="w-full py-5 text-sm font-black tracking-[0.2em] bg-white text-black hover:bg-white/90">
-                    PROCEED TO NEXT WEEK
+                  <SlantedButton onClick={onComplete} className="w-full py-3 text-[11px] font-black tracking-[0.2em] bg-white text-black">
+                    PROCEED
                   </SlantedButton>
                 </div>
               </>
@@ -281,14 +273,14 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         )}
 
         {!showFinal && (
-          <div className="absolute top-3 right-5 font-headline text-white/60 text-[11px] font-black uppercase tracking-[0.2em]">
+          <div className="absolute top-2 right-4 font-headline text-white/40 text-[9px] font-black uppercase tracking-[0.2em]">
             {timer}S
           </div>
         )}
       </div>
       
-      <div className="text-center min-h-[50px] px-8 mt-2">
-        <p className="text-[13px] font-headline tracking-widest text-white/90 uppercase font-black italic animate-in fade-in slide-in-from-bottom-3 duration-700">
+      <div className="text-center min-h-[40px] px-4">
+        <p className="text-[11px] font-headline tracking-widest text-white/80 uppercase font-black italic animate-in fade-in duration-500">
           {getCommentary(timer)}
         </p>
       </div>
