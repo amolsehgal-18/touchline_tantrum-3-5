@@ -54,7 +54,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       y: Math.random() * canvas.height,
       vx: (Math.random() - 0.5) * 1.5,
       vy: (Math.random() - 0.5) * 1.5,
-      // User = Red, Opponent = Blue
+      // User = Red (#ef4444), Opponent = Blue (#226be0)
       color: i < 11 ? '#ef4444' : '#226be0',
     }));
 
@@ -67,6 +67,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Pitch lines
       ctx.strokeStyle = 'rgba(255,255,255,0.1)';
       ctx.lineWidth = 1;
       ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
@@ -75,6 +77,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(canvas.width / 2, canvas.height - 5);
       ctx.stroke();
 
+      // Players
       players.forEach(p => {
         p.x += p.vx;
         p.y += p.vy;
@@ -86,12 +89,12 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.fill();
       });
 
+      // Ball = Yellow (#ffff00)
       ball.x += ball.vx;
       ball.y += ball.vy;
       if (ball.x < 10 || ball.x > canvas.width - 10) ball.vx *= -1;
       if (ball.y < 10 || ball.y > canvas.height - 10) ball.vy *= -1;
-      // Ball = Yellow
-      ctx.fillStyle = '#ffab00';
+      ctx.fillStyle = '#ffff00';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 2.5, 0, Math.PI * 2);
       ctx.fill();
@@ -149,7 +152,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
                   "text-[10px] font-headline font-black uppercase px-3 py-1 slanted-container",
                   result === 'win' ? "bg-destructive text-white" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-primary text-white"
                 )}>
-                  {result === 'win' ? "VICTORY" : result === 'draw' ? "STALEMATE" : "DEFEAT"}
+                  {result === 'win' ? "VICTORY" : result === 'draw' ? "DRAW" : "DEFEAT"}
                 </div>
               </div>
 

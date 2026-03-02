@@ -57,7 +57,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setCurrentScenario(null);
     setTimeLeft(15); // Reset timer
 
-    // If 3rd card, trigger match after a brief period
+    // If 3rd card, trigger match after a brief period (allow user to see impacts)
     if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
       const table = getLeagueTable(newState);
       const possibleOpponents = table.filter(t => !t.isUser);
