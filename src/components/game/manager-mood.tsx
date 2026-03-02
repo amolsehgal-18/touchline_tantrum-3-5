@@ -8,21 +8,22 @@ export const ManagerMoodView = ({ mood }: { mood: ManagerMood }) => {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="bg-accent/20 text-accent px-4 py-0.5 slanted-container text-[10px] font-headline uppercase tracking-[0.2em] shadow-lg border border-accent/30 mb-2">
+      <div className="bg-accent/20 text-accent px-4 py-1 slanted-container text-[10px] font-headline uppercase tracking-[0.3em] shadow-lg border border-accent/30 mb-2 font-bold">
         {mood}
       </div>
-      <div className="relative w-24 h-24">
-        <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse-slow" />
-        <div className="relative w-full h-full rounded-full border-2 border-primary/50 overflow-hidden bg-black/40 shadow-inner">
+      <div className="relative w-28 h-28">
+        <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl animate-pulse-slow" />
+        <div className="relative w-full h-full rounded-full border-4 border-white/5 overflow-hidden bg-black/40 shadow-2xl ring-2 ring-primary/20">
           <Image
             src={image.imageUrl}
-            alt={`Manager is ${mood}`}
-            width={400}
-            height={400}
-            className="object-cover"
+            alt={`Manager status: ${mood}`}
+            fill
+            className="object-cover transition-opacity duration-700"
             data-ai-hint={image.imageHint}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+          {/* Scanline effect on image */}
+          <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
         </div>
       </div>
     </div>

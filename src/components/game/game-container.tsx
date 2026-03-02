@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, getLeagueTable } from '@/lib/game-logic';
-import { SlantedContainer, StatBar, SlantedButton } from './slanted-elements';
+import { SlantedContainer, SlantedButton } from './slanted-elements';
 import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
 import { TensionArcs } from './tension-arcs';
 import { getAiScenarioPresentation, AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, Share2, Trophy, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Share2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const GameContainer = ({ initialState }: { initialState?: GameState }) => {
@@ -19,7 +19,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [error, setError] = useState<string | null>(null);
 
   const fetchScenario = useCallback(async () => {
-    if (state.isSacked) return;
+    if (state.isSacked || loading) return;
     setLoading(true);
     setError(null);
     setTimer(15);
@@ -36,26 +36,32 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         excludedScenarioTexts: state.history,
       });
       setCurrentScenario(result);
+      setError(null);
     } catch (err) {
       console.error("Failed to fetch scenario", err);
       setError("Intel transmission failed. Reconnecting...");
-      // Auto-retry after a delay
-      setTimeout(() => {
-        if (!state.isSacked) fetchScenario();
-      }, 3000);
     } finally {
       setLoading(false);
     }
-  }, [state]);
+  }, [state, loading]);
 
   useEffect(() => {
     if (!currentScenario && !isSimulating && !state.isSacked && !loading && !error) {
       fetchScenario();
     }
-  }, [currentScenario, isSimulating, state.isSacked, fetchScenario, loading, error]);
+  }, [currentScenario, isSimulating, state.isSacked, loading, error, fetchScenario]);
 
   useEffect(() => {
-    if (currentScenario && !isSimulating && !loading) {
+    if (error) {
+      const timeout = setTimeout(() => {
+        setError(null);
+      }, 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (currentScenario && !isSimulating && !loading && !error) {
       const interval = setInterval(() => {
         setTimer(t => {
           if (t <= 1) {
@@ -67,7 +73,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [currentScenario, isSimulating, loading]);
+  }, [currentScenario, isSimulating, loading, error]);
 
   const handleDecision = (side: 'left' | 'right') => {
     if (!currentScenario) return;
@@ -152,124 +158,128 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background">
       {/* Live League Table Header */}
-      <div className="bg-black/40 border-b border-white/5 p-2 z-40 backdrop-blur-md">
+      <div className="bg-black/60 border-b border-white/10 p-2 z-40 backdrop-blur-md">
         <div className="flex items-center justify-between px-2 mb-2">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
             <RefreshCw className="w-3 h-3 animate-spin" /> Live League Standing
           </span>
-          <span className="text-[10px] font-headline uppercase opacity-50">Week {Math.floor(state.cardsSeen / 3) + 1}</span>
+          <span className="text-[10px] font-headline uppercase opacity-50">Matchday {Math.floor(state.cardsSeen / 3) + 1}</span>
         </div>
         <div className="grid grid-cols-5 gap-1">
           {leagueTable.map((team) => (
             <div 
               key={team.team} 
               className={cn(
-                "flex flex-col items-center py-1 rounded text-[10px] transition-colors",
-                team.isUser ? "bg-primary/20 border border-primary/30" : "bg-white/5"
+                "flex flex-col items-center py-1 rounded text-[10px] transition-colors border",
+                team.isUser ? "bg-primary/20 border-primary/50" : "bg-white/5 border-transparent"
               )}
             >
               <span className="font-headline opacity-50">{team.pos}</span>
               <span className={cn("font-bold truncate w-full text-center px-1", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
-              <span className="text-[8px] opacity-40">{team.pts} PTS</span>
+              <span className="text-[8px] opacity-40">{team.pts}P</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Main Dashboard Layout */}
+      {/* Tension Dashboard Section */}
       <div className="p-4 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30">
-        <div className="flex justify-center items-center border-r border-white/5">
+        <div className="flex justify-center items-center border-r border-white/5 pr-4">
           <TensionArcs board={state.boardSupport} fans={state.fanSupport} morale={state.dressingRoom} />
         </div>
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center pl-4">
           <ManagerMoodView mood={mood} />
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 overflow-y-auto relative">
+      {/* Main Game Interface */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 overflow-y-auto relative bg-gradient-to-b from-transparent to-black/20">
         {isSimulating ? (
           <MatchRadar onComplete={onMatchComplete} />
         ) : (
-          <>
-            <div className="w-full min-h-[320px] flex items-center justify-center">
-              {loading || error ? (
-                <div className="flex flex-col items-center gap-4 p-8 bg-white/5 rounded-xl border border-white/10 w-full">
-                  {error ? (
-                    <AlertTriangle className="w-10 h-10 text-destructive animate-pulse" />
-                  ) : (
-                    <RefreshCw className="w-10 h-10 animate-spin text-primary" />
-                  )}
-                  <div className="space-y-2 text-center">
-                    <span className="text-xs font-headline uppercase tracking-widest text-primary">
-                      {error ? "Transmission Interrupted" : "Transmitting Intel"}
-                    </span>
-                    <p className="text-[10px] opacity-40 uppercase font-headline">
-                      {error || "Analyzing Squad Morale & Board Trust..."}
-                    </p>
-                  </div>
+          <div className="w-full min-h-[360px] flex items-center justify-center">
+            {loading || error ? (
+              <SlantedContainer className="w-full h-full flex flex-col items-center justify-center gap-4 border-white/10 bg-white/5">
+                {error ? (
+                  <AlertTriangle className="w-12 h-12 text-destructive animate-pulse" />
+                ) : (
+                  <RefreshCw className="w-12 h-12 animate-spin text-primary" />
+                )}
+                <div className="space-y-2 text-center">
+                  <span className="text-sm font-headline uppercase tracking-[0.2em] text-primary block">
+                    {error ? "Transmission Cut" : "Transmitting Intel"}
+                  </span>
+                  <p className="text-[10px] opacity-40 uppercase font-headline">
+                    {error || "Parsing Squad Tension Triangle..."}
+                  </p>
                 </div>
-              ) : currentScenario ? (
-                <SlantedContainer className="w-full relative scanline animate-in fade-in zoom-in duration-300">
-                  {currentScenario.isBreaking && (
-                    <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-3 py-1 z-20 skew-x-[-20deg] origin-top-right">
-                      BREAKING NEWS
+              </SlantedContainer>
+            ) : currentScenario ? (
+              <SlantedContainer className="w-full relative scanline animate-in fade-in zoom-in duration-500 shadow-2xl">
+                {currentScenario.isBreaking && (
+                  <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-3 py-1 z-20 skew-x-[-20deg] origin-top-right shadow-lg">
+                    BREAKING NEWS
+                  </div>
+                )}
+                <div className="space-y-8">
+                  <p className="text-xl leading-relaxed font-headline font-medium tracking-tight border-l-2 border-accent pl-4">{currentScenario.scenario}</p>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-[8px] font-headline uppercase opacity-40">
+                      <span>Tactical Window</span>
+                      <span>{timer}s</span>
                     </div>
-                  )}
-                  <div className="space-y-6">
-                    <p className="text-lg leading-snug font-medium tracking-tight">{currentScenario.scenario}</p>
-                    
                     <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-accent transition-all duration-1000 ease-linear" 
+                        className="h-full bg-accent transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(255,173,31,0.5)]" 
                         style={{ width: `${(timer / 15) * 100}%` }}
                       />
                     </div>
-
-                    <div className="flex flex-col gap-3">
-                      <SlantedButton 
-                        onClick={() => handleDecision('left')}
-                        className="bg-white/5 hover:bg-white/15 border border-white/10 text-xs text-left justify-start py-4 h-auto"
-                      >
-                        {currentScenario.leftOption}
-                      </SlantedButton>
-                      <SlantedButton 
-                        onClick={() => handleDecision('right')}
-                        className="bg-primary/10 hover:bg-primary/25 border border-primary/30 text-xs text-left justify-start py-4 h-auto"
-                      >
-                        {currentScenario.rightOption}
-                      </SlantedButton>
-                    </div>
                   </div>
-                </SlantedContainer>
-              ) : null}
-            </div>
-          </>
+
+                  <div className="flex flex-col gap-4">
+                    <SlantedButton 
+                      onClick={() => handleDecision('left')}
+                      className="bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-left justify-start py-5 h-auto transition-all active:scale-95"
+                    >
+                      {currentScenario.leftOption}
+                    </SlantedButton>
+                    <SlantedButton 
+                      onClick={() => handleDecision('right')}
+                      className="bg-primary/10 hover:bg-primary/20 border border-primary/30 text-xs text-left justify-start py-5 h-auto transition-all active:scale-95"
+                    >
+                      {currentScenario.rightOption}
+                    </SlantedButton>
+                  </div>
+                </div>
+              </SlantedContainer>
+            ) : null}
+          </div>
         )}
       </div>
 
-      {/* Footer / Aggression & Odds */}
-      <div className="p-6 premium-glass mt-auto bg-black/40 border-t border-white/5 z-30">
-        <div className="flex flex-col gap-4">
+      {/* Bottom Bar: Stats & Aggression */}
+      <div className="p-6 premium-glass mt-auto bg-black/60 border-t border-white/10 z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+        <div className="flex flex-col gap-5">
           <div className="flex justify-between items-end">
-            <div>
-              <div className="text-[10px] font-headline uppercase opacity-50 tracking-widest">Match Odds</div>
-              <div className="font-headline text-lg tracking-tighter">
+            <div className="space-y-1">
+              <div className="text-[10px] font-headline uppercase opacity-50 tracking-[0.2em]">Predicted Outcome</div>
+              <div className="font-headline text-2xl tracking-tighter flex items-center">
                 <span className="text-blue-400 font-bold">{odds.win}</span>
-                <span className="mx-2 text-white/10">/</span>
-                <span className="text-white/40">{odds.draw}</span>
-                <span className="mx-2 text-white/10">/</span>
+                <span className="mx-3 text-white/5">/</span>
+                <span className="text-white/30">{odds.draw}</span>
+                <span className="mx-3 text-white/5">/</span>
                 <span className="text-orange-400 font-bold">{odds.loss}</span>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-[10px] font-headline uppercase opacity-50 tracking-widest">Aggression</div>
-              <div className="text-xl font-headline text-primary font-bold">{Math.round(state.aggression * 100)}%</div>
+            <div className="text-right space-y-1">
+              <div className="text-[10px] font-headline uppercase opacity-50 tracking-[0.2em]">Squad Aggression</div>
+              <div className="text-2xl font-headline text-primary font-bold drop-shadow-sm">{Math.round(state.aggression * 100)}%</div>
             </div>
           </div>
-          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
              <div 
-              className="h-full bg-primary transition-all duration-1000" 
+              className="h-full bg-primary transition-all duration-1000 shadow-[0_0_15px_rgba(34,107,224,0.5)]" 
               style={{ width: `${state.aggression * 100}%` }} 
              />
           </div>
