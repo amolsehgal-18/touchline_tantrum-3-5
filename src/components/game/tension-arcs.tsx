@@ -14,18 +14,14 @@ export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
   const center = size / 2;
   
   const drawArc = (value: number, radius: number, color: string, label: string) => {
-    // Top semi-circle only (180 degrees)
-    // Starting from 180deg (left) to 0deg (right)
     const circumference = Math.PI * radius;
     const dash = value * circumference;
     const gap = circumference - dash;
     
-    // Path for top semi-circle: Move to (center-radius, center), Arc to (center+radius, center)
     const pathData = `M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`;
 
     return (
       <g key={label}>
-        {/* Background Track */}
         <path
           d={pathData}
           fill="none"
@@ -33,7 +29,6 @@ export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
           strokeWidth={strokeWidth}
           strokeLinecap="round"
         />
-        {/* Active Value */}
         <path
           d={pathData}
           fill="none"
@@ -52,7 +47,7 @@ export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
     <div className="relative flex flex-col items-center" style={{ width: size }}>
       <svg width={size} height={size / 2 + 10} className="overflow-visible">
         {drawArc(board, 50, "hsl(var(--primary))", "board")}
-        {drawArc(fans, 35, "hsl(var(--accent))", "fans")}
+        {drawArc(fans, 35, "hsl(var(--destructive))", "fans")}
       </svg>
       
       <div className="grid grid-cols-2 gap-3 text-[10px] font-headline uppercase tracking-wider mt-2 w-full px-1">
@@ -61,7 +56,7 @@ export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
           <span className="opacity-40 text-[7px] font-black">Board</span>
         </div>
         <div className="flex flex-col items-center pl-2">
-          <span className="text-accent font-black">{Math.round(fans * 100)}%</span>
+          <span className="text-destructive font-black">{Math.round(fans * 100)}%</span>
           <span className="opacity-40 text-[7px] font-black">Fans</span>
         </div>
       </div>

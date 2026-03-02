@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -137,7 +138,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     const fullTable = getLeagueTable(state);
     const userIndex = fullTable.findIndex(t => t.isUser);
     
-    // Show 3 teams centered on the user
     let start = Math.max(0, userIndex - 1);
     let end = start + 3;
     
@@ -234,23 +234,23 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           <span className="text-[10px] font-headline uppercase opacity-50">Matchday {activeConfig!.startGW + state.matchesPlayed}</span>
         </div>
         <div className="flex flex-col gap-0.5">
-          <div className="grid grid-cols-4 items-center px-2 py-1 text-[8px] font-headline uppercase opacity-40 border-b border-white/5 mb-1">
+          <div className="grid grid-cols-[30px_1fr_40px_40px] items-center px-2 py-1 text-[8px] font-headline uppercase opacity-40 border-b border-white/5 mb-1">
             <span>#</span>
             <span>Name</span>
-            <span className="text-center">G</span>
+            <span className="text-right">G</span>
             <span className="text-right">P</span>
           </div>
           {windowedLeagueTable.map((team) => (
             <div 
               key={team.team} 
               className={cn(
-                "grid grid-cols-4 items-center px-2 py-0.5 rounded text-[9px] transition-colors border",
+                "grid grid-cols-[30px_1fr_40px_40px] items-center px-2 py-1 rounded text-[9px] transition-colors border",
                 team.isUser ? "bg-primary/20 border-primary/50" : "bg-white/5 border-transparent"
               )}
             >
               <span className="font-headline opacity-50">{team.pos}</span>
               <span className={cn("font-bold truncate", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
-              <span className="text-center opacity-40">{team.gp}</span>
+              <span className="text-right opacity-40">{team.gp}</span>
               <span className="text-right font-bold">{team.pts}</span>
             </div>
           ))}

@@ -2,33 +2,33 @@
   "placeholderImages": [
     {
       "id": "manager-happy",
-      "description": "A happy football manager celebrating a goal",
-      "imageUrl": "https://images.unsplash.com/photo-1590402494628-9b9acf0b90ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxoYXBweSUyMG1hbmFnZXJ8ZW58MHx8fHwxNzcyNDg0NTkyfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "happy manager"
+      "description": "A successful football manager celebrating a massive victory",
+      "imageUrl": "https://images.unsplash.com/photo-1590402494628-9b9acf0b90ae?q=80&w=1080&auto=format&fit=crop",
+      "imageHint": "celebrating manager"
     },
     {
       "id": "manager-neutral",
-      "description": "A focused football manager on the touchline",
-      "imageUrl": "https://images.unsplash.com/photo-1631490238089-dd6f432133be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxmb290YmFsbCUyMGNvYWNofGVufDB8fHx8MTc3MjQ3OTg2Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "description": "A composed manager looking out onto the pitch",
+      "imageUrl": "https://images.unsplash.com/photo-1631490238089-dd6f432133be?q=80&w=1080&auto=format&fit=crop",
       "imageHint": "football coach"
     },
     {
       "id": "manager-stressed",
-      "description": "A stressed football manager with head in hands",
-      "imageUrl": "https://images.unsplash.com/photo-1686942165866-bf3dc1dfa842?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzdHJlc3NlZCUyMGNvYWNofGVufDB8fHx8MTc3MjQ4NDU5Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "description": "A stressed manager checking his watch on the touchline",
+      "imageUrl": "https://images.unsplash.com/photo-1686942165866-bf3dc1dfa842?q=80&w=1080&auto=format&fit=crop",
       "imageHint": "stressed coach"
     },
     {
       "id": "manager-angry",
-      "description": "An angry football manager shouting instructions",
-      "imageUrl": "https://images.unsplash.com/photo-1713947505562-299114c58523?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YW5ncnklMjBtYW5hZ2VyfGVufDB8fHx8MTc3MjQ4NDU5Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "description": "A manager shouting tactical instructions to his team",
+      "imageUrl": "https://images.unsplash.com/photo-1713947505562-299114c58523?q=80&w=1080&auto=format&fit=crop",
       "imageHint": "angry manager"
     },
     {
       "id": "manager-sacked",
-      "description": "A dejected football manager leaving the stadium",
-      "imageUrl": "https://images.unsplash.com/photo-1758523673058-f32cdb095792?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzYWQlMjBtYW5hZ2VyfGVufDB8fHx8MTc3MjQ4NDU5Mnww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "sad manager"
+      "description": "A dejected manager leaving the training ground for the last time",
+      "imageUrl": "https://images.unsplash.com/photo-1713947505646-64696c21e3ca?q=80&w=1080&auto=format&fit=crop",
+      "imageHint": "sad coach"
     }
   ]
 }
