@@ -131,6 +131,7 @@ export function calculateMood(state: GameState): ManagerMood {
 }
 
 export function getMatchOdds(aggression: number) {
+  // Aggression "Sweet Spot" is 0.5. Deviating from it makes odds worse.
   const win = (2.20 - (aggression * 0.8)).toFixed(2);
   const draw = "3.40";
   const loss = (2.40 + (aggression * 1.2)).toFixed(2);
@@ -138,11 +139,11 @@ export function getMatchOdds(aggression: number) {
 }
 
 export function calculateMatchResult(state: GameState): 'win' | 'draw' | 'loss' {
-  // PRD Formula base: 0.30 + (DressingRoom * 0.20)
-  // Plus the "Sweet Spot" aggression logic: 0.5 is ideal.
+  // The Sweet Spot Math: 0.5 is ideal aggression.
   const aggressionPenalty = Math.abs(0.5 - state.aggression) * 0.5;
   const adjustedAggressionFactor = (1 - aggressionPenalty) * 0.20;
   
+  // Win probability calculation: Base + Aggression Sweet Spot + Dressing Room Morale
   const winProb = 0.30 + adjustedAggressionFactor + (state.dressingRoom * 0.20);
 
   const roll = Math.random();

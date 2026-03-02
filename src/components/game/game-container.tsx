@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -84,6 +83,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     saveGameLocally(newState);
     setCurrentScenario(null);
 
+    // Every 3 swipes (6 days) triggers a match
     if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
       setPendingResult(calculateMatchResult(newState));
       setIsSimulating(true);
@@ -132,6 +132,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     const fullTable = getLeagueTable(state);
     const userIndex = fullTable.findIndex(t => t.isUser);
     
+    // Show 3 teams centered on the user
     let start = Math.max(0, userIndex - 1);
     let end = start + 3;
     
@@ -220,6 +221,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
+      {/* Table at the very top */}
       <div className="bg-black/60 border-b border-white/10 p-3 z-40 backdrop-blur-md">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
@@ -251,6 +253,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
+      {/* Tension arcs and mood on a clean horizontal grid */}
       <div className="p-4 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30 min-h-[140px]">
         <div className="flex justify-center items-center border-r border-white/5">
           <TensionArcs board={state.boardSupport} fans={state.fanSupport} />
@@ -286,6 +289,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
       </div>
 
+      {/* Footer stats with Aggression and Odds */}
       <div className="p-4 premium-glass bg-black/60 border-t border-white/10 z-30">
         <div className="flex justify-between items-end mb-3">
           <div className="space-y-1">
