@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -187,8 +188,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       "TAKEOVER: Mystery consortium interested in club acquisition.",
       "MARKET: Scouting reports suggest lack of depth in defensive areas."
     ];
-    // Double items for seamless scrolling
-    return [...items, ...items];
+    // Quadruple items for truly seamless slow scroll
+    return [...items, ...items, ...items, ...items];
   }, []);
 
   if (!state) {
@@ -197,7 +198,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         <div className="absolute inset-0 bg-primary/5 blur-[100px] pointer-events-none" />
         
         {setupStep === 0 && (
-          <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-center">
+          <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-center z-50">
             <div className="space-y-1">
               <h1 className="text-3xl font-headline font-black text-accent uppercase italic">Gaffer Protocol</h1>
               <p className="text-[9px] font-headline uppercase tracking-[0.4em] opacity-40 font-black">Initialization Stage 01</p>
@@ -219,7 +220,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
 
         {setupStep === 1 && (
-          <div className="w-full space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
+          <div className="w-full space-y-5 animate-in fade-in slide-in-from-right-4 duration-500 z-50">
             <div className="text-center space-y-1">
               <h2 className="text-2xl font-headline font-black text-primary uppercase italic">The Mission</h2>
               <p className="text-[9px] font-headline uppercase tracking-[0.3em] opacity-40 font-black">Stage 02: Objectives</p>
@@ -244,7 +245,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
 
         {setupStep === 2 && (
-          <div className="w-full space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+          <div className="w-full space-y-6 animate-in fade-in slide-in-from-right-4 duration-500 z-50">
              <div className="text-center space-y-1">
               <h2 className="text-2xl font-headline font-black text-accent uppercase italic">Final Prep</h2>
               <p className="text-[9px] font-headline uppercase tracking-[0.3em] opacity-40 font-black">Stage 03: Season Length</p>
@@ -293,15 +294,15 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
       {/* Top Header */}
-      <div className="bg-black/95 py-2.5 border-b border-white/10 text-center z-50">
+      <div className="bg-black/95 py-2.5 border-b border-white/10 text-center z-[100]">
         <span className="text-white text-[11px] font-headline font-black uppercase tracking-[0.4em]">
           {CAREER_MODES[state.mode].name} | GW {currentGW}
         </span>
       </div>
 
       {/* Docked League Table */}
-      <div className="bg-black/40 border-b border-white/5 p-2 z-40 backdrop-blur-md">
-        <div className="flex items-center justify-between mb-1.5">
+      <div className="bg-black/60 border-b border-white/5 p-2 z-[90] backdrop-blur-xl">
+        <div className="flex items-center justify-between mb-1">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1 font-black">
             <RefreshCw className="w-3 h-3 animate-spin" /> Live Standings
           </span>
@@ -313,7 +314,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
         <div className="flex flex-col gap-0.5">
           {windowedLeagueTable.map((team) => (
-            <div key={team.team} className={cn("flex justify-between items-center px-2 py-1.5 rounded text-[10px] transition-colors", team.isUser ? "bg-primary/20 border-l-2 border-primary" : "bg-white/5")}>
+            <div key={team.team} className={cn("flex justify-between items-center px-2 py-1 rounded text-[10px] transition-colors", team.isUser ? "bg-primary/20 border-l-2 border-primary" : "bg-white/5")}>
               <div className="flex items-center gap-3 min-w-0">
                 <span className="font-headline opacity-40 w-3 font-black">{team.pos}</span>
                 <span className={cn("font-black truncate max-w-[120px] uppercase tracking-tight text-[11px]", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
@@ -328,15 +329,15 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       </div>
 
       {/* Stats HUD (Layered behind cards) */}
-      <div className="px-4 py-2 grid grid-cols-2 bg-transparent z-10 border-b border-white/5 relative -mb-4">
-        <div className="flex justify-center items-center"><TensionArcs board={state.boardSupport} fans={state.fanSupport} /></div>
-        <div className="flex justify-center items-center"><ManagerMoodView mood={mood} /></div>
+      <div className="px-4 py-1 grid grid-cols-2 bg-transparent z-10 border-b border-white/5 relative -mb-2">
+        <div className="flex justify-center items-center scale-90 opacity-60"><TensionArcs board={state.boardSupport} fans={state.fanSupport} /></div>
+        <div className="flex justify-center items-center scale-90 opacity-60"><ManagerMoodView mood={mood} /></div>
       </div>
 
       {/* Action Center */}
-      <div className="flex-1 flex flex-col items-center justify-center p-2 relative overflow-hidden z-20">
+      <div className="flex-1 flex flex-col items-center justify-center p-2 relative overflow-hidden z-[80]">
         {matchIntro && (
-          <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-500">
+          <div className="absolute inset-0 z-[120] flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-500">
              <div className="space-y-2 text-center">
                 <Zap className="w-10 h-10 text-accent mx-auto animate-bounce" />
                 <h2 className="text-4xl font-headline font-black uppercase italic text-white tracking-tighter">MATCHDAY</h2>
@@ -348,7 +349,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         {isSimulating ? (
           <MatchRadar userTeam={state.userTeam} opponentTeam={opponentName} result={pendingResult} onComplete={onMatchComplete} />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center relative">
             {loading ? (
               <div className="text-center space-y-3">
                 <RefreshCw className="w-10 h-10 animate-spin text-primary mx-auto" />
@@ -368,8 +369,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       </div>
 
       {/* Footer Controls */}
-      <div className="bg-black/90 border-t border-white/10 z-30">
-        <div className="p-4 py-3 space-y-2.5">
+      <div className="bg-black/95 border-t border-white/10 z-[100]">
+        <div className="p-4 py-3 space-y-2">
           <div className="flex justify-between items-end px-1">
             <div className="flex flex-col gap-0.5">
               <div className="text-[9px] font-headline uppercase opacity-40 font-black tracking-widest">Next Match Odds</div>
@@ -390,7 +391,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         {/* Live News Ticker */}
         <div className="bg-destructive/10 border-t border-white/5 h-10 flex items-center overflow-hidden relative">
           <div className="bg-destructive text-white text-[10px] font-headline font-black px-4 py-1.5 z-20 absolute left-0 uppercase tracking-tighter flex items-center h-full">Breaking</div>
-          <div className="animate-ticker flex items-center gap-20 pl-[100px]">
+          <div className="animate-ticker flex items-center gap-20 pl-[100px]" style={{ animationDuration: '80s' }}>
             {newsItems.map((item, idx) => (
               <span key={idx} className="text-[11px] font-headline uppercase tracking-[0.2em] text-white/90 whitespace-nowrap font-black italic">{item}</span>
             ))}
