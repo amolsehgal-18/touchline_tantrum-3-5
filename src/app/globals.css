@@ -50,9 +50,9 @@
 }
 
 .premium-glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 @keyframes scanline {
@@ -70,4 +70,15 @@
   background: rgba(34, 107, 224, 0.3);
   animation: scanline 4s linear infinite;
   pointer-events: none;
+}
+
+@keyframes ticker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-ticker {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker 25s linear infinite;
 }

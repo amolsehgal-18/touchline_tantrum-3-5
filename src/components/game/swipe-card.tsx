@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef } from 'react';
@@ -32,23 +31,23 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
     if (!isDragging) return;
     setIsDragging(false);
 
-    if (dragX > 80) {
+    if (dragX > 60) {
       onDecision('right');
-    } else if (dragX < -80) {
+    } else if (dragX < -60) {
       onDecision('left');
     }
     setDragX(0);
   };
 
   const rotation = dragX / 10;
-  // Make the color pop sooner: calculate progress faster
-  const swipeProgress = Math.min(Math.abs(dragX) / 60, 1);
+  // Color pops up much sooner (15px threshold)
+  const swipeProgress = Math.min(Math.abs(dragX) / 40, 1);
   const isLeft = dragX < 0;
   const isRight = dragX > 0;
 
   return (
     <div 
-      className="relative w-full max-w-sm h-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing px-2 py-4"
+      className="relative w-full max-w-sm h-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing px-4 py-2"
       onMouseMove={handleTouchMove}
       onMouseDown={handleTouchStart}
       onMouseUp={handleTouchEnd}
@@ -65,74 +64,70 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
         }}
       >
         <SlantedContainer className={cn(
-          "w-full bg-card min-h-[400px] flex flex-col justify-between border-2 transition-all relative group shadow-2xl",
-          dragX < -30 ? "border-destructive shadow-[0_0_40px_rgba(239,68,68,0.4)]" : dragX > 30 ? "border-primary shadow-[0_0_40px_rgba(34,107,224,0.4)]" : "border-white/10"
+          "w-full bg-card min-h-[380px] flex flex-col justify-between border-2 transition-all relative group shadow-2xl p-6",
+          dragX < -15 ? "border-destructive shadow-[0_0_30px_rgba(239,68,68,0.3)]" : dragX > 15 ? "border-primary shadow-[0_0_30px_rgba(34,107,224,0.3)]" : "border-white/10"
         )}>
           {scenario.isBreaking && (
-            <div className="absolute top-0 right-0 bg-destructive text-white text-[9px] font-headline px-4 py-1.5 z-20 skew-x-[-20deg] shadow-lg font-black tracking-widest">
-              BREAKING
+            <div className="absolute top-0 right-0 bg-destructive text-white text-[8px] font-headline px-4 py-1.5 z-20 skew-x-[-15deg] font-black tracking-widest">
+              URGENT
             </div>
           )}
 
-          <div className="space-y-6">
-            <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-accent font-black">TACTICAL BRIEFING</div>
-            <p className="text-2xl leading-tight font-headline font-black text-white tracking-tight drop-shadow-sm">
+          <div className="space-y-4">
+            <div className="text-[10px] font-headline uppercase tracking-[0.3em] text-accent font-black opacity-80">Tactical Briefing</div>
+            <p className="text-lg md:text-xl leading-tight font-headline font-black text-white tracking-tight">
               {scenario.scenario}
             </p>
           </div>
 
-          <div className="mt-12 flex-1 flex flex-col justify-end">
-            <div className="grid grid-cols-2 gap-4 h-44 relative overflow-visible">
-              {/* Left Option Container (Red/Reject) */}
+          <div className="mt-8 flex-1 flex flex-col justify-end">
+            <div className="grid grid-cols-2 gap-3 h-32 relative">
+              {/* Left Option */}
               <div 
                 className={cn(
-                  "flex flex-col gap-3 p-4 rounded-xl border transition-all duration-300",
-                  isLeft && dragX < -15 ? "bg-destructive border-white/60 scale-105 shadow-2xl z-10" : "bg-white/5 border-transparent opacity-10"
+                  "flex flex-col gap-2 p-3 rounded-lg border transition-all duration-200",
+                  isLeft && dragX < -15 ? "bg-destructive border-white/40 scale-105 shadow-xl z-10" : "bg-white/5 border-transparent"
                 )}
-                style={{ 
-                  opacity: isLeft ? 0.3 + (swipeProgress * 0.7) : 0.05
-                }}
+                style={{ opacity: isLeft ? 0.4 + (swipeProgress * 0.6) : 0.1 }}
               >
-                <div className="flex items-center gap-1 text-white font-headline uppercase text-[16px] font-black italic tracking-tighter">
-                  <ChevronLeft className="w-5 h-5" /> REJECT
+                <div className="flex items-center gap-1 text-white font-headline uppercase text-[12px] font-black italic tracking-tighter">
+                  <ChevronLeft className="w-4 h-4" /> REJECT
                 </div>
-                <div className="text-[14px] font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
+                <div className="text-[11px] font-headline text-white leading-tight font-black">
                   {scenario.leftOption}
                 </div>
               </div>
 
-              {/* Right Option Container (Blue/Approve) */}
+              {/* Right Option */}
               <div 
                 className={cn(
-                  "flex flex-col gap-3 p-4 rounded-xl border text-right transition-all duration-300",
-                  isRight && dragX > 15 ? "bg-primary border-white/60 scale-105 shadow-2xl z-10" : "bg-white/5 border-transparent opacity-10"
+                  "flex flex-col gap-2 p-3 rounded-lg border text-right transition-all duration-200",
+                  isRight && dragX > 15 ? "bg-primary border-white/40 scale-105 shadow-xl z-10" : "bg-white/5 border-transparent"
                 )}
-                style={{ 
-                  opacity: isRight ? 0.3 + (swipeProgress * 0.7) : 0.05
-                }}
+                style={{ opacity: isRight ? 0.4 + (swipeProgress * 0.6) : 0.1 }}
               >
-                <div className="flex items-center gap-1 justify-end text-white font-headline uppercase text-[16px] font-black italic tracking-tighter">
-                  APPROVE <ChevronRight className="w-5 h-5" />
+                <div className="flex items-center gap-1 justify-end text-white font-headline uppercase text-[12px] font-black italic tracking-tighter">
+                  APPROVE <ChevronRight className="w-4 h-4" />
                 </div>
-                <div className="text-[14px] font-headline text-white leading-tight font-black tracking-tight drop-shadow-md">
+                <div className="text-[11px] font-headline text-white leading-tight font-black">
                   {scenario.rightOption}
                 </div>
               </div>
             </div>
 
             {Math.abs(dragX) < 15 && (
-              <div className="text-center mt-8 flex items-center justify-center gap-3 animate-pulse opacity-50">
-                <ChevronLeft className="w-4 h-4 text-destructive" />
-                <span className="text-[10px] font-headline uppercase tracking-[0.4em] font-black text-white">Swipe to Decide</span>
-                <ChevronRight className="w-4 h-4 text-primary" />
+              <div className="text-center mt-6 flex items-center justify-center gap-2 animate-pulse opacity-40">
+                <ChevronLeft className="w-3 h-3 text-destructive" />
+                <span className="text-[9px] font-headline uppercase tracking-[0.3em] font-black">Swipe to Act</span>
+                <ChevronRight className="w-3 h-3 text-primary" />
               </div>
             )}
           </div>
         </SlantedContainer>
       </div>
       
-      <div className="mt-10 text-center text-[10px] font-headline uppercase tracking-[0.6em] opacity-30 font-black italic text-white/50">
-        THE CLOCK IS TICKING...
+      <div className="mt-8 text-center text-[9px] font-headline uppercase tracking-[0.4em] opacity-20 font-black italic">
+        The clock is ticking...
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -175,6 +174,14 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     return fullTable.slice(start, end);
   }, [state]);
 
+  const newsItems = useMemo(() => [
+    "BREAKING: Fans plan protest outside stadium following tactical leaks.",
+    `EXCLUSIVE: ${state?.userTeam} Board reportedly considering alternative options.`,
+    "RUMOR: Star striker linked with shock move to rivals.",
+    "NEWS: Under-23 coach praised for defensive improvements.",
+    `STANDINGS: ${state?.userTeam} currently sitting in ${state?.currentLeaguePosition}th position.`
+  ], [state]);
+
   if (!state) {
     if (setupMode) {
       const mode = CAREER_MODES[setupMode];
@@ -279,7 +286,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   const mood = calculateMood(state);
   const odds = getMatchOdds(state.aggression);
-  const daysUntilMatch = (3 - (state.cardsSeen % 3)) * 2;
   const currentGW = activeConfig ? activeConfig.startGW + state.matchesPlayed : 0;
 
   return (
@@ -291,7 +297,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </span>
       </div>
 
-      <div className="bg-black/60 border-b border-white/10 p-3 z-40 backdrop-blur-md">
+      <div className="bg-black/40 border-b border-white/5 p-3 z-40 backdrop-blur-md">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
             <RefreshCw className="w-3 h-3 animate-spin" /> Live Standings
@@ -299,30 +305,20 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           <span className="text-[10px] font-headline uppercase opacity-50">Matchday {currentGW}</span>
         </div>
         <div className="flex flex-col gap-0.5">
-          <div className="flex justify-between items-center px-2 py-1 text-[8px] font-headline uppercase opacity-40 border-b border-white/5 mb-1">
-            <div className="flex gap-4">
-              <span className="w-4">#</span>
-              <span>Name</span>
-            </div>
-            <div className="flex gap-6 pr-1">
-              <span className="w-4 text-center">G</span>
-              <span className="w-4 text-center">P</span>
-            </div>
-          </div>
           {windowedLeagueTable.map((team) => (
             <div 
               key={team.team} 
               className={cn(
-                "flex justify-between items-center px-2 py-1.5 rounded text-[9px] transition-colors border",
-                team.isUser ? "bg-primary/20 border-primary/50" : "bg-white/5 border-transparent"
+                "flex justify-between items-center px-2 py-1.5 rounded text-[9px] transition-colors",
+                team.isUser ? "bg-primary/20 border-l-2 border-primary" : "bg-white/5"
               )}
             >
-              <div className="flex items-center gap-4 min-w-0">
-                <span className="font-headline opacity-50 w-4">{team.pos}</span>
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="font-headline opacity-50 w-3">{team.pos}</span>
                 <span className={cn("font-bold truncate max-w-[120px]", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
               </div>
-              <div className="flex items-center gap-6 pr-1">
-                <span className="opacity-40 w-4 text-center">{team.gp}</span>
+              <div className="flex items-center gap-5 pr-1 font-headline">
+                <span className="opacity-40 w-3 text-center">{team.gp}</span>
                 <span className="font-bold w-4 text-right">{team.pts}</span>
               </div>
             </div>
@@ -330,8 +326,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
-      <div className="p-4 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30 min-h-[140px]">
-        <div className="flex justify-center items-center border-r border-white/5">
+      <div className="p-4 grid grid-cols-2 bg-transparent z-30 min-h-[140px] border-b border-white/5">
+        <div className="flex justify-center items-center">
           <TensionArcs board={state.boardSupport} fans={state.fanSupport} />
         </div>
         <div className="flex justify-center items-center">
@@ -339,9 +335,9 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4 relative overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center p-2 gap-2 relative overflow-hidden">
         {matchIntro && (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/90 backdrop-blur-xl animate-in fade-in duration-500">
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-500">
              <div className="space-y-2 text-center">
                 <Zap className="w-12 h-12 text-accent mx-auto animate-bounce" />
                 <h2 className="text-4xl font-headline font-black uppercase italic text-white tracking-tighter">
@@ -357,7 +353,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
                 <div className="w-px h-10 bg-white/10" />
                 <div className="text-left">
                   <div className="text-[10px] font-headline uppercase opacity-40">Location</div>
-                  <div className="text-lg font-headline font-black uppercase text-accent">Away Grounds</div>
+                  <div className="text-lg font-headline font-black uppercase text-accent">Away</div>
                 </div>
              </div>
           </div>
@@ -371,70 +367,75 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             onComplete={onMatchComplete} 
           />
         ) : (
-          <div className="w-full flex-1 flex items-center justify-center relative">
+          <div className="w-full h-full flex items-center justify-center relative">
             {loading ? (
               <div className="text-center space-y-4">
                 <RefreshCw className="w-10 h-10 animate-spin text-primary mx-auto" />
-                <p className="text-[10px] font-headline uppercase tracking-[0.3em] opacity-40">Decrypting Comms...</p>
+                <p className="text-[10px] font-headline uppercase tracking-[0.3em] opacity-40">Processing Intelligence...</p>
               </div>
             ) : error ? (
               <div className="text-center space-y-4">
                 <AlertTriangle className="w-10 h-10 text-destructive mx-auto" />
                 <p className="text-xs uppercase font-headline opacity-50">{error}</p>
-                <SlantedButton onClick={fetchScenario}>Retry Decryption</SlantedButton>
+                <SlantedButton onClick={fetchScenario}>Retry Feed</SlantedButton>
               </div>
             ) : currentScenario ? (
-              <div className="relative w-full h-full flex flex-col items-center justify-center">
-                <div className="absolute top-0 left-0 right-0 flex justify-center z-50">
-                   <div className={cn(
-                     "flex items-center gap-2 px-4 py-1 slanted-container text-[10px] font-headline font-black uppercase tracking-widest",
-                     timeLeft <= 5 ? "bg-destructive text-white animate-pulse" : "bg-white/5 text-white/50"
-                   )}>
-                     <Clock className="w-3 h-3" /> {timeLeft}s REMAINING
-                   </div>
-                </div>
-                <SwipeCard 
-                  scenario={currentScenario} 
-                  onDecision={handleDecision} 
-                />
-              </div>
-            ) : (
-              <div className="text-center opacity-30 animate-pulse">
-                <Target className="w-12 h-12 mx-auto mb-2" />
-                <p className="text-[10px] font-headline uppercase tracking-widest">Awaiting Simulation...</p>
-              </div>
-            )}
+              <SwipeCard 
+                scenario={currentScenario} 
+                onDecision={handleDecision} 
+              />
+            ) : null}
           </div>
         )}
       </div>
 
-      <div className="p-4 premium-glass bg-black/60 border-t border-white/10 z-30">
-        <div className="flex justify-between items-end mb-3">
-          <div className="space-y-1">
-            <div className="text-[10px] font-headline uppercase opacity-50">Win Probability</div>
-            <div className="font-headline text-lg flex items-center gap-2">
-              <span className="text-blue-400">{Math.round(parseFloat(odds.win) * 100)}%</span>
-              <span className="text-white/20">|</span>
-              <span className="text-white/40">{Math.round(parseFloat(odds.draw) * 100)}%</span>
-              <span className="text-white/20">|</span>
-              <span className="text-orange-400">{Math.round(parseFloat(odds.loss) * 100)}%</span>
+      {/* Bottom Section: Timer & Odds & News Ticker */}
+      <div className="bg-black/80 border-t border-white/10 z-30">
+        <div className="p-4 space-y-4">
+          <div className="flex justify-between items-center px-1">
+            <div className="space-y-1">
+              <div className="text-[10px] font-headline uppercase opacity-50 font-black">Tactical Confidence</div>
+              <div className="font-headline text-sm flex items-center gap-2">
+                <span className="text-blue-400">W {Math.round(parseFloat(odds.win) * 100)}%</span>
+                <span className="text-white/40">D {Math.round(parseFloat(odds.draw) * 100)}%</span>
+                <span className="text-orange-400">L {Math.round(parseFloat(odds.loss) * 100)}%</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] font-headline uppercase opacity-50 font-black">Decision Time</div>
+              <div className={cn(
+                "text-lg font-headline font-black",
+                timeLeft <= 5 ? "text-destructive animate-pulse" : "text-white"
+              )}>
+                {timeLeft}s
+              </div>
             </div>
           </div>
-          <div className="text-right space-y-1">
-            <div className="text-[10px] font-headline uppercase opacity-50">Aggression</div>
-            <div className="text-lg font-headline text-primary font-bold">{Math.round(state.aggression * 100)}%</div>
+
+          {/* 15-Second Progress Timer Bar */}
+          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+            <div 
+              className={cn(
+                "h-full transition-all duration-1000 ease-linear",
+                timeLeft <= 5 ? "bg-destructive" : "bg-primary"
+              )} 
+              style={{ width: `${(timeLeft / 15) * 100}%` }} 
+            />
           </div>
         </div>
-        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-primary transition-all duration-1000" 
-            style={{ width: `${state.aggression * 100}%` }} 
-          />
-        </div>
-        <div className="flex justify-center mt-2">
-          <span className="text-[8px] font-headline uppercase opacity-30 tracking-widest font-bold">
-            {daysUntilMatch} Days until next Match
-          </span>
+
+        {/* Breaking News Ticker */}
+        <div className="bg-destructive/10 border-t border-white/5 h-8 flex items-center overflow-hidden relative">
+          <div className="bg-destructive text-white text-[8px] font-headline font-black px-3 py-1 z-20 absolute left-0 uppercase tracking-tighter">
+            Breaking
+          </div>
+          <div className="animate-ticker flex items-center gap-12 pl-[100px]">
+            {newsItems.map((item, idx) => (
+              <span key={idx} className="text-[9px] font-headline uppercase tracking-widest text-white/70 whitespace-nowrap">
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>

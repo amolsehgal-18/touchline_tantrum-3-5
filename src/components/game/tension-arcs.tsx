@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from 'react';
@@ -9,8 +8,8 @@ interface TensionArcsProps {
 }
 
 export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
-  const size = 120;
-  const strokeWidth = 10;
+  const size = 110;
+  const strokeWidth = 8;
   const center = size / 2;
   
   const drawArc = (value: number, radius: number, color: string, label: string) => {
@@ -25,7 +24,7 @@ export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
         <path
           d={pathData}
           fill="none"
-          stroke="rgba(255,255,255,0.08)"
+          stroke="rgba(255,255,255,0.05)"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
         />
@@ -37,28 +36,27 @@ export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
           strokeDasharray={`${dash} ${gap + circumference}`}
           strokeLinecap="round"
           className="transition-all duration-1000 ease-out"
-          style={{ filter: `drop-shadow(0 0 8px ${color}66)` }}
+          style={{ filter: `drop-shadow(0 0 5px ${color}44)` }}
         />
       </g>
     );
   };
 
   return (
-    <div className="relative flex flex-col items-center" style={{ width: size }}>
-      <svg width={size} height={size / 2 + 10} className="overflow-visible">
-        {drawArc(board, 50, "hsl(var(--primary))", "board")}
-        {/* Fan support set to Red as requested */}
-        {drawArc(fans, 35, "#ef4444", "fans")}
+    <div className="relative flex flex-col items-center bg-transparent" style={{ width: size }}>
+      <svg width={size} height={size / 2 + 5} className="overflow-visible">
+        {drawArc(board, 45, "hsl(var(--primary))", "board")}
+        {drawArc(fans, 32, "#ef4444", "fans")}
       </svg>
       
-      <div className="grid grid-cols-2 gap-3 text-[10px] font-headline uppercase tracking-wider mt-2 w-full px-1">
-        <div className="flex flex-col items-center border-r border-white/10 pr-2">
+      <div className="grid grid-cols-2 gap-2 text-[9px] font-headline uppercase tracking-wider mt-1 w-full px-1">
+        <div className="flex flex-col items-center border-r border-white/5">
           <span className="text-primary font-black">{Math.round(board * 100)}%</span>
-          <span className="opacity-40 text-[7px] font-black">Board</span>
+          <span className="opacity-30 text-[7px] font-black">Board</span>
         </div>
-        <div className="flex flex-col items-center pl-2">
+        <div className="flex flex-col items-center">
           <span className="text-[#ef4444] font-black">{Math.round(fans * 100)}%</span>
-          <span className="opacity-40 text-[7px] font-black">Fans</span>
+          <span className="opacity-30 text-[7px] font-black">Fans</span>
         </div>
       </div>
     </div>
