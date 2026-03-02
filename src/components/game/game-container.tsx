@@ -280,15 +280,23 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const mood = calculateMood(state);
   const odds = getMatchOdds(state.aggression);
   const daysUntilMatch = (3 - (state.cardsSeen % 3)) * 2;
+  const currentGW = activeConfig ? activeConfig.startGW + state.matchesPlayed : 0;
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
+      {/* Top Header: Game Mode & GW */}
+      <div className="bg-black/80 py-2 border-b border-white/5 text-center z-50">
+        <span className="text-white text-[10px] font-headline font-black uppercase tracking-[0.4em]">
+          {CAREER_MODES[state.mode].name} | GW {currentGW}
+        </span>
+      </div>
+
       <div className="bg-black/60 border-b border-white/10 p-3 z-40 backdrop-blur-md">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1">
             <RefreshCw className="w-3 h-3 animate-spin" /> Live Standings
           </span>
-          <span className="text-[10px] font-headline uppercase opacity-50">Matchday {activeConfig!.startGW + state.matchesPlayed}</span>
+          <span className="text-[10px] font-headline uppercase opacity-50">Matchday {currentGW}</span>
         </div>
         <div className="flex flex-col gap-0.5">
           <div className="flex justify-between items-center px-2 py-1 text-[8px] font-headline uppercase opacity-40 border-b border-white/5 mb-1">

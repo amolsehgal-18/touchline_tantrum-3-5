@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useRef } from 'react';
@@ -31,17 +32,19 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
     if (!isDragging) return;
     setIsDragging(false);
 
-    if (dragX > 100) {
+    if (dragX > 80) {
       onDecision('right');
-    } else if (dragX < -100) {
+    } else if (dragX < -80) {
       onDecision('left');
     }
     setDragX(0);
   };
 
   const rotation = dragX / 10;
-  const swipeProgress = Math.min(Math.abs(dragX) / 100, 1);
+  // Make the color pop sooner: calculate progress faster
+  const swipeProgress = Math.min(Math.abs(dragX) / 60, 1);
   const isLeft = dragX < 0;
+  const isRight = dragX > 0;
 
   return (
     <div 
@@ -63,7 +66,7 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
       >
         <SlantedContainer className={cn(
           "w-full bg-card min-h-[400px] flex flex-col justify-between border-2 transition-all relative group shadow-2xl",
-          dragX < -50 ? "border-destructive shadow-[0_0_40px_rgba(239,68,68,0.4)]" : dragX > 50 ? "border-primary shadow-[0_0_40px_rgba(34,107,224,0.4)]" : "border-white/10"
+          dragX < -30 ? "border-destructive shadow-[0_0_40px_rgba(239,68,68,0.4)]" : dragX > 30 ? "border-primary shadow-[0_0_40px_rgba(34,107,224,0.4)]" : "border-white/10"
         )}>
           {scenario.isBreaking && (
             <div className="absolute top-0 right-0 bg-destructive text-white text-[9px] font-headline px-4 py-1.5 z-20 skew-x-[-20deg] shadow-lg font-black tracking-widest">
@@ -84,10 +87,10 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
               <div 
                 className={cn(
                   "flex flex-col gap-3 p-4 rounded-xl border transition-all duration-300",
-                  isLeft ? "bg-destructive border-white/40 scale-110 shadow-2xl z-10" : "bg-white/5 border-transparent opacity-20"
+                  isLeft && dragX < -15 ? "bg-destructive border-white/60 scale-105 shadow-2xl z-10" : "bg-white/5 border-transparent opacity-10"
                 )}
                 style={{ 
-                  opacity: isLeft ? 0.9 + (swipeProgress * 0.1) : 0.05
+                  opacity: isLeft ? 0.3 + (swipeProgress * 0.7) : 0.05
                 }}
               >
                 <div className="flex items-center gap-1 text-white font-headline uppercase text-[16px] font-black italic tracking-tighter">
@@ -102,10 +105,10 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
               <div 
                 className={cn(
                   "flex flex-col gap-3 p-4 rounded-xl border text-right transition-all duration-300",
-                  !isLeft && dragX > 0 ? "bg-primary border-white/40 scale-110 shadow-2xl z-10" : "bg-white/5 border-transparent opacity-20"
+                  isRight && dragX > 15 ? "bg-primary border-white/60 scale-105 shadow-2xl z-10" : "bg-white/5 border-transparent opacity-10"
                 )}
                 style={{ 
-                  opacity: !isLeft && dragX > 0 ? 0.9 + (swipeProgress * 0.1) : 0.05
+                  opacity: isRight ? 0.3 + (swipeProgress * 0.7) : 0.05
                 }}
               >
                 <div className="flex items-center gap-1 justify-end text-white font-headline uppercase text-[16px] font-black italic tracking-tighter">
@@ -117,7 +120,7 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
               </div>
             </div>
 
-            {Math.abs(dragX) < 20 && (
+            {Math.abs(dragX) < 15 && (
               <div className="text-center mt-8 flex items-center justify-center gap-3 animate-pulse opacity-50">
                 <ChevronLeft className="w-4 h-4 text-destructive" />
                 <span className="text-[10px] font-headline uppercase tracking-[0.4em] font-black text-white">Swipe to Decide</span>
