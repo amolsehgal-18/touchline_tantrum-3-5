@@ -8,20 +8,20 @@
     },
     {
       "id": "manager-neutral",
-      "description": "A composed, professional manager in a dark suit with a cool blue tactical aura, stylized illustration style",
-      "imageUrl": "https://images.unsplash.com/photo-1665822814047-6ef8249da90e?q=80&w=2070&auto=format&fit=crop",
-      "imageHint": "composed manager suit"
+      "description": "A composed, professional manager in a dark suit on the touchline",
+      "imageUrl": "https://images.unsplash.com/photo-1519766428916-217059f7395c?q=80&w=2070&auto=format&fit=crop",
+      "imageHint": "composed coach"
     },
     {
       "id": "manager-stressed",
-      "description": "A stressed manager checking his watch anxiously on the touchline during a tense match",
+      "description": "A stressed manager checking his watch anxiously on the touchline",
       "imageUrl": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "stressed coach"
     },
     {
       "id": "manager-angry",
-      "description": "A manager shouting tactical instructions to his team in frustration under the floodlights",
-      "imageUrl": "https://images.unsplash.com/photo-1721734081214-1be31adce713?q=80&w=2070&auto=format&fit=crop",
+      "description": "A manager shouting tactical instructions to his team in frustration",
+      "imageUrl": "https://images.unsplash.com/photo-1599586120536-a7966465495e?q=80&w=2070&auto=format&fit=crop",
       "imageHint": "angry manager"
     },
     {
