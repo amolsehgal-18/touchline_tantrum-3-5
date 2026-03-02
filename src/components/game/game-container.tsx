@@ -13,13 +13,9 @@ import { getAiScenarioPresentation } from '@/ai/flows/ai-scenario-presentation-f
 import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
 import { RefreshCw, AlertTriangle, Trophy, Target, Shield, Calendar, ChevronLeft, User, Users, Clock, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
 
 export const GameContainer = ({ initialState }: { initialState?: GameState }) => {
   const [state, setState] = useState<GameState | null>(initialState || null);
-  const [setupMode, setSetupMode] = useState<CareerMode | null>(null);
-  const [managerName, setManagerName] = useState("Gaffer");
-  const [clubName, setClubName] = useState("United FC");
   const [currentScenario, setCurrentScenario] = useState<AiScenarioPresentationOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -169,6 +165,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     return fullTable.slice(start, end);
   }, [state]);
 
+  const odds = state ? getMatchOdds(state.aggression) : { win: '0.33', draw: '0.33', loss: '0.34' };
   const newsItems = useMemo(() => [
     "BREAKING: Fans plan protest outside stadium following tactical leaks.",
     `EXCLUSIVE: ${state?.userTeam} Board reportedly considering alternative options.`,
@@ -316,12 +313,20 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
       </div>
 
-      {/* Bottom Section: Timer Bar & News Ticker */}
+      {/* Bottom Section: Odds, Aggression, Timer Bar & News Ticker */}
       <div className="bg-black/80 border-t border-white/10 z-30 pb-0">
         <div className="p-4 space-y-2">
           <div className="flex justify-between items-center px-1">
-            <div className="text-[10px] font-headline uppercase opacity-50 font-black">Squad Aggression</div>
-            <div className="text-[10px] font-headline uppercase opacity-50 font-black">Decision Window</div>
+            <div className="flex flex-col">
+              <div className="text-[8px] font-headline uppercase opacity-40 font-black">Next Match Odds</div>
+              <div className="text-[10px] font-headline font-black text-white/90">
+                W: {Math.round(parseFloat(odds.win)*100)}% | D: {Math.round(parseFloat(odds.draw)*100)}% | L: {Math.round(parseFloat(odds.loss)*100)}%
+              </div>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="text-[8px] font-headline uppercase opacity-40 font-black">Squad Aggression</div>
+              <div className="text-[10px] font-headline font-black text-accent">{Math.round(state.aggression * 100)}%</div>
+            </div>
           </div>
 
           {/* 15-Second Progress Timer Bar */}
