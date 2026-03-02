@@ -84,6 +84,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
+      // Pitch markings
       ctx.strokeStyle = 'rgba(255,255,255,0.15)';
       ctx.lineWidth = 1;
       ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
@@ -95,12 +96,14 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.arc(canvas.width / 2, canvas.height / 2, 30, 0, Math.PI * 2);
       ctx.stroke();
 
+      // Ball Physics & Possession
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
         const dribbleAngle = Date.now() / 60;
         ball.x = p.x + Math.cos(dribbleAngle) * 6;
         ball.y = p.y + Math.sin(dribbleAngle) * 6;
         
+        // Move towards opponent goal
         const targetGoalX = p.team === 'user' ? canvas.width - 15 : 15;
         const dx = targetGoalX - p.x;
         const dy = (canvas.height / 2) - p.y;
@@ -109,6 +112,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         p.vx = (dx / dist) * 4.5;
         p.vy = (dy / dist) * 4.5;
 
+        // Chance to lose ball or pass
         if (Math.random() < 0.2) {
           ball.possessorIndex = -1;
           ball.vx = (p.team === 'user' ? 14 : -14) + (Math.random() - 0.5) * 8;
@@ -123,6 +127,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         if (ball.x < 12 || ball.x > canvas.width - 12) ball.vx *= -1;
         if (ball.y < 12 || ball.y > canvas.height - 12) ball.vy *= -1;
 
+        // Pickup logic
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
@@ -133,6 +138,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
+      // Player Movement
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
           const chaseDist = 140;
@@ -164,6 +170,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         p.x += p.vx;
         p.y += p.vy;
 
+        // Draw Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
@@ -173,6 +180,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.stroke();
       });
 
+      // Draw Ball
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
