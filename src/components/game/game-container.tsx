@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, getLeagueTable } from '@/lib/game-logic';
 import { SlantedContainer, SlantedButton } from './slanted-elements';
 import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
 import { TensionArcs } from './tension-arcs';
 import { getAiScenarioPresentation, AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, Share2, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Share2, AlertTriangle, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const GameContainer = ({ initialState }: { initialState?: GameState }) => {
@@ -17,12 +17,18 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [isSimulating, setIsSimulating] = useState(false);
   const [timer, setTimer] = useState(15);
   const [error, setError] = useState<string | null>(null);
+  
+  // Track if we are currently fetching to prevent double-calls
+  const isFetchingRef = useRef(false);
 
   const fetchScenario = useCallback(async () => {
-    if (state.isSacked || loading) return;
+    if (state.isSacked || isFetchingRef.current) return;
+    
+    isFetchingRef.current = true;
     setLoading(true);
     setError(null);
     setTimer(15);
+
     try {
       const result = await getAiScenarioPresentation({
         boardSupport: state.boardSupport,
@@ -42,24 +48,18 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setError("Intel transmission failed. Reconnecting...");
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
     }
-  }, [state.boardSupport, state.fanSupport, state.dressingRoom, state.aggression, state.userTeam, state.currentLeaguePosition, state.sagaObjective, state.objectiveMet, state.history, state.isSacked, loading]);
+  }, [state]);
 
+  // Initial fetch and fetch when scenario is empty
   useEffect(() => {
     if (!currentScenario && !isSimulating && !state.isSacked && !loading && !error) {
       fetchScenario();
     }
   }, [currentScenario, isSimulating, state.isSacked, loading, error, fetchScenario]);
 
-  useEffect(() => {
-    if (error) {
-      const timeout = setTimeout(() => {
-        setError(null);
-      }, 5000);
-      return () => clearTimeout(timeout);
-    }
-  }, [error]);
-
+  // Handle timer
   useEffect(() => {
     if (currentScenario && !isSimulating && !loading && !error) {
       const interval = setInterval(() => {
@@ -156,7 +156,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   }
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background">
+    <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
       {/* Live League Table Header */}
       <div className="bg-black/60 border-b border-white/10 p-2 z-40 backdrop-blur-md">
         <div className="flex items-center justify-between px-2 mb-2">
@@ -182,7 +182,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
-      {/* Tension Dashboard Section */}
+      {/* Tension Dashboard Section: Tension Arcs (Left) | Manager Mood (Right) */}
       <div className="p-4 grid grid-cols-2 premium-glass border-b border-white/5 bg-black/20 z-30">
         <div className="flex justify-center items-center border-r border-white/5 pr-4">
           <TensionArcs board={state.boardSupport} fans={state.fanSupport} morale={state.dressingRoom} />
@@ -201,18 +201,33 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             {loading || error ? (
               <SlantedContainer className="w-full h-full flex flex-col items-center justify-center gap-4 border-white/10 bg-white/5">
                 {error ? (
-                  <AlertTriangle className="w-12 h-12 text-destructive animate-pulse" />
+                  <>
+                    <AlertTriangle className="w-12 h-12 text-destructive animate-pulse" />
+                    <div className="space-y-4 text-center">
+                      <span className="text-sm font-headline uppercase tracking-[0.2em] text-destructive block">
+                        Transmission Cut
+                      </span>
+                      <p className="text-[10px] opacity-40 uppercase font-headline">
+                        Intel feed interrupted. Re-syncing with HQ...
+                      </p>
+                      <SlantedButton onClick={() => fetchScenario()} className="bg-destructive/20 text-destructive text-[10px] px-4 py-2 mt-4">
+                        RECONNECT MANUALLY
+                      </SlantedButton>
+                    </div>
+                  </>
                 ) : (
-                  <RefreshCw className="w-12 h-12 animate-spin text-primary" />
+                  <>
+                    <RefreshCw className="w-12 h-12 animate-spin text-primary" />
+                    <div className="space-y-2 text-center">
+                      <span className="text-sm font-headline uppercase tracking-[0.2em] text-primary block">
+                        Transmitting Intel
+                      </span>
+                      <p className="text-[10px] opacity-40 uppercase font-headline">
+                        Parsing Squad Tension Triangle...
+                      </p>
+                    </div>
+                  </>
                 )}
-                <div className="space-y-2 text-center">
-                  <span className="text-sm font-headline uppercase tracking-[0.2em] text-primary block">
-                    {error ? "Transmission Cut" : "Transmitting Intel"}
-                  </span>
-                  <p className="text-[10px] opacity-40 uppercase font-headline">
-                    {error || "Parsing Squad Tension Triangle..."}
-                  </p>
-                </div>
               </SlantedContainer>
             ) : currentScenario ? (
               <SlantedContainer className="w-full relative scanline animate-in fade-in zoom-in duration-500 shadow-2xl">

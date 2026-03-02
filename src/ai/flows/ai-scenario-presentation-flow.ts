@@ -36,7 +36,7 @@ const ImpactSchema = z.object({
 
 // Define the output schema for the AI scenario generation.
 const AiScenarioPresentationOutputSchema = z.object({
-  scenario: z.string().describe('The description of the scenario.'),
+  scenario: z.string().describe('The description of the scenario, customized for the user\'s team.'),
   leftOption: z.string().describe('Text for the left decision option.'),
   rightOption: z.string().describe('Text for the right decision option.'),
   impactLeft: ImpactSchema.describe('Impacts on stats if left option is chosen.'),
@@ -56,7 +56,7 @@ const aiScenarioPresentationPrompt = ai.definePrompt({
   name: 'aiScenarioPresentationPrompt',
   input: {
     schema: z.object({
-      scenario: z.string(),
+      baseScenario: z.string(),
       leftOption: z.string(),
       rightOption: z.string(),
       impactLeft: ImpactSchema,
@@ -68,38 +68,26 @@ const aiScenarioPresentationPrompt = ai.definePrompt({
     })
   },
   output: {schema: AiScenarioPresentationOutputSchema},
-  model: 'googleai/gemini-1.5-flash',
-  prompt: `You are a football manager simulator AI. Your task is to present a critical scenario to the manager, along with two distinct options and their pre-calculated impacts. The manager will choose one of these options.
-
-You are currently managing {{{userTeam}}}, sitting at position {{{currentLeaguePosition}}} in the league.
-
-Here is the scenario data:
-Scenario: {{{scenario}}}
-Left Option: {{{leftOption}}}
-Right Option: {{{rightOption}}}
-
-Your goal is to present this information clearly and concisely as a JSON object matching the provided schema. Do not add any conversational text outside the JSON. Ensure the 'scenario', 'leftOption', and 'rightOption' fields are exactly as provided.
-
-Output JSON:
-{
-  "scenario": "{{{scenario}}}",
-  "leftOption": "{{{leftOption}}}",
-  "rightOption": "{{{rightOption}}}",
-  "impactLeft": {
-    "board": {{{impactLeft.board}}},
-    "fans": {{{impactLeft.fans}}},
-    "squad": {{{impactLeft.squad}}},
-    "aggression": {{{impactLeft.aggression}}}
-  },
-  "impactRight": {
-    "board": {{{impactRight.board}}},
-    "fans": {{{impactRight.fans}}},
-    "squad": {{{impactRight.squad}}},
-    "aggression": {{{impactRight.aggression}}}
-  },
-  "imageCategory": "{{{imageCategory}}}",
-  "isBreaking": {{{isBreaking}}}
-}`
+  prompt: `You are a football manager simulator AI for the game "Touchline Tantrum".
+  
+  Your task is to rewrite and present a scenario to the manager of {{{userTeam}}}, who are currently {{{currentLeaguePosition}}} in the league.
+  
+  Base Scenario: {{{baseScenario}}}
+  Option A (Left): {{{leftOption}}}
+  Option B (Right): {{{rightOption}}}
+  
+  Instructions:
+  1. Rewrite the scenario to be punchy, dramatic, and specific to {{{userTeam}}}.
+  2. Keep the core meaning of the scenario and the options.
+  3. Return the pre-calculated impacts exactly as provided.
+  4. Ensure the output matches the requested JSON schema.
+  
+  Pre-calculated Impacts (DO NOT CHANGE THESE):
+  Left: Board: {{{impactLeft.board}}}, Fans: {{{impactLeft.fans}}}, Squad: {{{impactLeft.squad}}}, Aggression: {{{impactLeft.aggression}}}
+  Right: Board: {{{impactRight.board}}}, Fans: {{{impactRight.fans}}}, Squad: {{{impactRight.squad}}}, Aggression: {{{impactRight.aggression}}}
+  
+  Image Category: {{{imageCategory}}}
+  Is Breaking: {{{isBreaking}}}`,
 });
 
 const aiScenarioPresentationFlow = ai.defineFlow(
@@ -119,18 +107,16 @@ const aiScenarioPresentationFlow = ai.defineFlow(
       eligibleScenarios = SCENARIO_CARDS;
     }
 
-    // Apply stat-awareness filtering based on current game state.
+    // Apply stat-awareness filtering
     const { boardSupport, dressingRoom } = input;
     let prioritizedScenarios: ScenarioCardData[] = [];
 
-    // Prioritize crises if Board Trust is low
     if (boardSupport < 0.3) {
         prioritizedScenarios = eligibleScenarios.filter(card =>
             card.isBreaking || ['finance', 'board_pressure'].includes(card.imageCategory)
         );
     }
 
-    // Prioritize morale issues if Dressing Room is low
     if (dressingRoom < 0.3 && prioritizedScenarios.length === 0) {
         prioritizedScenarios = eligibleScenarios.filter(card =>
             ['locker', 'training'].includes(card.gameCategory)
@@ -138,10 +124,7 @@ const aiScenarioPresentationFlow = ai.defineFlow(
     }
 
     let finalScenarios = prioritizedScenarios.length > 0 ? prioritizedScenarios : eligibleScenarios;
-
-    if (finalScenarios.length === 0) {
-      finalScenarios = SCENARIO_CARDS;
-    }
+    if (finalScenarios.length === 0) finalScenarios = SCENARIO_CARDS;
 
     const selectedScenario = finalScenarios[Math.floor(Math.random() * finalScenarios.length)];
 
@@ -160,7 +143,7 @@ const aiScenarioPresentationFlow = ai.defineFlow(
     };
 
     const promptInput = {
-      scenario: selectedScenario.scenarioText,
+      baseScenario: selectedScenario.scenarioText,
       leftOption: selectedScenario.leftOptionText,
       rightOption: selectedScenario.rightOptionText,
       impactLeft: impactLeft,
@@ -171,8 +154,8 @@ const aiScenarioPresentationFlow = ai.defineFlow(
       currentLeaguePosition: input.currentLeaguePosition,
     };
 
-    const { output } = await aiScenarioPresentationPrompt(promptInput);
-    return output!;
+    const response = await aiScenarioPresentationPrompt(promptInput);
+    return response.output!;
   }
 );
 
