@@ -31,7 +31,7 @@ const ImpactSchema = z.object({
   board: z.number().int().describe('Impact on board support (-20 to +15).'),
   fans: z.number().int().describe('Impact on fan support (-20 to +15).'),
   squad: z.number().int().describe('Impact on dressing room morale (-20 to +15).'),
-  aggression: z.number().min(-0.1).max(0.1).describe('Impact on aggression (-0.1 to +0.1).'),
+  aggression: z.number().describe('Impact on aggression (-0.1 to +0.1).'),
 });
 
 // Define the output schema for the AI scenario generation.
@@ -47,13 +47,9 @@ const AiScenarioPresentationOutputSchema = z.object({
 
 export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentationOutputSchema>;
 
-// Helper to get a random aggression impact within the specified range (-0.1 to 0.1)
-const getRandomAggressionImpact = (): number => {
-  return (Math.random() * 0.2 - 0.1);
-};
-
 const aiScenarioPresentationPrompt = ai.definePrompt({
   name: 'aiScenarioPresentationPrompt',
+  model: 'googleai/gemini-1.5-flash',
   input: {
     schema: z.object({
       baseScenario: z.string(),
@@ -107,42 +103,23 @@ const aiScenarioPresentationFlow = ai.defineFlow(
       eligibleScenarios = SCENARIO_CARDS;
     }
 
-    // Apply stat-awareness filtering
-    const { boardSupport, dressingRoom } = input;
-    let prioritizedScenarios: ScenarioCardData[] = [];
-
-    if (boardSupport < 0.3) {
-        prioritizedScenarios = eligibleScenarios.filter(card =>
-            card.isBreaking || ['finance', 'board_pressure'].includes(card.imageCategory)
-        );
-    }
-
-    if (dressingRoom < 0.3 && prioritizedScenarios.length === 0) {
-        prioritizedScenarios = eligibleScenarios.filter(card =>
-            ['locker', 'training'].includes(card.gameCategory)
-        );
-    }
-
-    let finalScenarios = prioritizedScenarios.length > 0 ? prioritizedScenarios : eligibleScenarios;
-    if (finalScenarios.length === 0) finalScenarios = SCENARIO_CARDS;
-
-    const selectedScenario = finalScenarios[Math.floor(Math.random() * finalScenarios.length)];
+    const selectedScenario = eligibleScenarios[Math.floor(Math.random() * eligibleScenarios.length)];
 
     const impactLeft = {
       board: selectedScenario.boardImpact,
       fans: selectedScenario.fanImpact,
       squad: selectedScenario.dressingRoomImpact,
-      aggression: getRandomAggressionImpact(),
+      aggression: Math.random() * 0.2 - 0.1,
     };
 
     const impactRight = {
       board: -selectedScenario.boardImpact,
       fans: -selectedScenario.fanImpact,
       squad: -selectedScenario.dressingRoomImpact,
-      aggression: getRandomAggressionImpact(),
+      aggression: Math.random() * 0.2 - 0.1,
     };
 
-    const promptInput = {
+    const { output } = await aiScenarioPresentationPrompt({
       baseScenario: selectedScenario.scenarioText,
       leftOption: selectedScenario.leftOptionText,
       rightOption: selectedScenario.rightOptionText,
@@ -152,10 +129,13 @@ const aiScenarioPresentationFlow = ai.defineFlow(
       isBreaking: selectedScenario.isBreaking,
       userTeam: input.userTeam,
       currentLeaguePosition: input.currentLeaguePosition,
-    };
+    });
 
-    const response = await aiScenarioPresentationPrompt(promptInput);
-    return response.output!;
+    if (!output) {
+      throw new Error('AI failed to generate a scenario presentation');
+    }
+
+    return output;
   }
 );
 

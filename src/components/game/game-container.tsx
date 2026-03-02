@@ -7,7 +7,7 @@ import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
 import { TensionArcs } from './tension-arcs';
 import { getAiScenarioPresentation, AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, Share2, AlertTriangle, Play } from 'lucide-react';
+import { RefreshCw, Share2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const GameContainer = ({ initialState }: { initialState?: GameState }) => {
@@ -18,7 +18,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [timer, setTimer] = useState(15);
   const [error, setError] = useState<string | null>(null);
   
-  // Track if we are currently fetching to prevent double-calls
   const isFetchingRef = useRef(false);
 
   const fetchScenario = useCallback(async () => {
@@ -50,7 +49,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [state]);
+  }, [state.boardSupport, state.fanSupport, state.dressingRoom, state.aggression, state.userTeam, state.currentLeaguePosition, state.sagaObjective, state.objectiveMet, state.history, state.isSacked]);
 
   // Initial fetch and fetch when scenario is empty
   useEffect(() => {
