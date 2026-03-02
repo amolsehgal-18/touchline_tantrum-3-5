@@ -29,6 +29,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setTimer(15);
 
     try {
+      // getAiScenarioPresentation now has a bulletproof local fallback
       const result = await getAiScenarioPresentation({
         boardSupport: state.boardSupport,
         fanSupport: state.fanSupport,
@@ -43,7 +44,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       setCurrentScenario(result);
       setError(null);
     } catch (err) {
-      console.error("Failed to fetch scenario", err);
+      console.error("Critical error in scenario fetch", err);
       setError("Intel transmission failed. Reconnecting...");
     } finally {
       setLoading(false);

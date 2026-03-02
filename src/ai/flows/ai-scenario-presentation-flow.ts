@@ -117,7 +117,7 @@ const aiScenarioPresentationFlow = ai.defineFlow(
       currentLeaguePosition: input.currentLeaguePosition,
     });
 
-    if (!output) throw new Error('AI failed');
+    if (!output) throw new Error('AI failed to produce output');
     return output;
   }
 );
@@ -125,19 +125,22 @@ const aiScenarioPresentationFlow = ai.defineFlow(
 /**
  * Robust wrapper for the scenario presentation flow.
  * If the AI service fails, it automatically falls back to a local scenario.
+ * This function is guaranteed to return a valid scenario object.
  */
 export async function getAiScenarioPresentation(
   input: AiScenarioPresentationInput
 ): Promise<AiScenarioPresentationOutput> {
   try {
+    // Attempt the AI flow
     return await aiScenarioPresentationFlow(input);
   } catch (error) {
-    console.error("Genkit Flow failed, using local fallback:", error);
+    // Fallback to local scenarios from src/lib/game-scenarios.ts
+    const localScenarios = SCENARIO_CARDS;
+    let eligible = localScenarios.filter(c => !input.excludedScenarioTexts.includes(c.scenarioText));
+    if (eligible.length === 0) eligible = localScenarios;
     
-    // Fallback logic using local SCENARIO_CARDS
-    let eligible = SCENARIO_CARDS.filter(c => !input.excludedScenarioTexts.includes(c.scenarioText));
-    if (eligible.length === 0) eligible = SCENARIO_CARDS;
-    const card = eligible[Math.floor(Math.random() * eligible.length)];
+    // Pick a random card
+    const card = eligible[Math.floor(Math.random() * eligible.length)] || localScenarios[0];
     
     return {
       scenario: card.scenarioText,
