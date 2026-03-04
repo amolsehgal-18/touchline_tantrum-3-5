@@ -2,7 +2,7 @@
 'use server';
 /**
  * @fileOverview A Genkit flow for generating dynamic, context-aware scenarios.
- * Uses a hybrid approach: local database for balance, AI for drama.
+ * Uses unique ID tracking and strict exclusion to ensure variety.
  */
 
 import {ai} from '@/ai/genkit';
@@ -82,15 +82,12 @@ export async function getAiScenarioPresentation(
 ): Promise<AiScenarioPresentationOutput> {
   const excludedIds = input.excludedScenarioIds || [];
   
-  // Strict Exclusion Filter Logic
   let eligible = SCENARIO_CARDS.filter(c => !excludedIds.includes(c.id));
   
-  // If we've run out of unique cards, recycle the deck
   if (eligible.length === 0) {
      eligible = SCENARIO_CARDS;
   }
   
-  // Randomly pick from eligible cards
   const card = eligible[Math.floor(Math.random() * eligible.length)];
 
   const impactLeft = {
@@ -124,7 +121,7 @@ export async function getAiScenarioPresentation(
     
     return {
       ...output,
-      scenarioId: card.id // Map the true ID back to the game state
+      scenarioId: card.id
     };
   } catch (error) {
     return {

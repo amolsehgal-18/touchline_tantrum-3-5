@@ -45,7 +45,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     }
   }, [result]);
 
-  // Interval-based commentary logic
   const matchEvents = useMemo(() => [
     { time: 0, text: "Kick off! The atmosphere is electric." },
     { time: Math.floor(Math.random() * 30) + 10, text: "A fierce battle in the middle of the park." },
@@ -62,7 +61,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const width = canvas.width;
     const height = canvas.height;
 
-    // Fluid 4-4-2 Formations - Anchored positions
     const userFormation = [
       [0.08, 0.5], // GK
       [0.22, 0.25], [0.22, 0.42], [0.22, 0.58], [0.22, 0.75], // DEF
@@ -161,7 +159,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         const dBallY = ball.y - p.y;
         const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
-        // Targeted attraction only when close, otherwise anchor to base with high stability
         if (distToBall < 50) {
           const targetVx = (dBallX / distToBall) * 2;
           const targetVy = (dBallY / distToBall) * 2;
@@ -185,7 +182,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         p.x += p.vx;
         p.y += p.vy;
 
-        // Render Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
@@ -214,7 +210,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     return () => cancelAnimationFrame(animationFrame);
   }, [showFinal]);
 
-  // Interval Commentary Timer (5 Seconds Total)
   useEffect(() => {
     if (showFinal) return;
 
@@ -225,7 +220,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       const elapsed = Date.now() - start;
       const progress = Math.min(elapsed / totalDuration, 1);
       
-      // Map progress to the 4 discrete events
       let currentEvent;
       if (progress < 0.25) currentEvent = matchEvents[0];
       else if (progress < 0.5) currentEvent = matchEvents[1];
@@ -237,7 +231,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
       if (progress >= 1) {
         clearInterval(timer);
-        setTimeout(() => setShowFinal(true), 500); // Small delay for dramatic effect
+        setTimeout(() => setShowFinal(true), 500); 
       }
     }, 100);
 
@@ -254,7 +248,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           </div>
 
           <div className="flex flex-col items-center gap-1">
-             <div className="text-[9px] font-headline font-black uppercase text-accent mb-0.5 tracking-[0.2em] italic">Full Time</div>
             <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-2 mb-1">
               <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
               <span className="text-white/20">-</span>
@@ -298,9 +291,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           <span className="text-[11px] font-headline font-black uppercase tracking-tight text-white/90 italic leading-tight">
             {commentary}
           </span>
-        </div>
-        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-          <div className="h-full bg-accent transition-all duration-300" style={{ width: `${(matchTime/90)*100}%` }} />
         </div>
       </div>
     </div>
