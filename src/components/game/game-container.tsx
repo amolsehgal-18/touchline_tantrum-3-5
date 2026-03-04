@@ -292,7 +292,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const currentGW = activeConfig ? activeConfig.startGW + state.matchesPlayed : 0;
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
+    <div className="flex flex-col h-screen max-md:max-w-md md:max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
       <div className="bg-black/95 py-2.5 border-b border-white/10 text-center z-[100]">
         <span className="text-white text-[11px] font-headline font-black uppercase tracking-[0.4em]">
           {CAREER_MODES[state.mode].name} | GW {currentGW}

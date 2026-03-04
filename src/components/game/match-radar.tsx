@@ -151,7 +151,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
     animate();
     return () => cancelAnimationFrame(animationFrame);
-  }, [showFinal, players]);
+  }, [showFinal]);
 
   useEffect(() => {
     if (showFinal) return;
