@@ -168,9 +168,7 @@ export function getLeagueTable(state: GameState): LeagueTeam[] {
     "Forest", "Foxes", "Bees", "Clarets", "Hatters"
   ];
   
-  // Replace "United FC" with custom team if needed
   const displayTeams = teams.map(t => t === "United FC" ? state.userTeam : t);
-  
   const currentGW = (config.startGW - 1) + state.matchesPlayed;
   
   return displayTeams.map((team, i) => {
@@ -194,13 +192,13 @@ export function getLeagueTable(state: GameState): LeagueTeam[] {
 
 export function saveGameLocally(state: GameState) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('tt_save_v6', JSON.stringify(state));
+    localStorage.setItem('tt_save_v7', JSON.stringify(state));
   }
 }
 
 export function loadGameLocally(): GameState | null {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('tt_save_v6');
+    const saved = localStorage.getItem('tt_save_v7');
     try {
       return saved ? JSON.parse(saved) : null;
     } catch {

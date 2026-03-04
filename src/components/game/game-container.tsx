@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -41,7 +42,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     const impact = side === 'left' ? currentScenario.impactLeft : currentScenario.impactRight;
     const newCardsSeen = state.cardsSeen + 1;
     
-    // CRITICAL: Record the base text in history to prevent repetition
     const newState: GameState = {
       ...state,
       boardSupport: Math.min(1, Math.max(0, state.boardSupport + (impact.board / 100))),
@@ -61,7 +61,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setCurrentScenario(null);
     setTimeLeft(15);
 
-    // Trigger match every 3 cards
     if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
       const table = getLeagueTable(newState);
       const possibleOpponents = table.filter(t => !t.isUser);
@@ -179,17 +178,14 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const newsItems = useMemo(() => {
     const items = [
       "BREAKING: Fans plan protest outside stadium following tactical leaks.",
-      `EXCLUSIVE: Board considering alternative options if results don't improve.`,
+      "EXCLUSIVE: Board considering alternative options if results don't improve.",
       "RUMOR: Star striker linked with shock move to rivals.",
       "NEWS: Under-23 coach praised for defensive improvements.",
       "SCOUTING: New wonderkid identified in South America.",
-      "WEATHER: Heavy rain expected for the upcoming matchday.",
-      "FINANCE: Club audit reveals tightening budget for next window.",
-      "INJURY: Star midfielder sidelined for three weeks with calf strain.",
       "TAKEOVER: Mystery consortium interested in club acquisition.",
       "MARKET: Scouting reports suggest lack of depth in defensive areas."
     ];
-    return [...items, ...items, ...items, ...items];
+    return [...items, ...items]; // Duplicate for seamless looping
   }, []);
 
   if (!state) {
@@ -385,7 +381,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
         <div className="bg-destructive/10 border-t border-white/5 h-10 flex items-center overflow-hidden relative">
           <div className="bg-destructive text-white text-[10px] font-headline font-black px-4 py-1.5 z-20 absolute left-0 uppercase tracking-tighter flex items-center h-full">Breaking</div>
-          <div className="animate-ticker flex items-center gap-20 pl-[100px]" style={{ animationDuration: '320s' }}>
+          <div className="animate-ticker flex items-center gap-20 pl-[100px]">
             {newsItems.map((item, idx) => (
               <span key={idx} className="text-[11px] font-headline uppercase tracking-[0.2em] text-white/90 whitespace-nowrap font-black italic">{item}</span>
             ))}

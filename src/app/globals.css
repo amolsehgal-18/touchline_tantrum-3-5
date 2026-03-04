@@ -57,6 +57,17 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-ticker {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker 60s linear infinite;
+}
+
 @keyframes scanline {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100%); }
@@ -72,15 +83,4 @@
   background: rgba(34, 107, 224, 0.3);
   animation: scanline 4s linear infinite;
   pointer-events: none;
-}
-
-@keyframes ticker {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
-
-.animate-ticker {
-  display: inline-block;
-  white-space: nowrap;
-  animation: ticker 160s linear infinite;
 }
