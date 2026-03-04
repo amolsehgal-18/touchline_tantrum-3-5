@@ -83,13 +83,15 @@ export async function getAiScenarioPresentation(
 ): Promise<AiScenarioPresentationOutput> {
   try {
     // Filter out scenarios already seen in history to prevent repetition
+    // Use the base text for strict comparison
     let eligible = SCENARIO_CARDS.filter(c => !input.excludedScenarioTexts.includes(c.scenarioText));
     
-    // If we've run out of cards, recycle but prioritize variety
+    // If we've run out of cards, recycle
     if (eligible.length === 0) {
        eligible = SCENARIO_CARDS;
     }
     
+    // Pick a card from the filtered list
     const card = eligible[Math.floor(Math.random() * eligible.length)];
 
     const impactLeft = {
@@ -119,8 +121,13 @@ export async function getAiScenarioPresentation(
     });
 
     if (!output) throw new Error('AI Output null');
-    return output;
+    // Ensure the originalScenarioText is returned for tracking
+    return {
+      ...output,
+      originalScenarioText: card.scenarioText
+    };
   } catch (error) {
+    // Robust fallback
     const eligible = SCENARIO_CARDS.filter(c => !input.excludedScenarioTexts.includes(c.scenarioText));
     const card = eligible.length > 0 ? eligible[Math.floor(Math.random() * eligible.length)] : SCENARIO_CARDS[0];
     
