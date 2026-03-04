@@ -118,7 +118,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
-          const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
+          const pdist = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
           ball.vx = (pdx / pdist) * 14;
           ball.vy = (pdy / pdist) * 14;
         }
@@ -130,7 +130,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Maintain minimum velocity so it never stops
+        // Maintain minimum velocity so it never stops or vanishes
         const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
         if (speed < 4) {
           ball.vx *= 1.1;
@@ -152,7 +152,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       players.forEach((p) => {
         const dBallX = ball.x - p.x;
         const dBallY = ball.y - p.y;
-        const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
+        const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY) || 1;
 
         if (distToBall < 50) {
           const targetVx = (dBallX / distToBall) * 2.5;
@@ -162,7 +162,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         } else {
           const dtx = p.baseX - p.x;
           const dty = p.baseY - p.y;
-          const distToBase = Math.sqrt(dtx * dtx + dty * dty);
+          const distToBase = Math.sqrt(dtx * dtx + dty * dty) || 1;
           if (distToBase > 1) {
             const targetVx = (dtx / distToBase) * 1.5;
             const targetVy = (dty / distToBase) * 1.5;
