@@ -10,7 +10,7 @@ import { SwipeCard } from './swipe-card';
 import { SeasonSummary } from './season-summary';
 import { getAiScenarioPresentation } from '@/ai/flows/ai-scenario-presentation-flow';
 import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, AlertTriangle, Zap, ArrowRight, User, Shield } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Zap, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
@@ -182,8 +182,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       "BREAKING: Fans plan protest outside stadium following tactical leaks.",
       "EXCLUSIVE: Board considering alternative options if results don't improve.",
       "RUMOR: Star striker linked with shock move to rivals.",
-      "NEWS: Under-23 coach praised for defensive improvements.",
-      "SCOUTING: New wonderkid identified in South America.",
       "TAKEOVER: Mystery consortium interested in club acquisition.",
       "MARKET: Scouting reports suggest lack of depth in defensive areas."
     ];

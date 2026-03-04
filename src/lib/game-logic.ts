@@ -1,4 +1,3 @@
-
 export type CareerMode = 'title' | 'top4' | 'relegation' | 'season';
 
 export interface CareerConfig {

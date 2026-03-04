@@ -117,26 +117,6 @@ const FALLBACK_SCENARIOS: AiScenarioPresentationOutput[] = [
     imageCategory: "board_pressure",
     isBreaking: false,
     scenarioId: "fallback_3"
-  },
-  {
-    scenario: "A 'Super League' rumor has surfaced involving your club's owners. Fans are planning a banner protest at the next match.",
-    leftOption: "Back the fans.",
-    rightOption: "Support the owners.",
-    impactLeft: { board: -15, fans: 20, squad: 5, aggression: 0 },
-    impactRight: { board: 15, fans: -25, squad: -5, aggression: 0 },
-    imageCategory: "board_pressure",
-    isBreaking: true,
-    scenarioId: "fallback_4"
-  },
-  {
-    scenario: "The groundsman reports that the pitch is in 'atrocious' condition, but fixing it would eat into the transfer budget.",
-    leftOption: "Fix the pitch.",
-    rightOption: "Save the money.",
-    impactLeft: { board: -8, fans: 5, squad: 10, aggression: -0.05 },
-    impactRight: { board: 10, fans: -5, squad: -12, aggression: 0.1 },
-    imageCategory: "stadium",
-    isBreaking: false,
-    scenarioId: "fallback_5"
   }
 ];
 
