@@ -39,17 +39,17 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       const g = Math.floor(Math.random() * 2);
       return { user: g, opp: g };
     } else {
-      const g2 = Math.floor(Math.random() * 2) + 1;
+      const g2 = Math.floor(Math.random() * g2) + 1;
       const g1 = Math.floor(Math.random() * g2);
       return { user: g1, opp: g2 };
     }
   }, [result]);
 
   const matchEvents = useMemo(() => [
-    { time: 0, text: "Kick off! The atmosphere is electric." },
-    { time: Math.floor(Math.random() * 30) + 10, text: "A fierce battle in the middle of the park." },
-    { time: 45, text: "Half-time: Tactical adjustments being made." },
-    { time: Math.floor(Math.random() * 14) + 75, text: "Squeaky bum time! Tension mounting." }
+    { time: 0, text: "Kick off! The atmosphere is electric.", trigger: 0 },
+    { time: 31, text: "31' A fierce battle in the middle of the park.", trigger: 1.5 },
+    { time: 45, text: "45' Half-time: Tactical adjustments being made.", trigger: 2.5 },
+    { time: 87, text: "87' Squeaky bum time! Tension mounting.", trigger: 4 }
   ], []);
 
   useEffect(() => {
@@ -61,6 +61,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const width = canvas.width;
     const height = canvas.height;
 
+    // Standard 4-4-2 positions
     const userFormation = [
       [0.08, 0.5], // GK
       [0.22, 0.25], [0.22, 0.42], [0.22, 0.58], [0.22, 0.75], // DEF
@@ -182,6 +183,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         p.x += p.vx;
         p.y += p.vy;
 
+        // Draw Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
@@ -217,19 +219,20 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const start = Date.now();
 
     const timer = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const progress = Math.min(elapsed / totalDuration, 1);
+      const elapsed = (Date.now() - start) / 1000;
       
-      let currentEvent;
-      if (progress < 0.25) currentEvent = matchEvents[0];
-      else if (progress < 0.5) currentEvent = matchEvents[1];
-      else if (progress < 0.75) currentEvent = matchEvents[2];
-      else currentEvent = matchEvents[3];
+      let currentEvent = matchEvents[0];
+      for (let i = matchEvents.length - 1; i >= 0; i--) {
+        if (elapsed >= matchEvents[i].trigger) {
+          currentEvent = matchEvents[i];
+          break;
+        }
+      }
 
       setMatchTime(currentEvent.time);
       setCommentary(currentEvent.text);
 
-      if (progress >= 1) {
+      if (elapsed >= 5) {
         clearInterval(timer);
         setTimeout(() => setShowFinal(true), 500); 
       }
@@ -248,6 +251,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           </div>
 
           <div className="flex flex-col items-center gap-1">
+            <div className="text-[10px] font-headline uppercase font-black opacity-40 mb-1">Full Time</div>
             <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-2 mb-1">
               <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
               <span className="text-white/20">-</span>
@@ -287,7 +291,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
       <div className="w-full max-w-[300px] space-y-1">
         <div className="text-center min-h-[32px] flex items-center justify-center">
-          <span className="text-accent font-headline font-black italic text-[13px] mr-2">{matchTime}'</span>
           <span className="text-[11px] font-headline font-black uppercase tracking-tight text-white/90 italic leading-tight">
             {commentary}
           </span>
