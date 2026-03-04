@@ -145,6 +145,46 @@ const FALLBACK_POOL: AiScenarioPresentationOutput[] = [
     imageCategory: "finance",
     isBreaking: false,
     scenarioId: "f_sponsor_drama"
+  },
+  {
+    scenario: "Your veteran center-back claims your training methods are 'outdated' in a leaked group chat.",
+    leftOption: "Sell him now.",
+    rightOption: "Listen and adapt.",
+    impactLeft: { board: -5, fans: -8, squad: -12, aggression: 0.05 },
+    impactRight: { board: 5, fans: 5, squad: 15, aggression: -0.05 },
+    imageCategory: "training_ground",
+    isBreaking: false,
+    scenarioId: "f_centerback_chat"
+  },
+  {
+    scenario: "A freak flood has damaged the stadium's undersoil heating system.",
+    leftOption: "Postpone the match.",
+    rightOption: "Play on the ice.",
+    impactLeft: { board: -15, fans: -10, squad: 0, aggression: -0.05 },
+    impactRight: { board: 5, fans: 12, squad: -5, aggression: 0.15 },
+    imageCategory: "stadium",
+    isBreaking: true,
+    scenarioId: "f_flood_stadium"
+  },
+  {
+    scenario: "The fans are demanding a local youth academy graduate gets game time.",
+    leftOption: "Start the kid.",
+    rightOption: "Keep him on bench.",
+    impactLeft: { board: 5, fans: 15, squad: -5, aggression: 0.05 },
+    impactRight: { board: 0, fans: -12, squad: 5, aggression: -0.02 },
+    imageCategory: "fans",
+    isBreaking: false,
+    scenarioId: "f_youth_graduate"
+  },
+  {
+    scenario: "A rival manager called your team 'tactically naive' in his pre-match press conference.",
+    leftOption: "Fire back at him.",
+    rightOption: "Ignore the noise.",
+    impactLeft: { board: 0, fans: 10, squad: 8, aggression: 0.15 },
+    impactRight: { board: 5, fans: -5, squad: -2, aggression: -0.05 },
+    imageCategory: "press",
+    isBreaking: false,
+    scenarioId: "f_rival_manager"
   }
 ];
 
@@ -156,6 +196,7 @@ export async function getAiScenarioPresentation(
     if (!output) throw new Error('AI Output null');
     return output;
   } catch (error) {
+    // Fallback logic for variety
     const filteredPool = FALLBACK_POOL.filter(f => !input.excludedScenarioIds.includes(f.scenarioId));
     const pool = filteredPool.length > 0 ? filteredPool : FALLBACK_POOL;
     const randomIdx = Math.floor(Math.random() * pool.length);
