@@ -2,6 +2,7 @@
 /**
  * @fileOverview A Genkit flow for generating truly unique, context-aware scenarios.
  * It leverages AI to create new dilemmas based on current stats, ensuring infinite variety.
+ * FIX: Calibrated to gemini-1.5-flash and added entropy injection to prevent repetition.
  */
 
 import {ai} from '@/ai/genkit';
@@ -148,7 +149,6 @@ export async function getAiScenarioPresentation(
     return output;
   } catch (error) {
     console.error("AI Flow failed, using rotating fallback:", error);
-    // Rotating fallback to avoid feeling repetitive even when offline/errored
     const randomIdx = Math.floor(Math.random() * FALLBACK_SCENARIOS.length);
     const fallback = FALLBACK_SCENARIOS[randomIdx];
     return {

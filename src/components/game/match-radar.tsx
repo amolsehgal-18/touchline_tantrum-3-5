@@ -84,7 +84,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       x: width / 2,
       y: height / 2,
       targetPlayerIndex: Math.floor(Math.random() * players.length),
-      isTraveling: true
     };
 
     let animationFrame: number;
