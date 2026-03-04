@@ -111,6 +111,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         sagaObjective: CAREER_MODES[state.mode].name,
         objectiveMet: state.currentLeaguePosition <= activeConfig!.target,
         excludedScenarioIds: state.history,
+        randomSeed: Math.random().toString(36).substring(7), // Force variety
       });
       setCurrentScenario(result);
     } catch (err) {
