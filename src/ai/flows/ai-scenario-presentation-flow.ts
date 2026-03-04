@@ -2,7 +2,7 @@
 'use server';
 /**
  * @fileOverview A Genkit flow for generating truly unique, context-aware scenarios.
- * Instead of picking from a list, it leverages AI to create new dilemmas based on current stats.
+ * It leverages AI to create new dilemmas based on current stats, ensuring infinite variety.
  */
 
 import {ai} from '@/ai/genkit';
@@ -53,27 +53,28 @@ const aiScenarioPrompt = ai.definePrompt({
   
   CURRENT CONTEXT:
   - League Position: {{{currentLeaguePosition}}}
-  - Board Support: {{boardSupport}} (as decimal)
-  - Fan Support: {{fanSupport}} (as decimal)
-  - Dressing Room Morale: {{dressingRoom}} (as decimal)
-  - Tactical Aggression: {{aggression}} (as decimal)
+  - Board Support: {{boardSupport}} (decimal 0-1)
+  - Fan Support: {{fanSupport}} (decimal 0-1)
+  - Dressing Room Morale: {{dressingRoom}} (decimal 0-1)
+  - Tactical Aggression: {{aggression}} (decimal 0-1)
   - Seasonal Objective: {{{sagaObjective}}}
   
   TASK:
-  Generate a unique, dramatic, and punchy boardroom or dressing room scenario. 
+  Generate a completely original, dramatic, and punchy boardroom or dressing room scenario. 
   
   GENERATION RULES:
   1. If Board Support < 0.3, focus on 'Board Crisis', 'Financial Audit', or 'Ultimatum'.
   2. If Dressing Room < 0.3, focus on 'Player Revolt', 'Training Ground Fight', or 'Leaked DM'.
   3. If Fan Support < 0.3, focus on 'Stadium Protests' or 'Banner Planes'.
   4. If meeting Objective, focus on 'Manager Ego', 'Media Links to Bigger Clubs', or 'Transfer Demands'.
+  5. DO NOT repeat scenarios involving the IDs in this list: {{{excludedScenarioIds}}}
   
   MATH CONSTRAINTS:
   - Board/Fans/Squad Impacts: Range from -20 to +15.
   - Aggression Impact: Range from -0.1 to +0.1.
   
-  Make it satirical, high-stakes, and use British football terminology (gaffer, gaffer's office, training ground, etc.).
-  The scenarioId should be a unique string starting with 'ai_'.`,
+  Make it satirical, high-stakes, and use British football terminology (gaffer, training ground, etc.).
+  The scenarioId should be a unique random string.`,
 });
 
 export async function getAiScenarioPresentation(
@@ -87,7 +88,7 @@ export async function getAiScenarioPresentation(
     return output;
   } catch (error) {
     console.error('AI Flow Error:', error);
-    // Hard fallback to ensure game continues
+    // Hard fallback with random ID to prevent infinite loops
     return {
       scenario: "The local press is asking about your long-term commitment to the club.",
       leftOption: "Commit your future.",
@@ -96,7 +97,7 @@ export async function getAiScenarioPresentation(
       impactRight: { board: -5, fans: -5, squad: -2, aggression: 0.05 },
       imageCategory: "press",
       isBreaking: false,
-      scenarioId: "fallback_001"
+      scenarioId: "fallback_" + Math.random().toString(36).substring(7)
     };
   }
 }

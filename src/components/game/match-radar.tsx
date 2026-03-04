@@ -28,8 +28,9 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [showFinal, setShowFinal] = useState(false);
   const [matchTime, setMatchTime] = useState(0);
-  const [commentary, setCommentary] = useState("Kick-off! The tactical battle begins.");
+  const [commentary, setCommentary] = useState("0' Kick-off! The tactical battle begins.");
 
+  // Fixed score calculation to avoid ReferenceError
   const score = useMemo(() => {
     if (result === 'win') {
       const g1 = Math.floor(Math.random() * 2) + 1;
@@ -61,7 +62,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const width = canvas.width;
     const height = canvas.height;
 
-    // Tactical 4-4-2 Formations
+    // Tactical 4-4-2 Formations (Anchors)
     const userFormation = [
       [0.08, 0.5], [0.22, 0.25], [0.22, 0.42], [0.22, 0.58], [0.22, 0.75],
       [0.42, 0.2], [0.42, 0.4], [0.42, 0.6], [0.42, 0.8], [0.65, 0.35], [0.65, 0.65]
@@ -96,7 +97,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
       
-      // Pitch Detail Lines
+      // Pitch Detail Lines (Subtle)
       ctx.strokeStyle = 'rgba(255,255,255,0.05)';
       ctx.lineWidth = 1;
       ctx.strokeRect(5, 5, width - 10, height - 10);
@@ -111,33 +112,33 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ball.x = p.x;
         ball.y = p.y;
         
-        // Ensure ball stays attached to possessor
-        if (Math.random() < 0.08) { // Chance to pass
+        // Pass probability
+        if (Math.random() < 0.08) { 
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
-          ball.vx = (pdx / pdist) * 14;
-          ball.vy = (pdy / pdist) * 14;
+          ball.vx = (pdx / pdist) * 12;
+          ball.vy = (pdy / pdist) * 12;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
         
-        // Boundary check and bounce
+        // Bouncing off edges
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Maintain minimum velocity so it never stops or vanishes
+        // Minimum speed to ensure it never stops or vanishes
         const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
         if (speed < 4) {
           ball.vx *= 1.1;
           ball.vy *= 1.1;
         }
 
-        // Intersection check to gain possession
+        // Interception/Pickup
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
@@ -148,24 +149,26 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Player Movement Logic (Zero-Shaking Zone-Based)
+      // Player Movement Logic (Zero-Shaking Zonal Movement)
       players.forEach((p) => {
         const dBallX = ball.x - p.x;
         const dBallY = ball.y - p.y;
         const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY) || 1;
 
-        if (distToBall < 50) {
-          const targetVx = (dBallX / distToBall) * 2.5;
-          const targetVy = (dBallY / distToBall) * 2.5;
+        // React only if ball is nearby (Zonal defense)
+        if (distToBall < 60) {
+          const targetVx = (dBallX / distToBall) * 2;
+          const targetVy = (dBallY / distToBall) * 2;
           p.vx += (targetVx - p.vx) * 0.1;
           p.vy += (targetVy - p.vy) * 0.1;
         } else {
+          // Return to base position smoothly
           const dtx = p.baseX - p.x;
           const dty = p.baseY - p.y;
           const distToBase = Math.sqrt(dtx * dtx + dty * dty) || 1;
           if (distToBase > 1) {
-            const targetVx = (dtx / distToBase) * 1.5;
-            const targetVy = (dty / distToBase) * 1.5;
+            const targetVx = (dtx / distToBase) * 1;
+            const targetVy = (dty / distToBase) * 1;
             p.vx += (targetVx - p.vx) * 0.05;
             p.vy += (targetVy - p.vy) * 0.05;
           }
@@ -174,7 +177,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         p.x += p.vx;
         p.y += p.vy;
 
-        // Draw Player Dot
+        // Draw Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
@@ -184,7 +187,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.stroke();
       });
 
-      // Draw Yellow Ball Dot (Always Visible)
+      // Draw Yellow Ball (Persistent)
       ctx.fillStyle = '#facc15'; 
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 4.5, 0, Math.PI * 2);
@@ -200,6 +203,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     return () => cancelAnimationFrame(animationFrame);
   }, [showFinal]);
 
+  // Interval-based commentary logic
   useEffect(() => {
     if (showFinal) return;
     const start = Date.now();
@@ -213,7 +217,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           break;
         }
       }
-      setMatchTime(currentEvent.time);
       setCommentary(currentEvent.text);
       
       if (elapsed >= 5) {
@@ -251,7 +254,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
             <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{opponentTeam}</div>
           </div>
         </div>
-        <SlantedButton onClick={onComplete} className="w-full py-2.5 text-[9px] font-black tracking-[0.2em] bg-white text-black">
+        <SlantedButton onClick={onComplete} className="w-full py-2.5 text-[9px] font-black tracking-[0.2em] bg-white text-black uppercase">
           PROCEED TO NEXT MATCH
         </SlantedButton>
       </div>
