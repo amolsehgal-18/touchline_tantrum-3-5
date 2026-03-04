@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Shield, Target, Timer } from 'lucide-react';
+import { Shield, Target } from 'lucide-react';
 import { SlantedButton } from './slanted-elements';
 
 interface MatchRadarProps {
@@ -31,7 +31,7 @@ const COMMENTARY_SNIPPETS = [
   { time: 45, text: "Half-time instructions being shouted." },
   { time: 60, text: "The tempo is picking up now." },
   { time: 75, text: "Tension mounting as the clock ticks down." },
-  { time: 87, text: "87' Squeaky bum time!" },
+  { time: 87, text: "Squeaky bum time!" },
   { time: 90, text: "Final whistle is imminent!" }
 ];
 
@@ -98,8 +98,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const ball = {
       x: width / 2,
       y: height / 2,
-      vx: (Math.random() - 0.5) * 10,
-      vy: (Math.random() - 0.5) * 10,
+      vx: (Math.random() - 0.5) * 12,
+      vy: (Math.random() - 0.5) * 12,
       possessorIndex: -1,
     };
 
@@ -125,16 +125,16 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ball.x = p.x;
         ball.y = p.y;
         
-        // Passing AI: 12% chance per frame to pass
-        if (Math.random() < 0.12) {
+        // Passing AI: High tempo
+        if (Math.random() < 0.15) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 12; 
-          ball.vy = (pdy / pdist) * 12;
+          ball.vx = (pdx / pdist) * 15; 
+          ball.vy = (pdy / pdist) * 15;
         }
       } else {
         ball.x += ball.vx;
@@ -145,7 +145,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Intersection
+        // Intersection with logic to avoid magnetism
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
@@ -158,24 +158,24 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Fluid Player Reaction
+      // Fluid Player Reaction - Anchored to zones
       players.forEach((p, idx) => {
         const dBallX = ball.x - p.x;
         const dBallY = ball.y - p.y;
         const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
-        if (distToBall < 40) {
-          p.vx = (dBallX / distToBall) * 2.5;
-          p.vy = (dBallY / distToBall) * 2.5;
+        if (distToBall < 50) {
+          p.vx = (dBallX / distToBall) * 3;
+          p.vy = (dBallY / distToBall) * 3;
         } else {
           const dtx = p.baseX - p.x;
           const dty = p.baseY - p.y;
           const distToBase = Math.sqrt(dtx * dtx + dty * dty);
           if (distToBase > 2) {
-            p.vx = (dtx / distToBase) * 1.5;
-            p.vy = (dty / distToBase) * 1.5;
+            p.vx = (dtx / distToBase) * 2;
+            p.vy = (dty / distToBase) * 2;
           } else {
-            p.vx *= 0.5; p.vy *= 0.5;
+            p.vx *= 0.8; p.vy *= 0.8;
           }
         }
 
@@ -188,6 +188,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 1;
         ctx.stroke();
       });
 
@@ -235,7 +236,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   if (showFinal) {
     return (
       <div className="relative premium-glass p-5 slanted-container w-full max-w-[280px] border-white/10 shadow-2xl bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-        <div className="text-[9px] font-headline font-black uppercase text-accent mb-4 tracking-[0.2em] italic">Full Time Result</div>
+        <div className="text-[9px] font-headline font-black uppercase text-accent mb-4 tracking-[0.2em] italic">Full Time</div>
         
         <div className="flex items-center justify-between w-full gap-2 mb-6">
           <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
@@ -273,12 +274,12 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   return (
     <div className="flex flex-col items-center gap-3 w-full h-full justify-center px-4">
       <div className="w-full max-w-[300px] flex justify-between items-center px-2">
-        <div className="flex items-center gap-2">
-          <Timer className="w-3.5 h-3.5 text-accent animate-pulse" />
-          <span className="text-xl font-headline font-black italic text-white">{matchTime}'</span>
+        <div className="text-[10px] font-headline font-black italic text-white">
+          <span className="text-accent mr-2">{matchTime}'</span>
+          {commentary}
         </div>
         <div className="text-[9px] font-headline text-accent/80 uppercase font-black tracking-widest italic animate-pulse">
-          Matchday Live
+          Live
         </div>
       </div>
       
@@ -286,10 +287,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         <canvas ref={canvasRef} width={300} height={225} className="w-full h-full rounded" />
       </div>
 
-      <div className="w-full max-w-[300px] bg-white/5 border border-white/5 p-3 rounded-md text-center">
-        <p className="text-[10px] font-headline font-bold text-white/90 italic uppercase tracking-tight">
-          "{commentary}"
-        </p>
+      <div className="w-full max-w-[300px] h-1 bg-white/5 rounded-full overflow-hidden">
+        <div className="h-full bg-accent transition-all duration-300" style={{ width: `${(matchTime/90)*100}%` }} />
       </div>
     </div>
   );
