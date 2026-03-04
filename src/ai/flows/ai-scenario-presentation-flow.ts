@@ -2,8 +2,6 @@
 /**
  * @fileOverview A Genkit flow for generating truly unique, context-aware scenarios.
  * It leverages AI to create new dilemmas based on current stats, ensuring infinite variety.
- * 
- * - getAiScenarioPresentation - The main entry point for the UI.
  */
 
 import {ai} from '@/ai/genkit';
@@ -46,7 +44,7 @@ export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentation
 
 const aiScenarioPrompt = ai.definePrompt({
   name: 'aiScenarioPrompt',
-  model: 'gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-flash',
   input: {
     schema: AiScenarioPresentationInputSchema
   },
@@ -66,7 +64,7 @@ const aiScenarioPrompt = ai.definePrompt({
   SYSTEM: You are the 'Touchline Tantrum' Scenario Engine. 
   RANDOM SEED: {{{randomSeed}}}
   
-  CRITICAL RULE: Generate a COMPLETELY NEW scenario every time. Do not repeat previous themes.
+  CRITICAL RULE: Generate a COMPLETELY NEW scenario every time. Do not repeat previous themes or use generic fallbacks.
   
   CONTEXT FOR CLUB "{{{userTeam}}}":
   - Board Support: {{boardSupport}} (Current state: 0-1)
@@ -78,7 +76,8 @@ const aiScenarioPrompt = ai.definePrompt({
   Use British football slang (gaffer, training ground, gaffer's office, etc.).
   
   Impact ranges: Board/Fans/Squad (-20 to +15), Aggression (-0.1 to +0.1).
-  Make sure the choices are difficult and impactful.`,
+  Make sure the choices are difficult and impactful. 
+  NEVER mention previous ID or fallback references.`,
 });
 
 const FALLBACK_SCENARIOS: AiScenarioPresentationOutput[] = [
@@ -122,6 +121,7 @@ export async function getAiScenarioPresentation(
     if (!output) throw new Error('AI Output null');
     return output;
   } catch (error) {
+    console.error("AI Flow failed, using fallback cycle:", error);
     const randomIdx = Math.floor(Math.random() * FALLBACK_SCENARIOS.length);
     const fallback = FALLBACK_SCENARIOS[randomIdx];
     return {

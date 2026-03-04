@@ -101,13 +101,14 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width/2, height - 5);
       ctx.stroke();
 
-      // Ball Physics
+      // Ball Physics - Target System (Ensures ball is always visible and active)
       const target = players[ball.targetPlayerIndex];
       const dx = target.x - ball.x;
       const dy = target.y - ball.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       if (dist < 8) {
+        // Find next target teammate
         const teammates = players.filter((_, idx) => idx !== ball.targetPlayerIndex);
         ball.targetPlayerIndex = players.indexOf(teammates[Math.floor(Math.random() * teammates.length)]);
       } else {
