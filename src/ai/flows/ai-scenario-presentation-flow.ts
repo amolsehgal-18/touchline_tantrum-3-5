@@ -82,11 +82,11 @@ export async function getAiScenarioPresentation(
   input: AiScenarioPresentationInput
 ): Promise<AiScenarioPresentationOutput> {
   try {
+    const excluded = input.excludedScenarioTexts || [];
     // Filter out scenarios already seen in history to prevent repetition
-    // Use the base text for strict comparison
-    let eligible = SCENARIO_CARDS.filter(c => !input.excludedScenarioTexts.includes(c.scenarioText));
+    let eligible = SCENARIO_CARDS.filter(c => !excluded.includes(c.scenarioText));
     
-    // If we've run out of cards, recycle
+    // If we've run out of cards, recycle but pick randomly
     if (eligible.length === 0) {
        eligible = SCENARIO_CARDS;
     }
@@ -121,15 +121,16 @@ export async function getAiScenarioPresentation(
     });
 
     if (!output) throw new Error('AI Output null');
-    // Ensure the originalScenarioText is returned for tracking
+    
+    // Explicitly return the base text for history tracking
     return {
       ...output,
       originalScenarioText: card.scenarioText
     };
   } catch (error) {
-    // Robust fallback
-    const eligible = SCENARIO_CARDS.filter(c => !input.excludedScenarioTexts.includes(c.scenarioText));
-    const card = eligible.length > 0 ? eligible[Math.floor(Math.random() * eligible.length)] : SCENARIO_CARDS[0];
+    const excluded = input.excludedScenarioTexts || [];
+    const eligible = SCENARIO_CARDS.filter(c => !excluded.includes(c.scenarioText));
+    const card = eligible.length > 0 ? eligible[Math.floor(Math.random() * eligible.length)] : SCENARIO_CARDS[Math.floor(Math.random() * SCENARIO_CARDS.length)];
     
     return {
       scenario: card.scenarioText,
