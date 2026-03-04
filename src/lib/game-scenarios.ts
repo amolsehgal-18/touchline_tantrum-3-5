@@ -6,12 +6,10 @@
  * 2. fanImpact: Integer (e.g. -5 = -5% Fan Support)
  * 3. dressingRoomImpact: Integer (e.g. 8 = +8% Player Morale)
  * 4. aggressionImpact: Float (e.g. 0.15 = +15% Tactical Aggression)
- * 
- * NOTE: The right-swipe (Approve) uses the exact values provided.
- * The left-swipe (Reject) uses the negative of these values.
  */
 
 export interface ScenarioCardData {
+  id: string;
   scenarioText: string;
   leftOptionText: string;
   rightOptionText: string;
@@ -27,9 +25,10 @@ export interface ScenarioCardData {
 
 export const SCENARIO_CARDS: ScenarioCardData[] = [
   {
+    id: "sc_001",
     scenarioText: "Your star striker refuses to celebrate after scoring, hinting at unrest.",
     leftOptionText: "Drop him for the next match.",
-    rightOptionText: "Praise him publicly in the post-match presser.",
+    rightOptionText: "Praise him publicly.",
     boardImpact: -8,
     fanImpact: 2,
     dressingRoomImpact: 5,
@@ -40,9 +39,10 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_002",
     scenarioText: "The team's veteran leader criticizes your tactics to the media.",
     leftOptionText: "Strip him of the captaincy.",
-    rightOptionText: "Call a team meeting to address concerns.",
+    rightOptionText: "Call a team meeting.",
     boardImpact: -5,
     fanImpact: -3,
     dressingRoomImpact: 10,
@@ -53,9 +53,10 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_003",
     scenarioText: "A young prospect arrives late to training for the third time this month.",
     leftOptionText: "Fine him two weeks' wages.",
-    rightOptionText: "Make him run extra laps after training.",
+    rightOptionText: "Make him run extra laps.",
     boardImpact: 0,
     fanImpact: -2,
     dressingRoomImpact: 5,
@@ -66,6 +67,7 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_004",
     scenarioText: "The board demands you play their expensive new signing.",
     leftOptionText: "Stick with your in-form player.",
     rightOptionText: "Start him despite poor form.",
@@ -79,9 +81,10 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_005",
     scenarioText: "Two key players clash over a penalty decision during a match.",
     leftOptionText: "Hold a team vote on penalty duties.",
-    rightOptionText: "Let the captain decide who takes it.",
+    rightOptionText: "Let the captain decide.",
     boardImpact: -3,
     fanImpact: 0,
     dressingRoomImpact: -8,
@@ -92,9 +95,10 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_006",
     scenarioText: "Your goalkeeper concedes a soft goal and blames the defenders.",
-    leftOptionText: "Defend your defenders in the press.",
-    rightOptionText: "Make the goalkeeper apologize privately.",
+    leftOptionText: "Defend your defenders.",
+    rightOptionText: "Make him apologize privately.",
     boardImpact: -2,
     fanImpact: 5,
     dressingRoomImpact: 0,
@@ -105,9 +109,10 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_007",
     scenarioText: "The team's fitness coach recommends dropping an aging star.",
-    leftOptionText: "Keep playing your experienced leader.",
-    rightOptionText: "Follow the medical advice.",
+    leftOptionText: "Keep playing your leader.",
+    rightOptionText: "Follow medical advice.",
     boardImpact: -5,
     fanImpact: 8,
     dressingRoomImpact: 2,
@@ -118,8 +123,9 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_008",
     scenarioText: "A player is caught partying two nights before a crucial derby.",
-    leftOptionText: "Give him a stern warning but start him.",
+    leftOptionText: "Give him a stern warning.",
     rightOptionText: "Suspend him for three matches.",
     boardImpact: -10,
     fanImpact: 5,
@@ -131,9 +137,10 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_009",
     scenarioText: "The board sets unrealistic league position targets mid-season.",
-    leftOptionText: "Push back citing squad limitations.",
-    rightOptionText: "Publicly commit to the ambitious goal.",
+    leftOptionText: "Push back citing squad limits.",
+    rightOptionText: "Publicly commit to the goal.",
     boardImpact: -15,
     fanImpact: 10,
     dressingRoomImpact: 2,
@@ -144,8 +151,9 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_010",
     scenarioText: "Your assistant manager leaks team selection to the press.",
-    leftOptionText: "Handle it internally with a warning.",
+    leftOptionText: "Handle it internally.",
     rightOptionText: "Demand his resignation.",
     boardImpact: -8,
     fanImpact: 0,
@@ -157,9 +165,10 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_011",
     scenarioText: "Players complain the training schedule is too intense.",
-    leftOptionText: "Reduce the intensity and focus on recovery.",
-    rightOptionText: "Increase intensity to build resilience.",
+    leftOptionText: "Reduce the intensity.",
+    rightOptionText: "Increase intensity.",
     boardImpact: 5,
     fanImpact: -5,
     dressingRoomImpact: 5,
@@ -170,9 +179,10 @@ export const SCENARIO_CARDS: ScenarioCardData[] = [
     isBreaking: false
   },
   {
+    id: "sc_012",
     scenarioText: "A financial audit reveals the club has been hiding massive debts.",
-    leftOptionText: "Support the board's difficult decisions.",
-    rightOptionText: "Demand board resignations.",
+    leftOptionText: "Support board decisions.",
+    rightOptionText: "Demand resignations.",
     boardImpact: -20,
     fanImpact: 5,
     dressingRoomImpact: -2,

@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -49,7 +48,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
       aggression: Math.min(1, Math.max(0.05, state.aggression + (impact.aggression || 0))),
       cardsSeen: newCardsSeen,
-      history: [...state.history, currentScenario.originalScenarioText],
+      history: [...state.history, currentScenario.scenarioId], // Store the unique ID
     };
 
     if (newState.boardSupport <= 0.05 || newState.fanSupport <= 0.05) {
@@ -109,7 +108,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         currentLeaguePosition: state.currentLeaguePosition,
         sagaObjective: CAREER_MODES[state.mode].name,
         objectiveMet: state.currentLeaguePosition <= activeConfig!.target,
-        excludedScenarioTexts: state.history,
+        excludedScenarioIds: state.history,
       });
       setCurrentScenario(result);
     } catch (err) {
@@ -185,7 +184,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       "TAKEOVER: Mystery consortium interested in club acquisition.",
       "MARKET: Scouting reports suggest lack of depth in defensive areas."
     ];
-    return [...items, ...items]; // Duplicate for seamless looping
+    // Duplicate for seamless infinite loop
+    return [...items, ...items];
   }, []);
 
   if (!state) {
@@ -381,9 +381,11 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
         <div className="bg-destructive/10 border-t border-white/5 h-10 flex items-center overflow-hidden relative">
           <div className="bg-destructive text-white text-[10px] font-headline font-black px-4 py-1.5 z-20 absolute left-0 uppercase tracking-tighter flex items-center h-full">Breaking</div>
-          <div className="animate-ticker flex items-center gap-20 pl-[100px]">
+          <div className="flex items-center animate-ticker">
             {newsItems.map((item, idx) => (
-              <span key={idx} className="text-[11px] font-headline uppercase tracking-[0.2em] text-white/90 whitespace-nowrap font-black italic">{item}</span>
+              <span key={idx} className="text-[11px] font-headline uppercase tracking-[0.2em] text-white/90 whitespace-nowrap font-black italic px-10">
+                {item}
+              </span>
             ))}
           </div>
         </div>

@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for generating dynamic, context-aware scenarios.
@@ -25,7 +24,7 @@ const AiScenarioPresentationInputSchema = z.object({
   currentLeaguePosition: z.number().int(),
   sagaObjective: z.string(),
   objectiveMet: z.boolean(),
-  excludedScenarioTexts: z.array(z.string()),
+  excludedScenarioIds: z.array(z.string()),
 });
 
 export type AiScenarioPresentationInput = z.infer<typeof AiScenarioPresentationInputSchema>;
@@ -38,7 +37,7 @@ const AiScenarioPresentationOutputSchema = z.object({
   impactRight: ImpactSchema,
   imageCategory: z.string(),
   isBreaking: z.boolean(),
-  originalScenarioText: z.string(),
+  scenarioId: z.string(),
 });
 
 export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentationOutputSchema>;
@@ -66,33 +65,31 @@ const aiScenarioPresentationPrompt = ai.definePrompt({
   Make it punchy, dramatic, and context-aware. Use football terminology.
   
   Base Scenario: {{{baseScenario}}}
-  Option A (Left Swipe - REJECT): {{{leftOption}}}
-  Option B (Right Swipe - APPROVE): {{{rightOption}}}
+  Option A (Left): {{{leftOption}}}
+  Option B (Right): {{{rightOption}}}
   
   YOU MUST RETURN THESE IMPACTS EXACTLY:
   Left Impact: Board {{{impactLeft.board}}}, Fans {{{impactLeft.fans}}}, Squad {{{impactLeft.squad}}}, Aggression {{{impactLeft.aggression}}}
   Right Impact: Board {{{impactRight.board}}}, Fans {{{impactRight.fans}}}, Squad {{{impactRight.squad}}}, Aggression {{{impactRight.aggression}}}
   
   Image Category: {{{imageCategory}}}
-  Is Breaking: {{{isBreaking}}}
-  
-  CRITICAL: Set "originalScenarioText" to exactly: {{{baseScenario}}}`,
+  Is Breaking: {{{isBreaking}}}`,
 });
 
 export async function getAiScenarioPresentation(
   input: AiScenarioPresentationInput
 ): Promise<AiScenarioPresentationOutput> {
-  const excluded = input.excludedScenarioTexts || [];
+  const excludedIds = input.excludedScenarioIds || [];
   
-  // Filter out scenarios already seen in history to prevent repetition
-  let eligible = SCENARIO_CARDS.filter(c => !excluded.includes(c.scenarioText));
+  // Hardened Filter Logic
+  let eligible = SCENARIO_CARDS.filter(c => !excludedIds.includes(c.id));
   
-  // If we've run out of cards, recycle
+  // If we've run out of unique cards, recycle the deck
   if (eligible.length === 0) {
      eligible = SCENARIO_CARDS;
   }
   
-  // Pick a card from the filtered list
+  // Randomly pick from eligible cards
   const card = eligible[Math.floor(Math.random() * eligible.length)];
 
   const impactLeft = {
@@ -124,22 +121,20 @@ export async function getAiScenarioPresentation(
 
     if (!output) throw new Error('AI Output null');
     
-    // Explicitly enforce the original base text to ensure the filter works next time
     return {
       ...output,
-      originalScenarioText: card.scenarioText
+      scenarioId: card.id // Map the true ID back to the game state
     };
   } catch (error) {
-    // Fallback: Return the raw card data if AI fails
     return {
       scenario: card.scenarioText,
       leftOption: card.leftOptionText,
       rightOption: card.rightOptionText,
-      impactLeft: { board: -card.boardImpact, fans: -card.fanImpact, squad: -card.dressingRoomImpact, aggression: -card.aggressionImpact },
-      impactRight: { board: card.boardImpact, fans: card.fanImpact, squad: card.dressingRoomImpact, aggression: card.aggressionImpact },
+      impactLeft,
+      impactRight,
       imageCategory: card.imageCategory,
       isBreaking: card.isBreaking,
-      originalScenarioText: card.scenarioText
+      scenarioId: card.id
     };
   }
 }
