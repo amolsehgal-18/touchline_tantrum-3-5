@@ -45,9 +45,9 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
   const matchEvents = useMemo(() => [
     { time: 0, text: "0' Kick off! Atmosphere is electric.", trigger: 0 },
-    { time: 31, text: "31' Fierce battle in the middle of the park.", trigger: 1.5 },
-    { time: 45, text: "45' Half-time: Tactical adjustments made.", trigger: 2.5 },
-    { time: 87, text: "87' Squeaky bum time! Tension mounting.", trigger: 4 }
+    { time: 1.5, text: "31' Fierce battle in the middle of the park.", trigger: 1.5 },
+    { time: 2.5, text: "45' Half-time: Tactical adjustments made.", trigger: 2.5 },
+    { time: 4, text: "87' Squeaky bum time! Tension mounting.", trigger: 4 }
   ], []);
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width/2, height - 5);
       ctx.stroke();
 
-      // Ball Physics - Target System
+      // Ball Physics - Rapid Passing
       const target = players[ball.targetPlayerIndex];
       const dx = target.x - ball.x;
       const dy = target.y - ball.y;
@@ -111,7 +111,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         const teammates = players.filter((_, idx) => idx !== ball.targetPlayerIndex);
         ball.targetPlayerIndex = players.indexOf(teammates[Math.floor(Math.random() * teammates.length)]);
       } else {
-        const speed = 14;
+        const speed = 15; // Fast tactical passing
         ball.x += (dx / dist) * speed;
         ball.y += (dy / dist) * speed;
       }
@@ -120,21 +120,21 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       players.forEach((p) => {
         const dtx = p.baseX - p.x;
         const dty = p.baseY - p.y;
-        p.x += dtx * 0.05 + (Math.random() - 0.5) * 1.5;
-        p.y += dty * 0.05 + (Math.random() - 0.5) * 1.5;
+        p.x += dtx * 0.05 + (Math.random() - 0.5) * 1.2;
+        p.y += dty * 0.05 + (Math.random() - 0.5) * 1.2;
 
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
         ctx.lineWidth = 1;
         ctx.stroke();
       });
 
-      // Render Yellow Ball
+      // Render High-Visibility Yellow Ball
       ctx.fillStyle = '#facc15'; 
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 15;
       ctx.shadowColor = '#facc15';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 5, 0, Math.PI * 2);

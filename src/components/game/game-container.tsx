@@ -177,16 +177,13 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   const odds = state ? getMatchOdds(state.aggression) : { win: '0.33', draw: '0.33', loss: '0.34' };
   
-  const newsItems = useMemo(() => {
-    const items = [
-      "BREAKING: Fans plan protest outside stadium following tactical leaks.",
-      "EXCLUSIVE: Board considering alternative options if results don't improve.",
-      "RUMOR: Star striker linked with shock move to rivals.",
-      "TAKEOVER: Mystery consortium interested in club acquisition.",
-      "MARKET: Scouting reports suggest lack of depth in defensive areas."
-    ];
-    return [...items, ...items];
-  }, []);
+  const newsItems = [
+    "BREAKING: Fans plan protest outside stadium following tactical leaks.",
+    "EXCLUSIVE: Board considering alternative options if results don't improve.",
+    "RUMOR: Star striker linked with shock move to rivals.",
+    "TAKEOVER: Mystery consortium interested in club acquisition.",
+    "MARKET: Scouting reports suggest lack of depth in defensive areas."
+  ];
 
   if (!state) {
     return (
@@ -382,7 +379,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         <div className="bg-destructive/10 border-t border-white/5 h-10 flex items-center overflow-hidden relative">
           <div className="bg-destructive text-white text-[10px] font-headline font-black px-4 py-1.5 z-20 absolute left-0 uppercase tracking-tighter flex items-center h-full">Breaking</div>
           <div className="flex items-center animate-ticker">
-            {newsItems.map((item, idx) => (
+            {[...newsItems, ...newsItems].map((item, idx) => (
               <span key={idx} className="text-[11px] font-headline uppercase tracking-[0.2em] text-white/90 whitespace-nowrap font-black italic px-10">
                 {item}
               </span>

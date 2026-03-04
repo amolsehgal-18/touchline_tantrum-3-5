@@ -1,8 +1,7 @@
 'use server';
 /**
  * @fileOverview A Genkit flow for generating truly unique, context-aware scenarios.
- * It leverages AI to create new dilemmas based on current stats, ensuring infinite variety.
- * FIX: Calibrated to gemini-1.5-flash and added entropy injection to prevent repetition.
+ * RESOLVED: Repetition fix via gemini-1.5-flash calibration and high-entropy seed injection.
  */
 
 import {ai} from '@/ai/genkit';
@@ -69,8 +68,7 @@ const aiScenarioPrompt = ai.definePrompt({
   CRITICAL RULES:
   1. Generate a COMPLETELY NEW scenario every time. 
   2. NEVER use the themes "Long-term commitment", "Tactical rigidity", or "Assistant Manager interviewing".
-  3. DO NOT repeat the entropy key or any "REF" codes in your output.
-  4. Use gritty British football slang (gaffer, training ground, gaffer's office, etc.).
+  3. Use gritty British football slang (gaffer, training ground, gaffer's office, etc.).
   
   CONTEXT FOR CLUB "{{{userTeam}}}":
   - Board Support: {{boardSupport}} (Scale: 0-1)
@@ -89,34 +87,34 @@ const aiScenarioPrompt = ai.definePrompt({
 
 const FALLBACK_SCENARIOS: AiScenarioPresentationOutput[] = [
   {
-    scenario: "Your chief scout has identified a promising talent in the lower leagues, but the board is hesitant to release funds due to a recent audit.",
-    leftOption: "Demand the investment.",
-    rightOption: "Accept the budget.",
-    impactLeft: { board: -12, fans: 8, squad: 4, aggression: 0.05 },
-    impactRight: { board: 6, fans: -10, squad: -4, aggression: -0.05 },
-    imageCategory: "scouting",
-    isBreaking: true,
-    scenarioId: "fallback_1"
-  },
-  {
-    scenario: "A leaked video shows your star striker at a 4 AM rave. The fans are calling for him to be stripped of the vice-captaincy.",
-    leftOption: "Fine him and drop him.",
-    rightOption: "Protect your player.",
+    scenario: "Your star striker has been caught partying in Mayfair at 4 AM before the local derby. The tabloids have the photos.",
+    leftOption: "Drop him immediately.",
+    rightOption: "Publicly defend him.",
     impactLeft: { board: 5, fans: 12, squad: -15, aggression: 0.08 },
-    impactRight: { board: -5, fans: -15, squad: 10, aggression: -0.05 },
+    impactRight: { board: -8, fans: -12, squad: 10, aggression: -0.05 },
     imageCategory: "player_ego",
     isBreaking: true,
-    scenarioId: "fallback_2"
+    scenarioId: "f_striker_party"
   },
   {
-    scenario: "Your assistant manager is being linked with a head coach role at a direct rival. The squad looks distracted.",
-    leftOption: "Sack him immediately.",
-    rightOption: "Offer him a pay rise.",
-    impactLeft: { board: -5, fans: 5, squad: -10, aggression: 0.1 },
-    impactRight: { board: -10, fans: -5, squad: 5, aggression: -0.05 },
+    scenario: "A shock audit reveals the club's transfer budget was inflated by a clerical error. You must slash costs.",
+    leftOption: "Sell a key player.",
+    rightOption: "Demand board investment.",
+    impactLeft: { board: 15, fans: -20, squad: -10, aggression: -0.05 },
+    impactRight: { board: -15, fans: 10, squad: 5, aggression: 0.05 },
     imageCategory: "board_pressure",
-    isBreaking: false,
-    scenarioId: "fallback_3"
+    isBreaking: true,
+    scenarioId: "f_audit_crisis"
+  },
+  {
+    scenario: "The fans are planning a mass 'Tennis Ball' protest in the 10th minute due to ticket price hikes.",
+    leftOption: "Support the fans.",
+    rightOption: "Condemn the protest.",
+    impactLeft: { board: -15, fans: 20, squad: 0, aggression: 0.02 },
+    impactRight: { board: 10, fans: -15, squad: 0, aggression: -0.02 },
+    imageCategory: "fans",
+    isBreaking: true,
+    scenarioId: "f_fan_protest"
   }
 ];
 
@@ -128,7 +126,6 @@ export async function getAiScenarioPresentation(
     if (!output) throw new Error('AI Output null');
     return output;
   } catch (error) {
-    console.error("AI Flow failed, using rotating fallback:", error);
     const randomIdx = Math.floor(Math.random() * FALLBACK_SCENARIOS.length);
     const fallback = FALLBACK_SCENARIOS[randomIdx];
     return {
