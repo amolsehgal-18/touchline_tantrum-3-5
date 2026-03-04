@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
@@ -105,36 +106,39 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width/2, height-5);
       ctx.stroke();
 
-      // Ball Physics
+      // Ball Physics & Possession Logic
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
         ball.x = p.x;
         ball.y = p.y;
         
-        // Elite Speed Dribbling
+        // Elite Speed Dribbling toward target goal
         const targetX = p.team === 'user' ? width * 0.9 : width * 0.1;
         const dx = targetX - p.x;
         const dy = (height / 2) - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        p.vx = (dx / dist) * 4;
-        p.vy = (dy / dist) * 1.5;
+        
+        if (dist > 5) {
+          p.vx = (dx / dist) * 4.5;
+          p.vy = (dy / dist) * 1.8;
+        }
 
-        // Quick Passing AI
-        if (Math.random() < 0.1) {
+        // Quick Passing AI (15% chance to pass every frame)
+        if (Math.random() < 0.08) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 18;
-          ball.vy = (pdy / pdist) * 18;
+          ball.vx = (pdx / pdist) * 22; // High-speed passing
+          ball.vy = (pdy / pdist) * 22;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.96;
-        ball.vy *= 0.96;
+        ball.vx *= 0.97;
+        ball.vy *= 0.97;
 
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
@@ -144,7 +148,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 10) {
+          if (dist < 12) {
              ball.possessorIndex = idx;
              ball.vx = 0;
              ball.vy = 0;
@@ -152,26 +156,26 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Player Movement (Reaction AI & Formations)
+      // Player Fluid Movement (Reaction AI & Formations)
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
           const dBallX = ball.x - p.x;
           const dBallY = ball.y - p.y;
           const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
-          // Only move if ball is close, else stay in zone
-          if (distToBall < 60) {
-            p.vx = (dBallX / distToBall) * 2;
-            p.vy = (dBallY / distToBall) * 2;
+          // React to ball proximity or return to base
+          if (distToBall < 75) {
+            p.vx = (dBallX / distToBall) * 3.5;
+            p.vy = (dBallY / distToBall) * 3.5;
           } else {
             const dtx = p.baseX - p.x;
             const dty = p.baseY - p.y;
             const distToBase = Math.sqrt(dtx * dtx + dty * dty);
             if (distToBase > 2) {
-              p.vx = (dtx / distToBase) * 2.5;
-              p.vy = (dty / distToBase) * 2.5;
+              p.vx = (dtx / distToBase) * 2.8;
+              p.vy = (dty / distToBase) * 2.8;
             } else {
-              p.vx = 0; p.vy = 0;
+              p.vx *= 0.8; p.vy *= 0.8;
             }
           }
         }
@@ -182,20 +186,20 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         // Render Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 0.5;
         ctx.stroke();
       });
 
-      // Render High-Visibility Ball
+      // Render High-Visibility Ball (Always present)
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, 4.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.8;
       ctx.stroke();
 
       animationFrame = requestAnimationFrame(animate);
@@ -230,7 +234,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
             </div>
             <div className={cn(
               "text-[8px] font-headline font-black uppercase px-2.5 py-0.5 tracking-widest rounded-full",
-              result === 'win' ? "bg-green-600 text-white" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-red-600 text-white"
+              result === 'win' ? "bg-green-600/80 text-white" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-red-600/80 text-white"
             )}>
               {result === 'win' ? "WON" : result === 'draw' ? "DRAW" : "LOST"}
             </div>
