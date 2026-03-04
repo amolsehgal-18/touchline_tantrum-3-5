@@ -126,20 +126,25 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ball.x = p.x + (p.team === 'user' ? 4 : -4);
         ball.y = p.y;
         
-        // Attacking behavior: Move towards goal
-        const attackTargetX = p.team === 'user' ? width - 15 : 15;
-        const adx = attackTargetX - p.x;
-        const ady = (height / 2) - p.y;
-        const adist = Math.sqrt(adx * adx + ady * ady);
-        
-        p.vx = (adx / adist) * 1.5;
-        p.vy = (ady / adist) * 1.2 + (Math.random() - 0.5) * 0.4;
+        // Midfield play: Occasional drive to goal, mostly localized movement
+        const driveProb = 0.05;
+        if (Math.random() < driveProb) {
+          const attackTargetX = p.team === 'user' ? width - 15 : 15;
+          const adx = attackTargetX - p.x;
+          const ady = (height / 2) - p.y;
+          const adist = Math.sqrt(adx * adx + ady * ady);
+          p.vx = (adx / adist) * 1.5;
+          p.vy = (ady / adist) * 1.2 + (Math.random() - 0.5) * 0.4;
+        } else {
+          p.vx *= 0.8;
+          p.vy *= 0.8;
+        }
 
         // Random Passing Chance
         if (Math.random() < 0.04) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const forwardTeammates = teammates.filter(t => p.team === 'user' ? t.x > p.x : t.x < p.x);
-          const target = (forwardTeammates.length > 0 ? forwardTeammates : teammates)[Math.floor(Math.random() * (forwardTeammates.length || teammates.length))];
+          const target = (forwardTeammates.length > 0 && Math.random() > 0.4 ? forwardTeammates : teammates)[Math.floor(Math.random() * (forwardTeammates.length || teammates.length))];
           
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
