@@ -125,6 +125,7 @@ export async function getAiScenarioPresentation(
     };
   } catch (error) {
     console.error('AI Flow Error:', error);
+    // Hard fallback to ensure game continues
     return {
       scenario: card.scenarioText,
       leftOption: card.leftOptionText,

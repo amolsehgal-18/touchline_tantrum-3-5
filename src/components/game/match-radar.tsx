@@ -33,8 +33,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   const score = useMemo(() => {
     if (result === 'win') {
       const g1 = Math.floor(Math.random() * 2) + 1;
-      const g2 = Math.floor(Math.random() * g1);
-      return { user: g1, opp: g2 };
+      const g2_val = Math.floor(Math.random() * g1);
+      return { user: g1, opp: g2_val };
     } else if (result === 'draw') {
       const g = Math.floor(Math.random() * 2);
       return { user: g, opp: g };
@@ -85,8 +85,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const ball = {
       x: width / 2,
       y: height / 2,
-      vx: (Math.random() - 0.5) * 6,
-      vy: (Math.random() - 0.5) * 6,
+      vx: (Math.random() - 0.5) * 8,
+      vy: (Math.random() - 0.5) * 8,
       possessorIndex: -1,
     };
 
@@ -95,31 +95,33 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
       
-      ctx.fillStyle = 'rgba(255,255,255,0.02)';
-      ctx.fillRect(0, 0, width, height);
+      // Pitch details
       ctx.strokeStyle = 'rgba(255,255,255,0.05)';
       ctx.strokeRect(5, 5, width - 10, height - 10);
+      ctx.beginPath();
+      ctx.arc(width/2, height/2, 40, 0, Math.PI * 2);
+      ctx.stroke();
       
       // Ball Update
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
         ball.x = p.x;
         ball.y = p.y;
-        if (Math.random() < 0.08) {
+        if (Math.random() < 0.12) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 12;
-          ball.vy = (pdy / pdist) * 12;
+          ball.vx = (pdx / pdist) * 15;
+          ball.vy = (pdy / pdist) * 15;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.98;
-        ball.vy *= 0.98;
+        ball.vx *= 0.97;
+        ball.vy *= 0.97;
         if (ball.x < 15 || ball.x > width - 15) ball.vx *= -1;
         if (ball.y < 15 || ball.y > height - 15) ball.vy *= -1;
 
@@ -127,7 +129,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 12) {
+          if (dist < 10) {
              ball.possessorIndex = idx;
              ball.vx = 0;
              ball.vy = 0;
@@ -141,20 +143,20 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         const dBallY = ball.y - p.y;
         const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
-        if (distToBall < 60) {
-          const targetVx = (dBallX / distToBall) * 1.8;
-          const targetVy = (dBallY / distToBall) * 1.8;
-          p.vx += (targetVx - p.vx) * 0.1;
-          p.vy += (targetVy - p.vy) * 0.1;
+        if (distToBall < 50) {
+          const targetVx = (dBallX / distToBall) * 2.2;
+          const targetVy = (dBallY / distToBall) * 2.2;
+          p.vx += (targetVx - p.vx) * 0.12;
+          p.vy += (targetVy - p.vy) * 0.12;
         } else {
           const dtx = p.baseX - p.x;
           const dty = p.baseY - p.y;
           const distToBase = Math.sqrt(dtx * dtx + dty * dty);
           if (distToBase > 2) {
-            const targetVx = (dtx / distToBase) * 1.2;
-            const targetVy = (dty / distToBase) * 1.2;
-            p.vx += (targetVx - p.vx) * 0.05;
-            p.vy += (targetVy - p.vy) * 0.05;
+            const targetVx = (dtx / distToBase) * 1.5;
+            const targetVy = (dty / distToBase) * 1.5;
+            p.vx += (targetVx - p.vx) * 0.08;
+            p.vy += (targetVy - p.vy) * 0.08;
           }
         }
         p.x += p.vx;
@@ -164,14 +166,15 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.beginPath();
         ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+        ctx.lineWidth = 1;
         ctx.stroke();
       });
 
       // Render Yellow Ball
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, 4.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 1;
@@ -219,7 +222,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
             <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-2 mb-1">
               <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
               <span className="text-white/20">-</span>
-              <span className={cn(result === 'loss' ? "text-[#ef4444]" : "text-white")}>{score.opp}</span>
+              <span className={cn(result === 'loss' ? "text-destructive" : "text-white")}>{score.opp}</span>
             </div>
             <div className={cn(
               "text-[8px] font-headline font-black uppercase px-2.5 py-0.5 tracking-widest rounded-full",
@@ -229,7 +232,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
             </div>
           </div>
           <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-            <Target className="w-6 h-6 text-[#ef4444]" />
+            <Target className="w-6 h-6 text-destructive" />
             <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{opponentTeam}</div>
           </div>
         </div>
