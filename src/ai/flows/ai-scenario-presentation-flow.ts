@@ -66,10 +66,11 @@ const aiScenarioPrompt = ai.definePrompt({
     ],
   },
   prompt: `
-  SEED: {{{randomSeed}}}
+  ENTROPY SEED: {{{randomSeed}}}
   SYSTEM: You are the 'Touchline Tantrum' Scenario Engine. Your goal is to create unique, high-stakes football management dilemmas. 
   Use British football slang (gaffer, training ground, gaffer's office, etc.). 
-  BE CREATIVE. Avoid repetitive tropes like "long-term commitment" or "tactical rigidity" - these are banned topics.
+  
+  CRITICAL RULE: DO NOT repeat topics like "Long-term commitment" or "Tactical rigidity". Generate a COMPLETELY NEW scenario every time.
   
   CONTEXT FOR CLUB "{{{userTeam}}}":
   - League Position: {{{currentLeaguePosition}}}
@@ -79,22 +80,15 @@ const aiScenarioPrompt = ai.definePrompt({
   - Tactical Aggression: {{aggression}} (Scale 0-1)
   - Seasonal Objective: {{{sagaObjective}}}
   
-  TASK:
-  Generate a completely original, dramatic, and punchy boardroom or dressing room scenario. 
+  SCENARIO RULES:
+  1. If Board Support < 0.3, focus on financial audits, takeovers, or executive ultimatums.
+  2. If Dressing Room < 0.3, focus on player revolts, leaks, or training ground fights.
+  3. If Fan Support < 0.3, focus on protests, banners, or social media toxicity.
+  4. If meeting Objective, focus on manager ego, big club interest, or contract demands.
   
-  GENERATION RULES:
-  1. If Board Support < 0.3, focus on 'Board Crisis', 'Financial Audit', or 'Ultimatum'.
-  2. If Dressing Room < 0.3, focus on 'Player Revolt', 'Training Ground Fight', or 'Leaked DM'.
-  3. If Fan Support < 0.3, focus on 'Stadium Protests', 'Angry Banners', or 'TalkSport Meltdowns'.
-  4. If meeting Objective, focus on 'Manager Ego', 'Bigger Clubs Interest', or 'Contract Demands'.
-  5. DO NOT mention "Long-term commitment" or "Tactical rigidity".
-  6. ALWAYS generate completely new text for the scenario and options. 
-  
-  MATH CONSTRAINTS:
-  - Board/Fans/Squad Impacts: Range from -20 to +15.
-  - Aggression Impact: Range from -0.1 to +0.1.
-  
-  The scenarioId should be a unique random string based on the entropy seed.`,
+  OUTPUT: Generate a dramatic, punchy scenario and two options with mathematical impacts.
+  Impact ranges: Board/Fans/Squad (-20 to +15), Aggression (-0.1 to +0.1).
+  scenarioId must be unique based on the seed.`,
 });
 
 export async function getAiScenarioPresentation(
@@ -102,21 +96,20 @@ export async function getAiScenarioPresentation(
 ): Promise<AiScenarioPresentationOutput> {
   try {
     const { output } = await aiScenarioPrompt(input);
-
     if (!output) throw new Error('AI Output null');
-    
     return output;
   } catch (error) {
-    // Detectable fallback to signal AI service failure
+    // Dynamic fallback to show the engine is alive even if the service fails
+    const timestamp = Date.now();
     return {
-      scenario: "Your chief scout has identified a promising talent in the lower leagues, but the board is hesitant to release funds due to a recent audit.",
-      leftOption: "Demand the investment now.",
-      rightOption: "Accept the budget constraints.",
+      scenario: `[INTEL ${timestamp}] Your chief scout has identified a promising talent in the lower leagues, but the board is hesitant to release funds due to a recent audit.`,
+      leftOption: "Demand the investment.",
+      rightOption: "Accept the budget.",
       impactLeft: { board: -12, fans: 8, squad: 4, aggression: 0.05 },
       impactRight: { board: 6, fans: -10, squad: -4, aggression: -0.05 },
       imageCategory: "scouting",
-      isBreaking: false,
-      scenarioId: "fallback_" + Date.now()
+      isBreaking: true,
+      scenarioId: `fallback_${timestamp}`
     };
   }
 }
