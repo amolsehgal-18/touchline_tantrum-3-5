@@ -84,7 +84,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ...userFormation.map(pos => ({
         x: pos[0] * width,
         y: pos[1] * height,
-        vx: 0, vy: 0, team: 'user' as const, color: 'hsl(var(--primary))', // Blue
+        vx: 0, vy: 0, team: 'user' as const, color: '#3b82f6', // Soccer Blue
         baseX: pos[0] * width, baseY: pos[1] * height
       })),
       ...oppFormation.map(pos => ({
@@ -115,9 +115,11 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineWidth = 1;
       ctx.strokeRect(5, 5, width - 10, height - 10);
       ctx.beginPath();
+      ctx.setLineDash([5, 5]);
       ctx.moveTo(width/2, 5);
       ctx.lineTo(width/2, height-5);
       ctx.stroke();
+      ctx.setLineDash([]);
 
       // Ball Logic
       if (ball.possessorIndex !== -1) {
@@ -126,31 +128,31 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ball.y = p.y;
         
         // Passing AI: High tempo
-        if (Math.random() < 0.15) {
+        if (Math.random() < 0.1) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 15; 
-          ball.vy = (pdy / pdist) * 15;
+          ball.vx = (pdx / pdist) * 12; 
+          ball.vy = (pdy / pdist) * 12;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.99;
-        ball.vy *= 0.99;
+        ball.vx *= 0.98;
+        ball.vy *= 0.98;
 
-        if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
-        if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
+        if (ball.x < 12 || ball.x > width - 12) ball.vx *= -1;
+        if (ball.y < 12 || ball.y > height - 12) ball.vy *= -1;
 
-        // Intersection with logic to avoid magnetism
+        // Intersection logic - only capture if ball is slow enough or very close
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 6) {
+          if (dist < 8) {
              ball.possessorIndex = idx;
              ball.vx = 0;
              ball.vy = 0;
@@ -158,24 +160,30 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Fluid Player Reaction - Anchored to zones
-      players.forEach((p, idx) => {
+      // Stable Player Movement - No shaking
+      players.forEach((p) => {
         const dBallX = ball.x - p.x;
         const dBallY = ball.y - p.y;
         const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
-        if (distToBall < 50) {
-          p.vx = (dBallX / distToBall) * 3;
-          p.vy = (dBallY / distToBall) * 3;
+        // Targeted attraction only when close, otherwise anchor to base
+        if (distToBall < 40) {
+          const targetVx = (dBallX / distToBall) * 1.5;
+          const targetVy = (dBallY / distToBall) * 1.5;
+          p.vx += (targetVx - p.vx) * 0.1;
+          p.vy += (targetVy - p.vy) * 0.1;
         } else {
           const dtx = p.baseX - p.x;
           const dty = p.baseY - p.y;
           const distToBase = Math.sqrt(dtx * dtx + dty * dty);
-          if (distToBase > 2) {
-            p.vx = (dtx / distToBase) * 2;
-            p.vy = (dty / distToBase) * 2;
+          if (distToBase > 1) {
+            const targetVx = (dtx / distToBase) * 1;
+            const targetVy = (dty / distToBase) * 1;
+            p.vx += (targetVx - p.vx) * 0.1;
+            p.vy += (targetVy - p.vy) * 0.1;
           } else {
-            p.vx *= 0.8; p.vy *= 0.8;
+            p.vx *= 0.9; 
+            p.vy *= 0.9;
           }
         }
 
@@ -185,18 +193,21 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         // Render Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
         ctx.lineWidth = 1;
         ctx.stroke();
       });
 
-      // Render Yellow Soccer Ball
+      // Render Persistent Yellow Soccer Ball
+      ctx.shadowBlur = 4;
+      ctx.shadowColor = '#facc15';
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, 3.5, 0, Math.PI * 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 1;
       ctx.stroke();
@@ -236,8 +247,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   if (showFinal) {
     return (
       <div className="relative premium-glass p-5 slanted-container w-full max-w-[280px] border-white/10 shadow-2xl bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-        <div className="text-[9px] font-headline font-black uppercase text-accent mb-4 tracking-[0.2em] italic">Full Time</div>
-        
         <div className="flex items-center justify-between w-full gap-2 mb-6">
           <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
             <Shield className="w-6 h-6 text-primary" />
@@ -245,6 +254,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           </div>
 
           <div className="flex flex-col items-center gap-1">
+             <div className="text-[8px] font-headline font-black uppercase text-accent mb-0.5 tracking-[0.2em] italic">Full Time</div>
             <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-2 mb-1">
               <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
               <span className="text-white/20">-</span>
@@ -272,23 +282,26 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full h-full justify-center px-4">
-      <div className="w-full max-w-[300px] flex justify-between items-center px-2">
-        <div className="text-[10px] font-headline font-black italic text-white">
-          <span className="text-accent mr-2">{matchTime}'</span>
-          {commentary}
-        </div>
-        <div className="text-[9px] font-headline text-accent/80 uppercase font-black tracking-widest italic animate-pulse">
-          Live
-        </div>
-      </div>
-      
+    <div className="flex flex-col items-center gap-4 w-full h-full justify-center px-4">
       <div className="relative premium-glass p-0.5 slanted-container w-full max-w-[300px] aspect-[4/3] border-white/10 overflow-hidden bg-black/40 shadow-inner">
         <canvas ref={canvasRef} width={300} height={225} className="w-full h-full rounded" />
+        <div className="absolute top-2 right-2 flex items-center gap-2">
+           <div className="text-[9px] font-headline text-accent/80 uppercase font-black tracking-widest italic animate-pulse">
+            Live
+          </div>
+        </div>
       </div>
 
-      <div className="w-full max-w-[300px] h-1 bg-white/5 rounded-full overflow-hidden">
-        <div className="h-full bg-accent transition-all duration-300" style={{ width: `${(matchTime/90)*100}%` }} />
+      <div className="w-full max-w-[300px] space-y-2">
+        <div className="text-center">
+          <span className="text-accent font-headline font-black italic text-xs mr-2">{matchTime}'</span>
+          <span className="text-[10px] font-headline font-black uppercase tracking-tight text-white/90 italic">
+            {commentary}
+          </span>
+        </div>
+        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+          <div className="h-full bg-accent transition-all duration-300" style={{ width: `${(matchTime/90)*100}%` }} />
+        </div>
       </div>
     </div>
   );
