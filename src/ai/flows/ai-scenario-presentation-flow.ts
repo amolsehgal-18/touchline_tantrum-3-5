@@ -124,6 +124,7 @@ export async function getAiScenarioPresentation(
       scenarioId: card.id
     };
   } catch (error) {
+    console.error('AI Flow Error:', error);
     return {
       scenario: card.scenarioText,
       leftOption: card.leftOptionText,
