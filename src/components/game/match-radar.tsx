@@ -85,8 +85,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const ball = {
       x: width / 2,
       y: height / 2,
-      vx: (Math.random() - 0.5) * 4,
-      vy: (Math.random() - 0.5) * 4,
+      vx: (Math.random() - 0.5) * 8, // Faster start
+      vy: (Math.random() - 0.5) * 8,
       possessorIndex: -1,
     };
 
@@ -108,23 +108,23 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width / 2, height - 5);
       ctx.stroke();
 
-      // Ball Physics & Possession Logic
+      // Ball Physics & Possession Logic (High Speed)
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
         ball.x = p.x + (p.team === 'user' ? 4 : -4);
         ball.y = p.y;
         
-        // Possessor drives towards opponent half
-        const targetX = p.team === 'user' ? width * 0.8 : width * 0.2;
+        // Possessor drives at high speed
+        const targetX = p.team === 'user' ? width * 0.9 : width * 0.1;
         const dx = targetX - p.x;
         const dy = (height / 2) - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
-        p.vx = (dx / dist) * 1.5;
-        p.vy = (dy / dist) * 0.5 + (Math.random() - 0.5) * 0.2;
+        p.vx = (dx / dist) * 2.8; // Faster dribble
+        p.vy = (dy / dist) * 0.8 + (Math.random() - 0.5) * 0.4;
 
-        // Random Passing Chance
-        if (Math.random() < 0.03) {
+        // High frequency passing
+        if (Math.random() < 0.12) { // 12% chance per frame to pass
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           
@@ -132,41 +132,41 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 6;
-          ball.vy = (pdy / pdist) * 6;
+          ball.vx = (pdx / pdist) * 12; // Fast pass
+          ball.vy = (pdy / pdist) * 12;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.985;
-        ball.vy *= 0.985;
+        ball.vx *= 0.99; // Less friction for speed
+        ball.vy *= 0.99;
 
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Acquisition Logic: Nearest player grabs it
+        // Fast acquisition
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 6) ball.possessorIndex = idx;
+          if (dist < 8) ball.possessorIndex = idx;
         });
       }
 
-      // Tactical Formation AI - Players stay in their blocks
+      // Tactical Formation AI - Scatter & Zone Defense
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
           const dxBall = ball.x - p.x;
           const dyBall = ball.y - p.y;
           const distToBall = Math.sqrt(dxBall * dxBall + dyBall * dyBall);
 
-          // Return to base position with slight magnetism to ball if close
+          // Return to base position quickly if far, or track ball if near (but don't cluster)
           let tx = p.baseX;
           let ty = p.baseY;
 
-          if (distToBall < 50) {
-            tx = p.baseX + (ball.x - p.baseX) * 0.3;
-            ty = p.baseY + (ball.y - p.baseY) * 0.3;
+          if (distToBall < 40) { // React zone
+            tx = p.baseX + (ball.x - p.baseX) * 0.4;
+            ty = p.baseY + (ball.y - p.baseY) * 0.4;
           }
 
           const dtx = tx - p.x;
@@ -174,8 +174,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dDist = Math.sqrt(dtx * dtx + dty * dty);
           
           if (dDist > 1) {
-            p.vx = (dtx / dDist) * 1.0;
-            p.vy = (dty / dDist) * 1.0;
+            p.vx = (dtx / dDist) * 2.2; // Quick movement to zone
+            p.vy = (dty / dDist) * 2.2;
           } else {
             p.vx *= 0.1; p.vy *= 0.1;
           }
@@ -187,20 +187,20 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         // Render Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 0.5;
+        ctx.lineWidth = 1;
         ctx.stroke();
       });
 
-      // Render Ball
+      // Render Ball (Persistent Yellow with High Contrast)
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 3.5, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 0.8;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       animationFrame = requestAnimationFrame(animate);
@@ -215,7 +215,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       setTimer(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          setTimeout(() => setShowFinal(true), 500);
+          setTimeout(() => setShowFinal(true), 100);
           return 0;
         }
         return prev - 1;
@@ -231,16 +231,15 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       </div>
       
       {showFinal ? (
-        <div className="relative premium-glass p-5 slanted-container w-full max-w-[260px] border-white/10 overflow-hidden shadow-2xl bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-          <div className="text-[9px] font-headline uppercase tracking-[0.2em] opacity-40 mb-4 font-black">Full Time</div>
-          
-          <div className="flex items-center justify-between w-full gap-2 mb-6">
+        <div className="relative premium-glass p-5 slanted-container w-full max-w-[240px] border-white/10 overflow-hidden shadow-2xl bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+          <div className="flex items-center justify-between w-full gap-2 mb-5">
             <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
               <Shield className="w-6 h-6 text-destructive" />
               <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight">{userTeam}</div>
             </div>
 
             <div className="flex flex-col items-center gap-1">
+              <div className="text-[9px] font-headline uppercase tracking-[0.2em] opacity-40 font-black mb-1">Full Time</div>
               <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-2">
                 <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
                 <span className="text-white/20">-</span>
