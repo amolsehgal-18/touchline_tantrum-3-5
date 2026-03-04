@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
@@ -147,7 +146,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         if (ball.x < 12 || ball.x > width - 12) ball.vx *= -1;
         if (ball.y < 12 || ball.y > height - 12) ball.vy *= -1;
 
-        // Intersection logic - only capture if ball is slow enough or very close
+        // Intersection logic - capture if ball is close
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
@@ -160,30 +159,30 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Stable Player Movement - No shaking
+      // Stable Player Movement - Anchored to zones
       players.forEach((p) => {
         const dBallX = ball.x - p.x;
         const dBallY = ball.y - p.y;
         const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
         // Targeted attraction only when close, otherwise anchor to base
-        if (distToBall < 40) {
+        if (distToBall < 45) {
           const targetVx = (dBallX / distToBall) * 1.5;
           const targetVy = (dBallY / distToBall) * 1.5;
-          p.vx += (targetVx - p.vx) * 0.1;
-          p.vy += (targetVy - p.vy) * 0.1;
+          p.vx += (targetVx - p.vx) * 0.15;
+          p.vy += (targetVy - p.vy) * 0.15;
         } else {
           const dtx = p.baseX - p.x;
           const dty = p.baseY - p.y;
           const distToBase = Math.sqrt(dtx * dtx + dty * dty);
-          if (distToBase > 1) {
+          if (distToBase > 2) {
             const targetVx = (dtx / distToBase) * 1;
             const targetVy = (dty / distToBase) * 1;
             p.vx += (targetVx - p.vx) * 0.1;
             p.vy += (targetVy - p.vy) * 0.1;
           } else {
-            p.vx *= 0.9; 
-            p.vy *= 0.9;
+            p.vx *= 0.8; 
+            p.vy *= 0.8;
           }
         }
 
@@ -292,10 +291,10 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         </div>
       </div>
 
-      <div className="w-full max-w-[300px] space-y-2">
+      <div className="w-full max-w-[300px] space-y-1">
         <div className="text-center">
-          <span className="text-accent font-headline font-black italic text-xs mr-2">{matchTime}'</span>
-          <span className="text-[10px] font-headline font-black uppercase tracking-tight text-white/90 italic">
+          <span className="text-accent font-headline font-black italic text-[11px] mr-2">{matchTime}'</span>
+          <span className="text-[11px] font-headline font-black uppercase tracking-tight text-white/90 italic">
             {commentary}
           </span>
         </div>
