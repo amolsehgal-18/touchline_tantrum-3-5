@@ -2,6 +2,10 @@
 /**
  * @fileOverview A Genkit flow for generating truly unique, context-aware scenarios.
  * It leverages AI to create new dilemmas based on current stats, ensuring infinite variety.
+ * 
+ * - getAiScenarioPresentation - The main entry point for the UI.
+ * - AiScenarioPresentationInput - Schema for the game state context.
+ * - AiScenarioPresentationOutput - Schema for the generated dilemma.
  */
 
 import {ai} from '@/ai/genkit';
@@ -50,6 +54,9 @@ const aiScenarioPrompt = ai.definePrompt({
   },
   output: {schema: AiScenarioPresentationOutputSchema},
   config: {
+    temperature: 1.0,
+    topP: 0.95,
+    topK: 40,
     safetySettings: [
       { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
       { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
@@ -59,9 +66,10 @@ const aiScenarioPrompt = ai.definePrompt({
     ],
   },
   prompt: `
+  SEED: {{{randomSeed}}}
   SYSTEM: You are the 'Touchline Tantrum' Scenario Engine. Your goal is to create unique, high-stakes football management dilemmas. 
   Use British football slang (gaffer, training ground, gaffer's office, etc.). 
-  BE CREATIVE. Avoid repetitive tropes like "long-term commitment" or "tactical rigidity".
+  BE CREATIVE. Avoid repetitive tropes like "long-term commitment" or "tactical rigidity" - these are banned topics.
   
   CONTEXT FOR CLUB "{{{userTeam}}}":
   - League Position: {{{currentLeaguePosition}}}
@@ -70,7 +78,6 @@ const aiScenarioPrompt = ai.definePrompt({
   - Dressing Room Morale: {{dressingRoom}} (Scale 0-1)
   - Tactical Aggression: {{aggression}} (Scale 0-1)
   - Seasonal Objective: {{{sagaObjective}}}
-  - ENTROPY SEED: {{{randomSeed}}}
   
   TASK:
   Generate a completely original, dramatic, and punchy boardroom or dressing room scenario. 
@@ -80,7 +87,7 @@ const aiScenarioPrompt = ai.definePrompt({
   2. If Dressing Room < 0.3, focus on 'Player Revolt', 'Training Ground Fight', or 'Leaked DM'.
   3. If Fan Support < 0.3, focus on 'Stadium Protests', 'Angry Banners', or 'TalkSport Meltdowns'.
   4. If meeting Objective, focus on 'Manager Ego', 'Bigger Clubs Interest', or 'Contract Demands'.
-  5. DO NOT mention "Long-term commitment" or "Tactical rigidity" - these are banned topics.
+  5. DO NOT mention "Long-term commitment" or "Tactical rigidity".
   6. ALWAYS generate completely new text for the scenario and options. 
   
   MATH CONSTRAINTS:
