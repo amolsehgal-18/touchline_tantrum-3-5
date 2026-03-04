@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for generating dynamic, context-aware scenarios.
@@ -81,33 +82,34 @@ const aiScenarioPresentationPrompt = ai.definePrompt({
 export async function getAiScenarioPresentation(
   input: AiScenarioPresentationInput
 ): Promise<AiScenarioPresentationOutput> {
+  const excluded = input.excludedScenarioTexts || [];
+  
+  // Filter out scenarios already seen in history to prevent repetition
+  let eligible = SCENARIO_CARDS.filter(c => !excluded.includes(c.scenarioText));
+  
+  // If we've run out of cards, recycle
+  if (eligible.length === 0) {
+     eligible = SCENARIO_CARDS;
+  }
+  
+  // Pick a card from the filtered list
+  const card = eligible[Math.floor(Math.random() * eligible.length)];
+
+  const impactLeft = {
+    board: -card.boardImpact,
+    fans: -card.fanImpact,
+    squad: -card.dressingRoomImpact,
+    aggression: -card.aggressionImpact,
+  };
+
+  const impactRight = {
+    board: card.boardImpact,
+    fans: card.fanImpact,
+    squad: card.dressingRoomImpact,
+    aggression: card.aggressionImpact,
+  };
+
   try {
-    const excluded = input.excludedScenarioTexts || [];
-    // Filter out scenarios already seen in history to prevent repetition
-    let eligible = SCENARIO_CARDS.filter(c => !excluded.includes(c.scenarioText));
-    
-    // If we've run out of cards, recycle but pick randomly
-    if (eligible.length === 0) {
-       eligible = SCENARIO_CARDS;
-    }
-    
-    // Pick a card from the filtered list
-    const card = eligible[Math.floor(Math.random() * eligible.length)];
-
-    const impactLeft = {
-      board: -card.boardImpact,
-      fans: -card.fanImpact,
-      squad: -card.dressingRoomImpact,
-      aggression: -card.aggressionImpact,
-    };
-
-    const impactRight = {
-      board: card.boardImpact,
-      fans: card.fanImpact,
-      squad: card.dressingRoomImpact,
-      aggression: card.aggressionImpact,
-    };
-
     const { output } = await aiScenarioPresentationPrompt({
       baseScenario: card.scenarioText,
       leftOption: card.leftOptionText,
@@ -122,16 +124,13 @@ export async function getAiScenarioPresentation(
 
     if (!output) throw new Error('AI Output null');
     
-    // Explicitly return the base text for history tracking
+    // Explicitly enforce the original base text to ensure the filter works next time
     return {
       ...output,
       originalScenarioText: card.scenarioText
     };
   } catch (error) {
-    const excluded = input.excludedScenarioTexts || [];
-    const eligible = SCENARIO_CARDS.filter(c => !excluded.includes(c.scenarioText));
-    const card = eligible.length > 0 ? eligible[Math.floor(Math.random() * eligible.length)] : SCENARIO_CARDS[Math.floor(Math.random() * SCENARIO_CARDS.length)];
-    
+    // Fallback: Return the raw card data if AI fails
     return {
       scenario: card.scenarioText,
       leftOption: card.leftOptionText,
