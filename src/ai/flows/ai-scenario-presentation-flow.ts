@@ -84,7 +84,11 @@ export async function getAiScenarioPresentation(
   try {
     // Filter out scenarios already seen in history to prevent repetition
     let eligible = SCENARIO_CARDS.filter(c => !input.excludedScenarioTexts.includes(c.scenarioText));
-    if (eligible.length === 0) eligible = SCENARIO_CARDS; // Fallback if all cards seen
+    
+    // If we've run out of cards, recycle but prioritize variety
+    if (eligible.length === 0) {
+       eligible = SCENARIO_CARDS;
+    }
     
     const card = eligible[Math.floor(Math.random() * eligible.length)];
 

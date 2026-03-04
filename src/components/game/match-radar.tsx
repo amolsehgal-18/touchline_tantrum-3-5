@@ -75,7 +75,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const width = canvas.width;
     const height = canvas.height;
 
-    // 4-4-2 Formations
+    // Tactical 4-4-2 Formations
     const userFormation = [
       [0.08, 0.5], // GK
       [0.2, 0.2], [0.2, 0.4], [0.2, 0.6], [0.2, 0.8], // DEF
@@ -142,20 +142,23 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ball.x = p.x + (p.team === 'user' ? 4 : -4);
         ball.y = p.y;
         
-        // Attacking behavior: Move towards goal
+        // Attacking behavior: Move towards opponent goal
         const attackTargetX = p.team === 'user' ? width - 15 : 15;
         const adx = attackTargetX - p.x;
         const ady = (height / 2) - p.y;
         const adist = Math.sqrt(adx * adx + ady * ady);
         
+        // Dribbling speed
         p.vx = (adx / adist) * 1.8;
         p.vy = (ady / adist) * 1.8 + (Math.random() - 0.5) * 0.5;
 
-        // Passing Logic: Random chance to switch possessor
+        // Passing Logic: Random chance to switch possessor to a teammate in front
         if (Math.random() < 0.04) {
           ball.possessorIndex = -1;
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
-          const target = teammates[Math.floor(Math.random() * teammates.length)];
+          // Find teammates ahead of current player
+          const forwardTeammates = teammates.filter(t => p.team === 'user' ? t.x > p.x : t.x < p.x);
+          const target = (forwardTeammates.length > 0 ? forwardTeammates : teammates)[Math.floor(Math.random() * (forwardTeammates.length || teammates.length))];
           
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
@@ -191,7 +194,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           let tx = p.baseX;
           let ty = p.baseY;
 
-          // Reactive behavior: Chase ball if it enters tactical zone
+          // Tactical Zone: Players chase ball if it enters their immediate area
           if (distToBall < 60) {
             tx = ball.x;
             ty = ball.y;
@@ -212,7 +215,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         p.x += p.vx;
         p.y += p.vy;
 
-        // Render Dots
+        // Render Dot
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
