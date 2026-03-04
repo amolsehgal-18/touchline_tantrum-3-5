@@ -39,7 +39,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       const g = Math.floor(Math.random() * 2);
       return { user: g, opp: g };
     } else {
-      // Fixed ReferenceError: use local variable name for calculation
       const g2_val = Math.floor(Math.random() * 2) + 1;
       const g1_val = Math.floor(Math.random() * g2_val);
       return { user: g1_val, opp: g2_val };
@@ -75,11 +74,11 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
     const players: Player[] = [
       ...userFormation.map(pos => ({
-        x: pos[0] * width, y: pos[1] * height, vx: 0, vy: 0, team: 'user' as const, color: '#3b82f6', // Professional Blue
+        x: pos[0] * width, y: pos[1] * height, vx: 0, vy: 0, team: 'user' as const, color: '#3b82f6', 
         baseX: pos[0] * width, baseY: pos[1] * height
       })),
       ...oppFormation.map(pos => ({
-        x: pos[0] * width, y: pos[1] * height, vx: 0, vy: 0, team: 'opp' as const, color: '#ef4444', // Classic Red
+        x: pos[0] * width, y: pos[1] * height, vx: 0, vy: 0, team: 'opp' as const, color: '#ef4444', 
         baseX: pos[0] * width, baseY: pos[1] * height
       }))
     ];
@@ -87,8 +86,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const ball = {
       x: width / 2,
       y: height / 2,
-      vx: (Math.random() - 0.5) * 6,
-      vy: (Math.random() - 0.5) * 6,
+      vx: (Math.random() - 0.5) * 8,
+      vy: (Math.random() - 0.5) * 8,
       possessorIndex: -1,
     };
 
@@ -97,16 +96,13 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
       
-      // Pitch Detail Lines (Very Subtle)
+      // Pitch Detail Lines
       ctx.strokeStyle = 'rgba(255,255,255,0.05)';
       ctx.lineWidth = 1;
       ctx.strokeRect(5, 5, width - 10, height - 10);
       ctx.beginPath();
       ctx.moveTo(width/2, 5);
       ctx.lineTo(width/2, height - 5);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(width/2, height/2, 35, 0, Math.PI * 2);
       ctx.stroke();
       
       // Ball Logic: Pass or Move
@@ -115,36 +111,39 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ball.x = p.x;
         ball.y = p.y;
         
-        // Pass to teammate randomly
-        if (Math.random() < 0.1) {
+        // Ensure ball stays attached to possessor
+        if (Math.random() < 0.08) { // Chance to pass
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 12;
-          ball.vy = (pdy / pdist) * 12;
+          ball.vx = (pdx / pdist) * 14;
+          ball.vy = (pdy / pdist) * 14;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.98;
-        ball.vy *= 0.98;
-
-        // Bounce off walls
+        
+        // Boundary check and bounce
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
+
+        // Maintain minimum velocity so it never stops
+        const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+        if (speed < 4) {
+          ball.vx *= 1.1;
+          ball.vy *= 1.1;
+        }
 
         // Intersection check to gain possession
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 8) {
+          if (dist < 10) {
              ball.possessorIndex = idx;
-             ball.vx = 0;
-             ball.vy = 0;
           }
         });
       }
@@ -155,10 +154,9 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         const dBallY = ball.y - p.y;
         const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
-        // Drift toward ball if close, otherwise return to base position
-        if (distToBall < 60) {
-          const targetVx = (dBallX / distToBall) * 2;
-          const targetVy = (dBallY / distToBall) * 2;
+        if (distToBall < 50) {
+          const targetVx = (dBallX / distToBall) * 2.5;
+          const targetVy = (dBallY / distToBall) * 2.5;
           p.vx += (targetVx - p.vx) * 0.1;
           p.vy += (targetVy - p.vy) * 0.1;
         } else {
@@ -166,8 +164,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dty = p.baseY - p.y;
           const distToBase = Math.sqrt(dtx * dtx + dty * dty);
           if (distToBase > 1) {
-            const targetVx = (dtx / distToBase) * 1.2;
-            const targetVy = (dty / distToBase) * 1.2;
+            const targetVx = (dtx / distToBase) * 1.5;
+            const targetVy = (dty / distToBase) * 1.5;
             p.vx += (targetVx - p.vx) * 0.05;
             p.vy += (targetVy - p.vy) * 0.05;
           }
@@ -179,20 +177,20 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         // Draw Player Dot
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = 'rgba(0,0,0,0.3)';
         ctx.lineWidth = 1;
         ctx.stroke();
       });
 
-      // Draw Yellow Ball Dot
-      ctx.fillStyle = '#facc15'; // Vibrant Yellow
+      // Draw Yellow Ball Dot (Always Visible)
+      ctx.fillStyle = '#facc15'; 
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, 4.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 0.5;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       animationFrame = requestAnimationFrame(animate);
@@ -208,7 +206,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const timer = setInterval(() => {
       const elapsed = (Date.now() - start) / 1000;
       
-      // Update interval-based commentary
       let currentEvent = matchEvents[0];
       for (let i = matchEvents.length - 1; i >= 0; i--) {
         if (elapsed >= matchEvents[i].trigger) {

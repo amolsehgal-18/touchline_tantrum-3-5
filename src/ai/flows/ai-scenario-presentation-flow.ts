@@ -1,19 +1,18 @@
 
 'use server';
 /**
- * @fileOverview A Genkit flow for generating dynamic, context-aware scenarios.
- * Uses unique ID tracking and strict exclusion to ensure variety.
+ * @fileOverview A Genkit flow for generating truly unique, context-aware scenarios.
+ * Instead of picking from a list, it leverages AI to create new dilemmas based on current stats.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { SCENARIO_CARDS } from '@/lib/game-scenarios';
 
 const ImpactSchema = z.object({
-  board: z.number().int(),
-  fans: z.number().int(),
-  squad: z.number().int(),
-  aggression: z.number(),
+  board: z.number().int().describe('Impact on board support (-20 to 15)'),
+  fans: z.number().int().describe('Impact on fan support (-20 to 15)'),
+  squad: z.number().int().describe('Impact on dressing room morale (-20 to 15)'),
+  aggression: z.number().describe('Impact on tactical aggression (-0.1 to 0.1)'),
 });
 
 const AiScenarioPresentationInputSchema = z.object({
@@ -43,99 +42,61 @@ const AiScenarioPresentationOutputSchema = z.object({
 
 export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentationOutputSchema>;
 
-const aiScenarioPresentationPrompt = ai.definePrompt({
-  name: 'aiScenarioPresentationPrompt',
+const aiScenarioPrompt = ai.definePrompt({
+  name: 'aiScenarioPrompt',
   model: 'googleai/gemini-1.5-flash',
   input: {
-    schema: z.object({
-      baseScenario: z.string(),
-      leftOption: z.string(),
-      rightOption: z.string(),
-      impactLeft: ImpactSchema,
-      impactRight: ImpactSchema,
-      imageCategory: z.string(),
-      isBreaking: z.boolean(),
-      userTeam: z.string(),
-      currentLeaguePosition: z.number().int(),
-    })
+    schema: AiScenarioPresentationInputSchema
   },
   output: {schema: AiScenarioPresentationOutputSchema},
-  prompt: `You are a football manager simulator AI.
+  prompt: `You are a football manager simulator AI engine for the club "{{{userTeam}}}".
   
-  Rewrite this scenario for the manager of {{{userTeam}}} (Current League Position: {{{currentLeaguePosition}}}).
-  Make it punchy, dramatic, and context-aware. Use football terminology.
+  CURRENT CONTEXT:
+  - League Position: {{{currentLeaguePosition}}}
+  - Board Support: {{boardSupport}} (as decimal)
+  - Fan Support: {{fanSupport}} (as decimal)
+  - Dressing Room Morale: {{dressingRoom}} (as decimal)
+  - Tactical Aggression: {{aggression}} (as decimal)
+  - Seasonal Objective: {{{sagaObjective}}}
   
-  Base Scenario: {{{baseScenario}}}
-  Option A (Left): {{{leftOption}}}
-  Option B (Right): {{{rightOption}}}
+  TASK:
+  Generate a unique, dramatic, and punchy boardroom or dressing room scenario. 
   
-  YOU MUST RETURN THESE IMPACTS EXACTLY:
-  Left Impact: Board {{{impactLeft.board}}}, Fans {{{impactLeft.fans}}}, Squad {{{impactLeft.squad}}}, Aggression {{{impactLeft.aggression}}}
-  Right Impact: Board {{{impactRight.board}}}, Fans {{{impactRight.fans}}}, Squad {{{impactRight.squad}}}, Aggression {{{impactRight.aggression}}}
+  GENERATION RULES:
+  1. If Board Support < 0.3, focus on 'Board Crisis', 'Financial Audit', or 'Ultimatum'.
+  2. If Dressing Room < 0.3, focus on 'Player Revolt', 'Training Ground Fight', or 'Leaked DM'.
+  3. If Fan Support < 0.3, focus on 'Stadium Protests' or 'Banner Planes'.
+  4. If meeting Objective, focus on 'Manager Ego', 'Media Links to Bigger Clubs', or 'Transfer Demands'.
   
-  Image Category: {{{imageCategory}}}
-  Is Breaking: {{{isBreaking}}}`,
+  MATH CONSTRAINTS:
+  - Board/Fans/Squad Impacts: Range from -20 to +15.
+  - Aggression Impact: Range from -0.1 to +0.1.
+  
+  Make it satirical, high-stakes, and use British football terminology (gaffer, gaffer's office, training ground, etc.).
+  The scenarioId should be a unique string starting with 'ai_'.`,
 });
 
 export async function getAiScenarioPresentation(
   input: AiScenarioPresentationInput
 ): Promise<AiScenarioPresentationOutput> {
-  const excludedIds = input.excludedScenarioIds || [];
-  
-  // Logic to pick a scenario that hasn't been seen yet
-  let eligible = SCENARIO_CARDS.filter(c => !excludedIds.includes(c.id));
-  
-  if (eligible.length === 0) {
-     eligible = SCENARIO_CARDS;
-  }
-  
-  const card = eligible[Math.floor(Math.random() * eligible.length)];
-
-  const impactLeft = {
-    board: -card.boardImpact,
-    fans: -card.fanImpact,
-    squad: -card.dressingRoomImpact,
-    aggression: -card.aggressionImpact,
-  };
-
-  const impactRight = {
-    board: card.boardImpact,
-    fans: card.fanImpact,
-    squad: card.dressingRoomImpact,
-    aggression: card.aggressionImpact,
-  };
-
   try {
-    const { output } = await aiScenarioPresentationPrompt({
-      baseScenario: card.scenarioText,
-      leftOption: card.leftOptionText,
-      rightOption: card.rightOptionText,
-      impactLeft,
-      impactRight,
-      imageCategory: card.imageCategory,
-      isBreaking: card.isBreaking,
-      userTeam: input.userTeam,
-      currentLeaguePosition: input.currentLeaguePosition,
-    });
+    const { output } = await aiScenarioPrompt(input);
 
     if (!output) throw new Error('AI Output null');
     
-    return {
-      ...output,
-      scenarioId: card.id
-    };
+    return output;
   } catch (error) {
     console.error('AI Flow Error:', error);
-    // Hard fallback to ensure game continues even if AI fails
+    // Hard fallback to ensure game continues
     return {
-      scenario: card.scenarioText,
-      leftOption: card.leftOptionText,
-      rightOption: card.rightOptionText,
-      impactLeft,
-      impactRight,
-      imageCategory: card.imageCategory,
-      isBreaking: card.isBreaking,
-      scenarioId: card.id
+      scenario: "The local press is asking about your long-term commitment to the club.",
+      leftOption: "Commit your future.",
+      rightOption: "Stay vague.",
+      impactLeft: { board: 5, fans: 5, squad: 2, aggression: 0 },
+      impactRight: { board: -5, fans: -5, squad: -2, aggression: 0.05 },
+      imageCategory: "press",
+      isBreaking: false,
+      scenarioId: "fallback_001"
     };
   }
 }
