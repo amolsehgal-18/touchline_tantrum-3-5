@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for generating truly unique, context-aware scenarios.
@@ -50,6 +49,14 @@ const aiScenarioPrompt = ai.definePrompt({
     schema: AiScenarioPresentationInputSchema
   },
   output: {schema: AiScenarioPresentationOutputSchema},
+  config: {
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+    ],
+  },
   prompt: `You are a football manager simulator AI engine for the club "{{{userTeam}}}".
   
   CURRENT CONTEXT:
