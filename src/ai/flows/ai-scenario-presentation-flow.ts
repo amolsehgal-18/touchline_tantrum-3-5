@@ -4,8 +4,6 @@
  * It leverages AI to create new dilemmas based on current stats, ensuring infinite variety.
  * 
  * - getAiScenarioPresentation - The main entry point for the UI.
- * - AiScenarioPresentationInput - Schema for the game state context.
- * - AiScenarioPresentationOutput - Schema for the generated dilemma.
  */
 
 import {ai} from '@/ai/genkit';
@@ -48,7 +46,7 @@ export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentation
 
 const aiScenarioPrompt = ai.definePrompt({
   name: 'aiScenarioPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'gemini-1.5-flash',
   input: {
     schema: AiScenarioPresentationInputSchema
   },
@@ -66,27 +64,21 @@ const aiScenarioPrompt = ai.definePrompt({
   },
   prompt: `
   SYSTEM: You are the 'Touchline Tantrum' Scenario Engine. 
-  ENTROPY SEED: {{{randomSeed}}}
+  RANDOM SEED: {{{randomSeed}}}
   
   CRITICAL RULE: Generate a COMPLETELY NEW scenario every time. Do not repeat previous themes.
   
   CONTEXT FOR CLUB "{{{userTeam}}}":
-  - Board Support: {{boardSupport}} (0-1)
-  - Fan Support: {{fanSupport}} (0-1)
-  - Morale: {{dressingRoom}} (0-1)
+  - Board Support: {{boardSupport}} (Current state: 0-1)
+  - Fan Support: {{fanSupport}} (Current state: 0-1)
+  - Morale: {{dressingRoom}} (Current state: 0-1)
   - Objective: {{{sagaObjective}}}
   
-  SCENARIO THEMES:
-  1. Tactical leaks / Assistant Manager betrayal.
-  2. Training ground fights / Player ego clashes.
-  3. Transfer rumors / Secret buyout clauses.
-  4. Fan protests / Social media toxicity.
-  5. Financial audits / Shadowy consortia.
-  
+  TASK: Generate a dramatic boardroom, training ground, or media dilemma. 
   Use British football slang (gaffer, training ground, gaffer's office, etc.).
   
-  OUTPUT: Generate a dramatic, punchy scenario and two options.
-  Impact ranges: Board/Fans/Squad (-20 to +15), Aggression (-0.1 to +0.1).`,
+  Impact ranges: Board/Fans/Squad (-20 to +15), Aggression (-0.1 to +0.1).
+  Make sure the choices are difficult and impactful.`,
 });
 
 const FALLBACK_SCENARIOS: AiScenarioPresentationOutput[] = [
@@ -130,7 +122,6 @@ export async function getAiScenarioPresentation(
     if (!output) throw new Error('AI Output null');
     return output;
   } catch (error) {
-    // If AI fails, pick a random fallback so it doesn't look like the same card
     const randomIdx = Math.floor(Math.random() * FALLBACK_SCENARIOS.length);
     const fallback = FALLBACK_SCENARIOS[randomIdx];
     return {

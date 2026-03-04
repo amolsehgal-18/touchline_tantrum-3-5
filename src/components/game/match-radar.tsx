@@ -59,6 +59,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const width = canvas.width;
     const height = canvas.height;
 
+    // Tactical 4-4-2 Formations
     const userFormation = [
       [0.08, 0.5], [0.22, 0.25], [0.22, 0.42], [0.22, 0.58], [0.22, 0.75],
       [0.42, 0.2], [0.42, 0.4], [0.42, 0.6], [0.42, 0.8], [0.65, 0.35], [0.65, 0.65]
@@ -91,6 +92,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
       
+      // Pitch Grid
       ctx.strokeStyle = 'rgba(255,255,255,0.05)';
       ctx.lineWidth = 1;
       ctx.strokeRect(5, 5, width - 10, height - 10);
@@ -99,6 +101,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width/2, height - 5);
       ctx.stroke();
 
+      // Ball Physics
       const target = players[ball.targetPlayerIndex];
       const dx = target.x - ball.x;
       const dy = target.y - ball.y;
@@ -107,13 +110,13 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       if (dist < 8) {
         const teammates = players.filter((_, idx) => idx !== ball.targetPlayerIndex);
         ball.targetPlayerIndex = players.indexOf(teammates[Math.floor(Math.random() * teammates.length)]);
-        ball.isTraveling = true;
       } else {
         const speed = 14;
         ball.x += (dx / dist) * speed;
         ball.y += (dy / dist) * speed;
       }
 
+      // Player Movement (Zonal Drifting)
       players.forEach((p) => {
         const dtx = p.baseX - p.x;
         const dty = p.baseY - p.y;
@@ -129,6 +132,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.stroke();
       });
 
+      // Render Yellow Ball
       ctx.fillStyle = '#facc15'; 
       ctx.shadowBlur = 12;
       ctx.shadowColor = '#facc15';
