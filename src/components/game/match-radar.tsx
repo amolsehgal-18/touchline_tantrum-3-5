@@ -152,7 +152,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         p.vx = (adx / adist) * 1.8;
         p.vy = (ady / adist) * 1.8 + (Math.random() - 0.5) * 0.5;
 
-        // Passing Logic: Every ~2 seconds (random chance)
+        // Passing Logic: Random chance to switch possessor
         if (Math.random() < 0.04) {
           ball.possessorIndex = -1;
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);

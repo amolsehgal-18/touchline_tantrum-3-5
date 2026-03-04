@@ -2,6 +2,7 @@
 'use server';
 /**
  * @fileOverview A Genkit flow for generating dynamic, context-aware scenarios.
+ * Uses a hybrid approach: local database for balance, AI for drama.
  */
 
 import {ai} from '@/ai/genkit';
@@ -61,12 +62,12 @@ const aiScenarioPresentationPrompt = ai.definePrompt({
   output: {schema: AiScenarioPresentationOutputSchema},
   prompt: `You are a football manager simulator AI.
   
-  Rewrite this scenario for the manager of {{{userTeam}}} (League Position: {{{currentLeaguePosition}}}).
-  Make it punchy, dramatic, and context-aware.
+  Rewrite this scenario for the manager of {{{userTeam}}} (Current League Position: {{{currentLeaguePosition}}}).
+  Make it punchy, dramatic, and context-aware. Use football terminology.
   
   Base Scenario: {{{baseScenario}}}
-  Option A (Left Swipe): {{{leftOption}}}
-  Option B (Right Swipe): {{{rightOption}}}
+  Option A (Left Swipe - REJECT): {{{leftOption}}}
+  Option B (Right Swipe - APPROVE): {{{rightOption}}}
   
   YOU MUST RETURN THESE IMPACTS EXACTLY:
   Left Impact: Board {{{impactLeft.board}}}, Fans {{{impactLeft.fans}}}, Squad {{{impactLeft.squad}}}, Aggression {{{impactLeft.aggression}}}
@@ -75,30 +76,31 @@ const aiScenarioPresentationPrompt = ai.definePrompt({
   Image Category: {{{imageCategory}}}
   Is Breaking: {{{isBreaking}}}
   
-  IMPORTANT: Set "originalScenarioText" to exactly: {{{baseScenario}}}`,
+  CRITICAL: Set "originalScenarioText" to exactly: {{{baseScenario}}}`,
 });
 
 export async function getAiScenarioPresentation(
   input: AiScenarioPresentationInput
 ): Promise<AiScenarioPresentationOutput> {
   try {
+    // Filter out scenarios already seen in history to prevent repetition
     let eligible = SCENARIO_CARDS.filter(c => !input.excludedScenarioTexts.includes(c.scenarioText));
-    if (eligible.length === 0) eligible = SCENARIO_CARDS;
+    if (eligible.length === 0) eligible = SCENARIO_CARDS; // Fallback if all cards seen
     
     const card = eligible[Math.floor(Math.random() * eligible.length)];
 
     const impactLeft = {
-      board: card.boardImpact,
-      fans: card.fanImpact,
-      squad: card.dressingRoomImpact,
-      aggression: card.aggressionImpact,
-    };
-
-    const impactRight = {
       board: -card.boardImpact,
       fans: -card.fanImpact,
       squad: -card.dressingRoomImpact,
       aggression: -card.aggressionImpact,
+    };
+
+    const impactRight = {
+      board: card.boardImpact,
+      fans: card.fanImpact,
+      squad: card.dressingRoomImpact,
+      aggression: card.aggressionImpact,
     };
 
     const { output } = await aiScenarioPresentationPrompt({
@@ -125,8 +127,8 @@ export async function getAiScenarioPresentation(
       scenario: card.scenarioText,
       leftOption: card.leftOptionText,
       rightOption: card.rightOptionText,
-      impactLeft: { board: card.boardImpact, fans: card.fanImpact, squad: card.dressingRoomImpact, aggression: card.aggressionImpact },
-      impactRight: { board: -card.boardImpact, fans: -card.fanImpact, squad: -card.dressingRoomImpact, aggression: -card.aggressionImpact },
+      impactLeft: { board: -card.boardImpact, fans: -card.fanImpact, squad: -card.dressingRoomImpact, aggression: -card.aggressionImpact },
+      impactRight: { board: card.boardImpact, fans: card.fanImpact, squad: card.dressingRoomImpact, aggression: card.aggressionImpact },
       imageCategory: card.imageCategory,
       isBreaking: card.isBreaking,
       originalScenarioText: card.scenarioText

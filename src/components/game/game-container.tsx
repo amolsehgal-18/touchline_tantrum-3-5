@@ -49,7 +49,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
       aggression: Math.min(1, Math.max(0.05, state.aggression + (impact.aggression || 0))),
       cardsSeen: newCardsSeen,
-      history: [...state.history, currentScenario.originalScenarioText],
+      history: [...state.history, currentScenario.originalScenarioText], // Track the original text for variety
     };
 
     if (newState.boardSupport <= 0.05 || newState.fanSupport <= 0.05) {
@@ -61,6 +61,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setCurrentScenario(null);
     setTimeLeft(15);
 
+    // Trigger match every 3 cards
     if (newCardsSeen > 0 && newCardsSeen % 3 === 0) {
       const table = getLeagueTable(newState);
       const possibleOpponents = table.filter(t => !t.isUser);
@@ -76,6 +77,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     }
   }, [currentScenario, state]);
 
+  // Decision Timer Logic
   useEffect(() => {
     if (!currentScenario || isSimulating || matchIntro || loading || error || state?.isSacked || state?.isSeasonEnd) return;
 
@@ -325,6 +327,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
+      {/* Layered Dashboard row - Layered behind cards with low z-index */}
       <div className="px-4 py-2 flex justify-around items-center bg-transparent z-10 border-b border-white/5 relative -mb-4">
         <div className="flex-1 flex justify-center scale-95 opacity-80"><TensionArcs board={state.boardSupport} fans={state.fanSupport} /></div>
         <div className="flex-1 flex justify-center scale-95 opacity-80"><ManagerMoodView mood={mood} /></div>
@@ -363,6 +366,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
       </div>
 
+      {/* Bottom Ticker and Stats Bar */}
       <div className="bg-black/95 border-t border-white/10 z-[100]">
         <div className="p-4 py-3 space-y-2">
           <div className="flex justify-between items-end px-1">
@@ -384,7 +388,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
         <div className="bg-destructive/10 border-t border-white/5 h-10 flex items-center overflow-hidden relative">
           <div className="bg-destructive text-white text-[10px] font-headline font-black px-4 py-1.5 z-20 absolute left-0 uppercase tracking-tighter flex items-center h-full">Breaking</div>
-          <div className="animate-ticker flex items-center gap-20 pl-[100px]" style={{ animationDuration: '160s' }}>
+          <div className="animate-ticker flex items-center gap-20 pl-[100px]" style={{ animationDuration: '320s' }}>
             {newsItems.map((item, idx) => (
               <span key={idx} className="text-[11px] font-headline uppercase tracking-[0.2em] text-white/90 whitespace-nowrap font-black italic">{item}</span>
             ))}
