@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
@@ -51,7 +52,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const width = canvas.width;
     const height = canvas.height;
 
-    // Tactical 4-4-2 Formations (Scattered, non-shaking anchors)
+    // Tactical 4-4-2 Formations (Anchors for stability)
     const userFormation = [
       [0.10, 0.5], // GK
       [0.25, 0.25], [0.25, 0.42], [0.25, 0.58], [0.25, 0.75], // DEF
@@ -70,13 +71,13 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ...userFormation.map(pos => ({
         x: pos[0] * width,
         y: pos[1] * height,
-        vx: 0, vy: 0, team: 'user' as const, color: 'hsl(var(--primary))',
+        vx: 0, vy: 0, team: 'user' as const, color: 'hsl(var(--primary))', // Blue
         baseX: pos[0] * width, baseY: pos[1] * height
       })),
       ...oppFormation.map(pos => ({
         x: pos[0] * width,
         y: pos[1] * height,
-        vx: 0, vy: 0, team: 'opp' as const, color: '#ef4444',
+        vx: 0, vy: 0, team: 'opp' as const, color: '#ef4444', // Red
         baseX: pos[0] * width, baseY: pos[1] * height
       }))
     ];
@@ -105,49 +106,49 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width/2, height-5);
       ctx.stroke();
 
-      // Ball Physics & Possession Logic (Elite Fluidity)
+      // Ball Physics & Possession Logic
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
         ball.x = p.x;
         ball.y = p.y;
         
-        // Elite Speed Dribbling toward target goal area
+        // Dribbling towards target area
         const targetX = p.team === 'user' ? width * 0.9 : width * 0.1;
         const dx = targetX - p.x;
         const dy = (height / 2) - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (dist > 5) {
-          p.vx = (dx / dist) * 4.5;
-          p.vy = (dy / dist) * 1.8;
+          p.vx = (dx / dist) * 3.5;
+          p.vy = (dy / dist) * 1.5;
         }
 
-        // Quick Passing AI (8% chance to pass every frame for speed)
-        if (Math.random() < 0.08) {
+        // Passing Logic (6% chance to pass)
+        if (Math.random() < 0.06) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 22; // High-speed passing
-          ball.vy = (pdy / pdist) * 22;
+          ball.vx = (pdx / pdist) * 18; // High speed pass
+          ball.vy = (pdy / pdist) * 18;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.97;
-        ball.vy *= 0.97;
+        ball.vx *= 0.98;
+        ball.vy *= 0.98;
 
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Intersection Logic (Snap to Player with Buffer)
+        // Intersection Logic
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 12) {
+          if (dist < 10) {
              ball.possessorIndex = idx;
              ball.vx = 0;
              ball.vy = 0;
@@ -155,26 +156,26 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Player Fluid Movement (Reaction AI & Formations)
+      // Player Movement (Formation + Reaction)
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
           const dBallX = ball.x - p.x;
           const dBallY = ball.y - p.y;
           const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
-          // React fluidly to ball proximity or return to base anchors
-          if (distToBall < 75) {
-            p.vx = (dBallX / distToBall) * 3.5;
-            p.vy = (dBallY / distToBall) * 3.5;
+          // Only react if ball is close, else stay near base (no magnet)
+          if (distToBall < 60) {
+            p.vx = (dBallX / distToBall) * 2.5;
+            p.vy = (dBallY / distToBall) * 2.5;
           } else {
             const dtx = p.baseX - p.x;
             const dty = p.baseY - p.y;
             const distToBase = Math.sqrt(dtx * dtx + dty * dty);
             if (distToBase > 2) {
-              p.vx = (dtx / distToBase) * 2.8;
-              p.vy = (dty / distToBase) * 2.8;
+              p.vx = (dtx / distToBase) * 2.2;
+              p.vy = (dty / distToBase) * 2.2;
             } else {
-              p.vx *= 0.8; p.vy *= 0.8;
+              p.vx *= 0.5; p.vy *= 0.5;
             }
           }
         }
@@ -182,23 +183,23 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         p.x += p.vx;
         p.y += p.vy;
 
-        // Render Player (Fluid Dots)
+        // Render Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 0.5;
         ctx.stroke();
       });
 
-      // Render High-Visibility Ball (Always present, high contrast)
+      // Render Yellow Ball (Elite Visibility)
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 4.5, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1.8;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       animationFrame = requestAnimationFrame(animate);
@@ -240,7 +241,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           </div>
 
           <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-            <Target className="w-6 h-6 text-destructive" />
+            <Target className="w-6 h-6 text-[#ef4444]" />
             <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{opponentTeam}</div>
           </div>
         </div>

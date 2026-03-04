@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -48,7 +49,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
       aggression: Math.min(1, Math.max(0.05, state.aggression + (impact.aggression || 0))),
       cardsSeen: newCardsSeen,
-      history: [...state.history, currentScenario.scenarioId], // Store the unique ID
+      history: [...state.history, currentScenario.scenarioId],
     };
 
     if (newState.boardSupport <= 0.05 || newState.fanSupport <= 0.05) {
@@ -184,7 +185,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       "TAKEOVER: Mystery consortium interested in club acquisition.",
       "MARKET: Scouting reports suggest lack of depth in defensive areas."
     ];
-    // Duplicate for seamless infinite loop
     return [...items, ...items];
   }, []);
 
