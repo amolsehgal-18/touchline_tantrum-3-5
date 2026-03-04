@@ -45,7 +45,7 @@ export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentation
 
 const aiScenarioPrompt = ai.definePrompt({
   name: 'aiScenarioPrompt',
-  model: 'gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-flash',
   input: {
     schema: AiScenarioPresentationInputSchema
   },
