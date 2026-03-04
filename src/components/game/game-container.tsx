@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -188,7 +187,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       "TAKEOVER: Mystery consortium interested in club acquisition.",
       "MARKET: Scouting reports suggest lack of depth in defensive areas."
     ];
-    // Quadruple items for truly seamless slow scroll
     return [...items, ...items, ...items, ...items];
   }, []);
 
@@ -293,14 +291,12 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
-      {/* Top Header */}
       <div className="bg-black/95 py-2.5 border-b border-white/10 text-center z-[100]">
         <span className="text-white text-[11px] font-headline font-black uppercase tracking-[0.4em]">
           {CAREER_MODES[state.mode].name} | GW {currentGW}
         </span>
       </div>
 
-      {/* Docked League Table */}
       <div className="bg-black/60 border-b border-white/5 p-2 z-[90] backdrop-blur-xl">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1 font-black">
@@ -328,13 +324,11 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
-      {/* Stats HUD (Layered behind cards) */}
-      <div className="px-4 py-1 grid grid-cols-2 bg-transparent z-10 border-b border-white/5 relative -mb-2">
-        <div className="flex justify-center items-center scale-90 opacity-60"><TensionArcs board={state.boardSupport} fans={state.fanSupport} /></div>
-        <div className="flex justify-center items-center scale-90 opacity-60"><ManagerMoodView mood={mood} /></div>
+      <div className="px-4 py-2 flex justify-around items-center bg-transparent z-10 border-b border-white/5 relative -mb-4">
+        <div className="flex-1 flex justify-center scale-95 opacity-80"><TensionArcs board={state.boardSupport} fans={state.fanSupport} /></div>
+        <div className="flex-1 flex justify-center scale-95 opacity-80"><ManagerMoodView mood={mood} /></div>
       </div>
 
-      {/* Action Center */}
       <div className="flex-1 flex flex-col items-center justify-center p-2 relative overflow-hidden z-[80]">
         {matchIntro && (
           <div className="absolute inset-0 z-[120] flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-500">
@@ -368,7 +362,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
       </div>
 
-      {/* Footer Controls */}
       <div className="bg-black/95 border-t border-white/10 z-[100]">
         <div className="p-4 py-3 space-y-2">
           <div className="flex justify-between items-end px-1">
@@ -388,7 +381,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           </div>
         </div>
 
-        {/* Live News Ticker */}
         <div className="bg-destructive/10 border-t border-white/5 h-10 flex items-center overflow-hidden relative">
           <div className="bg-destructive text-white text-[10px] font-headline font-black px-4 py-1.5 z-20 absolute left-0 uppercase tracking-tighter flex items-center h-full">Breaking</div>
           <div className="animate-ticker flex items-center gap-20 pl-[100px]" style={{ animationDuration: '80s' }}>
