@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
@@ -52,7 +51,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const width = canvas.width;
     const height = canvas.height;
 
-    // Tactical 4-4-2 Formations (Scattered)
+    // Tactical 4-4-2 Formations (Scattered, non-shaking anchors)
     const userFormation = [
       [0.10, 0.5], // GK
       [0.25, 0.25], [0.25, 0.42], [0.25, 0.58], [0.25, 0.75], // DEF
@@ -106,13 +105,13 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width/2, height-5);
       ctx.stroke();
 
-      // Ball Physics & Possession Logic
+      // Ball Physics & Possession Logic (Elite Fluidity)
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
         ball.x = p.x;
         ball.y = p.y;
         
-        // Elite Speed Dribbling toward target goal
+        // Elite Speed Dribbling toward target goal area
         const targetX = p.team === 'user' ? width * 0.9 : width * 0.1;
         const dx = targetX - p.x;
         const dy = (height / 2) - p.y;
@@ -123,7 +122,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           p.vy = (dy / dist) * 1.8;
         }
 
-        // Quick Passing AI (15% chance to pass every frame)
+        // Quick Passing AI (8% chance to pass every frame for speed)
         if (Math.random() < 0.08) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
@@ -143,7 +142,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Intersection Logic (Snap to Player)
+        // Intersection Logic (Snap to Player with Buffer)
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
@@ -163,7 +162,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dBallY = ball.y - p.y;
           const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
-          // React to ball proximity or return to base
+          // React fluidly to ball proximity or return to base anchors
           if (distToBall < 75) {
             p.vx = (dBallX / distToBall) * 3.5;
             p.vy = (dBallY / distToBall) * 3.5;
@@ -183,7 +182,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         p.x += p.vx;
         p.y += p.vy;
 
-        // Render Player
+        // Render Player (Fluid Dots)
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
@@ -193,7 +192,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.stroke();
       });
 
-      // Render High-Visibility Ball (Always present)
+      // Render High-Visibility Ball (Always present, high contrast)
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 4.5, 0, Math.PI * 2);

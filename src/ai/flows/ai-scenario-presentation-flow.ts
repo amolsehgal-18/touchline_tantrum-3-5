@@ -81,7 +81,7 @@ export async function getAiScenarioPresentation(
 ): Promise<AiScenarioPresentationOutput> {
   const excludedIds = input.excludedScenarioIds || [];
   
-  // Hardened Filter Logic
+  // Strict Exclusion Filter Logic
   let eligible = SCENARIO_CARDS.filter(c => !excludedIds.includes(c.id));
   
   // If we've run out of unique cards, recycle the deck
