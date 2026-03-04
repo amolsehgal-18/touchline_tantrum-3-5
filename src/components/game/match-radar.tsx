@@ -255,7 +255,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   return (
     <div className="flex flex-col items-center gap-4 w-full px-2 h-full justify-center">
       <div className="text-[10px] font-headline text-accent animate-pulse uppercase font-black tracking-[0.2em] italic">
-        Match In Progress
+        {showFinal ? "Full Time" : "Match In Progress"}
       </div>
       
       <div className="relative premium-glass p-0.5 slanted-container w-full max-w-[280px] aspect-[4/3] border-white/10 overflow-hidden shadow-2xl bg-black/40">
