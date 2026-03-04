@@ -2,33 +2,33 @@
   "placeholderImages": [
     {
       "id": "manager-happy",
-      "description": "A successful football manager celebrating a victory on the pitch",
-      "imageUrl": "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?q=80&w=2073&auto=format&fit=crop",
-      "imageHint": "celebrating manager"
+      "description": "A successful football manager celebrating a victory",
+      "imageUrl": "https://raw.githubusercontent.com/amolsehgal-18/antigravity-touchline_tantrum/main/touchline_tantrum/assets/images/manager/happy.png",
+      "imageHint": "happy manager"
     },
     {
       "id": "manager-neutral",
-      "description": "A composed, professional manager in a dark suit observing the game",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=1QsYEr1e-_LMKej5LGMSWoFhaZNhUyHn2",
-      "imageHint": "composed coach"
+      "description": "A composed manager observing the match",
+      "imageUrl": "https://raw.githubusercontent.com/amolsehgal-18/antigravity-touchline_tantrum/main/touchline_tantrum/assets/images/manager/neutral.png",
+      "imageHint": "neutral manager"
     },
     {
       "id": "manager-stressed",
-      "description": "A stressed manager checking his watch on the touchline during a tight game",
-      "imageUrl": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2070&auto=format&fit=crop",
-      "imageHint": "stressed coach"
+      "description": "A stressed manager feeling the pressure",
+      "imageUrl": "https://raw.githubusercontent.com/amolsehgal-18/antigravity-touchline_tantrum/main/touchline_tantrum/assets/images/manager/stressed.png",
+      "imageHint": "stressed manager"
     },
     {
       "id": "manager-angry",
-      "description": "An intense, angry manager shouting tactical instructions to his players",
-      "imageUrl": "https://images.unsplash.com/photo-1599586120536-a7966465495e?q=80&w=2070&auto=format&fit=crop",
+      "description": "An angry manager shouting instructions",
+      "imageUrl": "https://raw.githubusercontent.com/amolsehgal-18/antigravity-touchline_tantrum/main/touchline_tantrum/assets/images/manager/angry.png",
       "imageHint": "angry manager"
     },
     {
       "id": "manager-sacked",
-      "description": "A dejected manager leaving the stadium alone after being dismissed",
-      "imageUrl": "https://images.unsplash.com/photo-1563257263-1e354cbf41b0?q=80&w=2070&auto=format&fit=crop",
-      "imageHint": "sad coach"
+      "description": "A manager leaving after being dismissed",
+      "imageUrl": "https://raw.githubusercontent.com/amolsehgal-18/antigravity-touchline_tantrum/main/touchline_tantrum/assets/images/manager/sacked.png",
+      "imageHint": "sacked manager"
     }
   ]
 }
