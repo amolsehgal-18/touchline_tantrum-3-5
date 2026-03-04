@@ -44,7 +44,7 @@ export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentation
 
 const aiScenarioPrompt = ai.definePrompt({
   name: 'aiScenarioPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'gemini-1.5-flash',
   input: {
     schema: AiScenarioPresentationInputSchema
   },
@@ -68,6 +68,7 @@ const aiScenarioPrompt = ai.definePrompt({
   3. If Fan Support < 0.3, focus on 'Stadium Protests' or 'Banner Planes'.
   4. If meeting Objective, focus on 'Manager Ego', 'Media Links to Bigger Clubs', or 'Transfer Demands'.
   5. DO NOT repeat scenarios involving the IDs in this list: {{{excludedScenarioIds}}}
+  6. ALWAYS generate completely new text for the scenario and options. NEVER return the 'Long-term commitment' fallback.
   
   MATH CONSTRAINTS:
   - Board/Fans/Squad Impacts: Range from -20 to +15.
@@ -87,14 +88,13 @@ export async function getAiScenarioPresentation(
     
     return output;
   } catch (error) {
-    console.error('AI Flow Error:', error);
-    // Hard fallback with random ID to prevent infinite loops
+    // Fallback logic for safety, but model fix should prevent this
     return {
-      scenario: "The local press is asking about your long-term commitment to the club.",
-      leftOption: "Commit your future.",
-      rightOption: "Stay vague.",
-      impactLeft: { board: 5, fans: 5, squad: 2, aggression: 0 },
-      impactRight: { board: -5, fans: -5, squad: -2, aggression: 0.05 },
+      scenario: "The local press is asking about your tactical rigidity following a series of mixed results.",
+      leftOption: "Defend your philosophy.",
+      rightOption: "Acknowledge the need for change.",
+      impactLeft: { board: 2, fans: -5, squad: 5, aggression: 0.05 },
+      impactRight: { board: 5, fans: 5, squad: -5, aggression: -0.1 },
       imageCategory: "press",
       isBreaking: false,
       scenarioId: "fallback_" + Math.random().toString(36).substring(7)

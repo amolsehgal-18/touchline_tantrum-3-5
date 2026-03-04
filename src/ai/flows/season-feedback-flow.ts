@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for generating post-season feedback from stakeholders.
@@ -28,7 +29,7 @@ export type FeedbackOutput = z.infer<typeof FeedbackOutputSchema>;
 
 const seasonFeedbackPrompt = ai.definePrompt({
   name: 'seasonFeedbackPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'gemini-1.5-flash',
   input: { schema: FeedbackInputSchema },
   output: { schema: FeedbackOutputSchema },
   prompt: `You are a football club's press officer. Provide three punchy, one-sentence feedback snippets after the season ends.
@@ -54,7 +55,6 @@ export async function getSeasonFeedback(input: FeedbackInput): Promise<FeedbackO
     if (!output) throw new Error('AI failed to provide feedback');
     return output;
   } catch (error) {
-    console.error('Feedback Flow Error:', error);
     // Fallback logic
     const isSuccess = input.pos <= input.target;
     return {
