@@ -99,7 +99,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setError(null);
 
     try {
-      const uniqueSeed = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      // Enhanced entropy generation
+      const uniqueSeed = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}-${Math.random().toString(36).substring(2, 15)}`;
       
       const result = await getAiScenarioPresentation({
         boardSupport: state.boardSupport,
@@ -110,7 +111,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         currentLeaguePosition: state.currentLeaguePosition,
         sagaObjective: CAREER_MODES[state.mode].name,
         objectiveMet: state.currentLeaguePosition <= activeConfig!.target,
-        excludedScenarioIds: state.history,
+        excludedScenarioIds: state.history.slice(-20), // Only exclude recent ones to keep context
         randomSeed: uniqueSeed,
       });
       setCurrentScenario(result);

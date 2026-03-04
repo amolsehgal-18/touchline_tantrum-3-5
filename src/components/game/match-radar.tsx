@@ -100,7 +100,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width/2, height - 5);
       ctx.stroke();
 
-      // Ball Physics - Rapid Passing
+      // Ball Physics - High-Speed Target-Based Passing
       const target = players[ball.targetPlayerIndex];
       const dx = target.x - ball.x;
       const dy = target.y - ball.y;
@@ -111,7 +111,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         const teammates = players.filter((_, idx) => idx !== ball.targetPlayerIndex);
         ball.targetPlayerIndex = players.indexOf(teammates[Math.floor(Math.random() * teammates.length)]);
       } else {
-        const speed = 12; // Adjusted speed for better visibility
+        const speed = 15; // Rapid visible movement
         ball.x += (dx / dist) * speed;
         ball.y += (dy / dist) * speed;
       }
@@ -120,8 +120,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       players.forEach((p) => {
         const dtx = p.baseX - p.x;
         const dty = p.baseY - p.y;
-        p.x += dtx * 0.05 + (Math.random() - 0.5) * 1.2;
-        p.y += dty * 0.05 + (Math.random() - 0.5) * 1.2;
+        p.x += dtx * 0.05 + (Math.random() - 0.5) * 1.5;
+        p.y += dty * 0.05 + (Math.random() - 0.5) * 1.5;
 
         ctx.fillStyle = p.color;
         ctx.beginPath();
