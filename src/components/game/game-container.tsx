@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -101,6 +100,9 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setError(null);
 
     try {
+      // Force unique results with high-entropy seed
+      const uniqueSeed = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      
       const result = await getAiScenarioPresentation({
         boardSupport: state.boardSupport,
         fanSupport: state.fanSupport,
@@ -111,7 +113,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         sagaObjective: CAREER_MODES[state.mode].name,
         objectiveMet: state.currentLeaguePosition <= activeConfig!.target,
         excludedScenarioIds: state.history,
-        randomSeed: Math.random().toString(36).substring(7), // Force variety
+        randomSeed: uniqueSeed,
       });
       setCurrentScenario(result);
     } catch (err) {
