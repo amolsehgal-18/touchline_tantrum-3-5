@@ -83,8 +83,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const ball = {
       x: width / 2,
       y: height / 2,
-      vx: 0,
-      vy: 0,
       targetPlayerIndex: Math.floor(Math.random() * players.length),
       isTraveling: true
     };
@@ -116,7 +114,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           ball.targetPlayerIndex = players.indexOf(teammates[Math.floor(Math.random() * teammates.length)]);
           ball.isTraveling = true;
         }
-      } else {
+      } else if (dist > 0) {
         // High-speed travel
         ball.x += (dx / dist) * 12;
         ball.y += (dy / dist) * 12;
@@ -153,7 +151,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
     animate();
     return () => cancelAnimationFrame(animationFrame);
-  }, [showFinal, players]);
+  }, [showFinal]);
 
   useEffect(() => {
     if (showFinal) return;

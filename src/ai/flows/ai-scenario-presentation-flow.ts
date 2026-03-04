@@ -57,20 +57,13 @@ const aiScenarioPrompt = ai.definePrompt({
     temperature: 1.0,
     topP: 0.95,
     topK: 40,
-    safetySettings: [
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_CIVIC_INTEGRITY', threshold: 'BLOCK_NONE' },
-    ],
   },
   prompt: `
   ENTROPY SEED: {{{randomSeed}}}
   SYSTEM: You are the 'Touchline Tantrum' Scenario Engine. Your goal is to create unique, high-stakes football management dilemmas. 
   Use British football slang (gaffer, training ground, gaffer's office, etc.). 
   
-  CRITICAL RULE: DO NOT repeat topics like "Long-term commitment" or "Tactical rigidity". Generate a COMPLETELY NEW scenario every time.
+  CRITICAL RULE: DO NOT repeat topics like "Long-term commitment" or "Tactical rigidity". Generate a COMPLETELY NEW scenario every time. Use the entropy seed to ensure total randomness.
   
   CONTEXT FOR CLUB "{{{userTeam}}}":
   - League Position: {{{currentLeaguePosition}}}
@@ -88,7 +81,7 @@ const aiScenarioPrompt = ai.definePrompt({
   
   OUTPUT: Generate a dramatic, punchy scenario and two options with mathematical impacts.
   Impact ranges: Board/Fans/Squad (-20 to +15), Aggression (-0.1 to +0.1).
-  scenarioId must be unique based on the seed.`,
+  scenarioId must be a completely unique identifier.`,
 });
 
 export async function getAiScenarioPresentation(
@@ -99,7 +92,6 @@ export async function getAiScenarioPresentation(
     if (!output) throw new Error('AI Output null');
     return output;
   } catch (error) {
-    // Dynamic fallback to show the engine is alive even if the service fails
     const timestamp = Date.now();
     return {
       scenario: `[INTEL ${timestamp}] Your chief scout has identified a promising talent in the lower leagues, but the board is hesitant to release funds due to a recent audit.`,
