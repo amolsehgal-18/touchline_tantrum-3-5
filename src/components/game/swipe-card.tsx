@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useRef } from 'react';
@@ -82,13 +83,13 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
             <div className="grid grid-cols-2 gap-3 h-28 relative">
               <div 
                 className={cn(
-                  "flex flex-col gap-1.5 p-3.5 rounded-lg border transition-all duration-200",
+                  "flex flex-col justify-center gap-1.5 p-3.5 rounded-lg border transition-all duration-200",
                   isLeft && dragX < -15 ? "bg-destructive border-white/50 scale-105 z-10" : "bg-white/10 border-transparent"
                 )}
                 style={{ opacity: isLeft ? 0.8 + (swipeProgress * 0.2) : 0.7 }}
               >
                 <div className="flex items-center gap-1 text-white font-headline uppercase text-[10px] font-black italic">
-                  <ChevronLeft className="w-3 h-3" /> REJECT
+                  <ChevronLeft className="w-4 h-4" />
                 </div>
                 <div className="text-[11px] font-headline font-bold text-white leading-tight">
                   {scenario.leftOption}
@@ -97,13 +98,13 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
 
               <div 
                 className={cn(
-                  "flex flex-col gap-1.5 p-3.5 rounded-lg border text-right transition-all duration-200",
+                  "flex flex-col justify-center gap-1.5 p-3.5 rounded-lg border text-right transition-all duration-200",
                   isRight && dragX > 15 ? "bg-primary border-white/50 scale-105 z-10" : "bg-white/10 border-transparent"
                 )}
                 style={{ opacity: isRight ? 0.8 + (swipeProgress * 0.2) : 0.7 }}
               >
                 <div className="flex items-center gap-1 justify-end text-white font-headline uppercase text-[10px] font-black italic">
-                  APPROVE <ChevronRight className="w-3 h-3" />
+                  <ChevronRight className="w-4 h-4" />
                 </div>
                 <div className="text-[11px] font-headline font-bold text-white leading-tight">
                   {scenario.rightOption}

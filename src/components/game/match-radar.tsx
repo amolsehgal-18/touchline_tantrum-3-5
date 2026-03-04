@@ -86,8 +86,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const ball = {
       x: width / 2,
       y: height / 2,
-      vx: (Math.random() - 0.5) * 12, // High initial speed
-      vy: (Math.random() - 0.5) * 12,
+      vx: (Math.random() - 0.5) * 16, // High elite speed
+      vy: (Math.random() - 0.5) * 16,
       possessorIndex: -1,
     };
 
@@ -107,48 +107,47 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width/2, height-5);
       ctx.stroke();
 
-      // Ball Physics & Logic
+      // Ball Physics & High Fidelity Interaction
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
         ball.x = p.x + (p.team === 'user' ? 4 : -4);
         ball.y = p.y;
         
-        // Dribble Logic
+        // Elite Dribble Drive
         const targetX = p.team === 'user' ? width * 0.95 : width * 0.05;
         const dx = targetX - p.x;
         const dy = (height / 2) - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
-        p.vx = (dx / dist) * 2.5; 
-        p.vy = (dy / dist) * 0.8;
+        p.vx = (dx / dist) * 3.5; 
+        p.vy = (dy / dist) * 1.2;
 
-        // Passing Logic (Randomly trigger a pass)
-        if (Math.random() < 0.08) { 
+        // Passing AI (Random tactical release)
+        if (Math.random() < 0.12) { 
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
-          // Pick a teammate who is "ahead"
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 14; // Fast pass
-          ball.vy = (pdy / pdist) * 14;
+          ball.vx = (pdx / pdist) * 18; // Snap pass
+          ball.vy = (pdy / pdist) * 18;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.98; // Friction
-        ball.vy *= 0.98;
+        ball.vx *= 0.99; // Retain elite momentum
+        ball.vy *= 0.99;
 
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Interception Logic
+        // Interception AI (Reactive zone)
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 8) {
+          if (dist < 10) {
              ball.possessorIndex = idx;
              ball.vx = 0;
              ball.vy = 0;
@@ -156,7 +155,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Player Formation Logic
+      // 4-4-2 Reaction AI
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
           const dxBall = ball.x - p.x;
@@ -166,10 +165,10 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           let tx = p.baseX;
           let ty = p.baseY;
 
-          // React to ball if close
-          if (distToBall < 50) { 
-            tx = p.baseX + (ball.x - p.baseX) * 0.4;
-            ty = p.baseY + (ball.y - p.baseY) * 0.4;
+          // Only deviate if the ball is in tactical range (prevents clustering)
+          if (distToBall < 60) { 
+            tx = p.baseX + (ball.x - p.baseX) * 0.45;
+            ty = p.baseY + (ball.y - p.baseY) * 0.45;
           }
 
           const dtx = tx - p.x;
@@ -177,8 +176,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dDist = Math.sqrt(dtx * dtx + dty * dty);
           
           if (dDist > 1) {
-            p.vx = (dtx / dDist) * 2.2; 
-            p.vy = (dty / dDist) * 2.2;
+            p.vx = (dtx / dDist) * 3.0; 
+            p.vy = (dty / dDist) * 3.0;
           } else {
             p.vx = 0;
             p.vy = 0;
@@ -188,7 +187,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         p.x += p.vx;
         p.y += p.vy;
 
-        // Render Player
+        // Player Render
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
@@ -198,13 +197,13 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.stroke();
       });
 
-      // Render Ball (High Visibility)
+      // Ball Render (High Visibility)
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 3.5, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2); // Thicker ball
       ctx.fill();
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       animationFrame = requestAnimationFrame(animate);
@@ -230,9 +229,11 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
   return (
     <div className="flex flex-col items-center gap-4 w-full h-full justify-center">
-      <div className="text-[10px] font-headline text-accent animate-pulse uppercase font-black tracking-[0.2em] italic">
-        {showFinal ? "Full Time" : "Match In Progress"}
-      </div>
+      {!showFinal && (
+        <div className="text-[10px] font-headline text-accent animate-pulse uppercase font-black tracking-[0.2em] italic">
+          Match In Progress
+        </div>
+      )}
       
       {showFinal ? (
         <div className="relative premium-glass p-6 slanted-container w-full max-w-[280px] border-white/10 shadow-2xl bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
