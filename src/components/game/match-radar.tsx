@@ -112,27 +112,28 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ball.x = p.x;
         ball.y = p.y;
         
-        // Dribbling towards target area
-        const targetX = p.team === 'user' ? width * 0.9 : width * 0.1;
+        // Dribbling towards target goal
+        const targetX = p.team === 'user' ? width * 0.95 : width * 0.05;
+        const targetY = height / 2;
         const dx = targetX - p.x;
-        const dy = (height / 2) - p.y;
+        const dy = targetY - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
-        if (dist > 5) {
-          p.vx = (dx / dist) * 3.5;
+        if (dist > 10) {
+          p.vx = (dx / dist) * 4;
           p.vy = (dy / dist) * 1.5;
         }
 
-        // Passing Logic (6% chance to pass)
-        if (Math.random() < 0.06) {
+        // Passing Logic (8% chance to pass)
+        if (Math.random() < 0.08) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 18; // High speed pass
-          ball.vy = (pdy / pdist) * 18;
+          ball.vx = (pdx / pdist) * 20; // High speed pass
+          ball.vy = (pdy / pdist) * 20;
         }
       } else {
         ball.x += ball.vx;
@@ -148,7 +149,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 10) {
+          if (dist < 8) {
              ball.possessorIndex = idx;
              ball.vx = 0;
              ball.vy = 0;
@@ -163,19 +164,19 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dBallY = ball.y - p.y;
           const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
-          // Only react if ball is close, else stay near base (no magnet)
-          if (distToBall < 60) {
-            p.vx = (dBallX / distToBall) * 2.5;
-            p.vy = (dBallY / distToBall) * 2.5;
+          // React faster if ball is close, else stay near base
+          if (distToBall < 50) {
+            p.vx = (dBallX / distToBall) * 3;
+            p.vy = (dBallY / distToBall) * 3;
           } else {
             const dtx = p.baseX - p.x;
             const dty = p.baseY - p.y;
             const distToBase = Math.sqrt(dtx * dtx + dty * dty);
             if (distToBase > 2) {
-              p.vx = (dtx / distToBase) * 2.2;
-              p.vy = (dty / distToBase) * 2.2;
+              p.vx = (dtx / distToBase) * 2.5;
+              p.vy = (dty / distToBase) * 2.5;
             } else {
-              p.vx *= 0.5; p.vy *= 0.5;
+              p.vx *= 0.3; p.vy *= 0.3;
             }
           }
         }
@@ -188,8 +189,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.beginPath();
         ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 1;
         ctx.stroke();
       });
 
@@ -218,15 +219,14 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
   if (showFinal) {
     return (
-      <div className="relative premium-glass p-6 slanted-container w-full max-w-[280px] border-white/10 shadow-2xl bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-        <div className="flex items-center justify-between w-full gap-2 mb-6">
+      <div className="relative premium-glass p-5 slanted-container w-full max-w-[280px] border-white/10 shadow-2xl bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+        <div className="flex items-center justify-between w-full gap-2 mb-4">
           <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
             <Shield className="w-6 h-6 text-primary" />
             <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{userTeam}</div>
           </div>
 
           <div className="flex flex-col items-center gap-1">
-            <div className="text-[10px] font-headline font-black uppercase text-accent/60 mb-1 tracking-[0.3em]">Full Time</div>
             <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-2 mb-1">
               <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
               <span className="text-white/20">-</span>
@@ -246,7 +246,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           </div>
         </div>
 
-        <SlantedButton onClick={onComplete} className="w-full py-2.5 text-[10px] font-black tracking-[0.3em] bg-white text-black">
+        <SlantedButton onClick={onComplete} className="w-full py-2 text-[10px] font-black tracking-[0.3em] bg-white text-black">
           CONTINUE
         </SlantedButton>
       </div>
