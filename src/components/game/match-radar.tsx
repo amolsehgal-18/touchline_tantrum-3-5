@@ -51,7 +51,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const width = canvas.width;
     const height = canvas.height;
 
-    // Tactical 4-4-2 Formations (Scattered, Not Magnetic)
+    // Tactical 4-4-2 Formations (Scattered)
     const userFormation = [
       [0.10, 0.5], // GK
       [0.25, 0.25], [0.25, 0.42], [0.25, 0.58], [0.25, 0.75], // DEF
@@ -84,8 +84,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const ball = {
       x: width / 2,
       y: height / 2,
-      vx: (Math.random() - 0.5) * 8,
-      vy: (Math.random() - 0.5) * 8,
+      vx: (Math.random() - 0.5) * 12,
+      vy: (Math.random() - 0.5) * 12,
       possessorIndex: -1,
     };
 
@@ -111,40 +111,40 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ball.x = p.x;
         ball.y = p.y;
         
-        // Dribble
-        const targetX = p.team === 'user' ? width : 0;
+        // Elite Speed Dribbling
+        const targetX = p.team === 'user' ? width * 0.9 : width * 0.1;
         const dx = targetX - p.x;
         const dy = (height / 2) - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        p.vx = (dx / dist) * 2;
-        p.vy = (dy / dist) * 0.5;
+        p.vx = (dx / dist) * 4;
+        p.vy = (dy / dist) * 1.5;
 
-        // Pass
-        if (Math.random() < 0.05) {
+        // Quick Passing AI
+        if (Math.random() < 0.1) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 12;
-          ball.vy = (pdy / pdist) * 12;
+          ball.vx = (pdx / pdist) * 18;
+          ball.vy = (pdy / pdist) * 18;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.98;
-        ball.vy *= 0.98;
+        ball.vx *= 0.96;
+        ball.vy *= 0.96;
 
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Intersection Logic
+        // Intersection Logic (Snap to Player)
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 8) {
+          if (dist < 10) {
              ball.possessorIndex = idx;
              ball.vx = 0;
              ball.vy = 0;
@@ -152,19 +152,27 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Player Movement (Formation Anchored)
+      // Player Movement (Reaction AI & Formations)
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
-          const dtx = p.baseX - p.x;
-          const dty = p.baseY - p.y;
-          const distToBase = Math.sqrt(dtx * dtx + dty * dty);
-          
-          if (distToBase > 2) {
-            p.vx = (dtx / distToBase) * 1.5;
-            p.vy = (dty / distToBase) * 1.5;
+          const dBallX = ball.x - p.x;
+          const dBallY = ball.y - p.y;
+          const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
+
+          // Only move if ball is close, else stay in zone
+          if (distToBall < 60) {
+            p.vx = (dBallX / distToBall) * 2;
+            p.vy = (dBallY / distToBall) * 2;
           } else {
-            p.vx = 0;
-            p.vy = 0;
+            const dtx = p.baseX - p.x;
+            const dty = p.baseY - p.y;
+            const distToBase = Math.sqrt(dtx * dtx + dty * dty);
+            if (distToBase > 2) {
+              p.vx = (dtx / distToBase) * 2.5;
+              p.vy = (dty / distToBase) * 2.5;
+            } else {
+              p.vx = 0; p.vy = 0;
+            }
           }
         }
 
@@ -181,13 +189,13 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.stroke();
       });
 
-      // Render Ball (High Visibility)
+      // Render High-Visibility Ball
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       animationFrame = requestAnimationFrame(animate);
