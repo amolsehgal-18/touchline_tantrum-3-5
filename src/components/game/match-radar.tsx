@@ -107,16 +107,15 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       if (dist < 8) {
-        // Find next target teammate
         const teammates = players.filter((_, idx) => idx !== ball.targetPlayerIndex);
         ball.targetPlayerIndex = players.indexOf(teammates[Math.floor(Math.random() * teammates.length)]);
       } else {
-        const speed = 15; // Rapid visible movement
+        const speed = 15; 
         ball.x += (dx / dist) * speed;
         ball.y += (dy / dist) * speed;
       }
 
-      // Player Movement (Zonal Drifting)
+      // Player Movement
       players.forEach((p) => {
         const dtx = p.baseX - p.x;
         const dty = p.baseY - p.y;

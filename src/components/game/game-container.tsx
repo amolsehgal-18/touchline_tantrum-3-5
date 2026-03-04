@@ -99,9 +99,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setError(null);
 
     try {
-      // Enhanced entropy generation
-      const uniqueSeed = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}-${Math.random().toString(36).substring(2, 15)}`;
-      
+      const uniqueSeed = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
       const result = await getAiScenarioPresentation({
         boardSupport: state.boardSupport,
         fanSupport: state.fanSupport,
@@ -111,7 +109,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         currentLeaguePosition: state.currentLeaguePosition,
         sagaObjective: CAREER_MODES[state.mode].name,
         objectiveMet: state.currentLeaguePosition <= activeConfig!.target,
-        excludedScenarioIds: state.history.slice(-20), // Only exclude recent ones to keep context
+        excludedScenarioIds: state.history.slice(-20), 
         randomSeed: uniqueSeed,
       });
       setCurrentScenario(result);
@@ -188,7 +186,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   if (!state) {
     return (
-      <div className="flex flex-col h-screen max-w-md mx-auto bg-background p-6 items-center justify-center relative overflow-hidden">
+      <div className="flex flex-col h-screen max-md:max-w-md md:max-w-md mx-auto bg-background p-6 items-center justify-center relative overflow-hidden">
         <div className="absolute inset-0 bg-primary/5 blur-[100px] pointer-events-none" />
         
         {setupStep === 0 && (

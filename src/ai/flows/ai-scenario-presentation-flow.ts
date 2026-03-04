@@ -66,7 +66,7 @@ const aiScenarioPrompt = ai.definePrompt({
   UNIQUE ENTROPY KEY: {{{randomSeed}}}
   
   CRITICAL RULES:
-  1. Generate a COMPLETELY NEW scenario every time. Do NOT use themes from: {{{excludedScenarioIds}}}
+  1. Generate a COMPLETELY NEW scenario every time. Use the entropy key to diverge your thoughts.
   2. Use gritty British football slang (gaffer, training ground, gaffer's office, etc.).
   3. Ensure the scenario is relevant to the club context.
   
@@ -195,46 +195,6 @@ const FALLBACK_POOL: AiScenarioPresentationOutput[] = [
     imageCategory: "training_ground",
     isBreaking: false,
     scenarioId: "f_mud_training"
-  },
-  {
-    scenario: "A player's agent is seen having lunch with the sporting director of your biggest rival.",
-    leftOption: "Confront the agent.",
-    rightOption: "Bust the player's balls.",
-    impactLeft: { board: 5, fans: -2, squad: -5, aggression: 0.05 },
-    impactRight: { board: -5, fans: 5, squad: -12, aggression: 0.1 },
-    imageCategory: "press",
-    isBreaking: false,
-    scenarioId: "f_agent_lunch"
-  },
-  {
-    scenario: "The team bus was egged by your own fans after the last away trip.",
-    leftOption: "Confront the fans.",
-    rightOption: "Ignore the noise.",
-    impactLeft: { board: -5, fans: -15, squad: 10, aggression: 0.2 },
-    impactRight: { board: 5, fans: 5, squad: -5, aggression: -0.05 },
-    imageCategory: "fans",
-    isBreaking: true,
-    scenarioId: "f_bus_egg"
-  },
-  {
-    scenario: "The kit manufacturer has leaked the new home shirt. It's hideous, and the fans are fuming.",
-    leftOption: "Join the criticism.",
-    rightOption: "Defend the design.",
-    impactLeft: { board: -15, fans: 20, squad: 0, aggression: 0 },
-    impactRight: { board: 15, fans: -20, squad: 0, aggression: 0 },
-    imageCategory: "finance",
-    isBreaking: false,
-    scenarioId: "f_kit_leak"
-  },
-  {
-    scenario: "A star player is late for the team bus for the third time this month.",
-    leftOption: "Leave him behind.",
-    rightOption: "Wait for him.",
-    impactLeft: { board: 5, fans: 2, squad: -10, aggression: 0.05 },
-    impactRight: { board: -5, fans: -5, squad: 12, aggression: -0.05 },
-    imageCategory: "locker",
-    isBreaking: false,
-    scenarioId: "f_bus_late"
   }
 ];
 
