@@ -78,17 +78,17 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
     // 4-4-2 Formations
     const userFormation = [
-      [0.05, 0.5], // GK
-      [0.15, 0.2], [0.15, 0.4], [0.15, 0.6], [0.15, 0.8], // DEF
-      [0.3, 0.15], [0.3, 0.38], [0.3, 0.62], [0.3, 0.85], // MID
-      [0.45, 0.4], [0.45, 0.6] // FWD
+      [0.08, 0.5], // GK
+      [0.2, 0.2], [0.2, 0.4], [0.2, 0.6], [0.2, 0.8], // DEF
+      [0.35, 0.15], [0.35, 0.38], [0.35, 0.62], [0.35, 0.85], // MID
+      [0.48, 0.4], [0.48, 0.6] // FWD
     ];
 
     const oppFormation = [
-      [0.95, 0.5], // GK
-      [0.85, 0.2], [0.85, 0.4], [0.85, 0.6], [0.85, 0.8], // DEF
-      [0.7, 0.15], [0.7, 0.38], [0.7, 0.62], [0.7, 0.85], // MID
-      [0.55, 0.4], [0.55, 0.6] // FWD
+      [0.92, 0.5], // GK
+      [0.8, 0.2], [0.8, 0.4], [0.8, 0.6], [0.8, 0.8], // DEF
+      [0.65, 0.15], [0.65, 0.38], [0.65, 0.62], [0.65, 0.85], // MID
+      [0.52, 0.4], [0.52, 0.6] // FWD
     ];
 
     const players: Player[] = [
@@ -111,7 +111,9 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       y: height / 2,
       vx: (Math.random() - 0.5) * 4,
       vy: (Math.random() - 0.5) * 4,
-      possessorIndex: -1
+      possessorIndex: -1,
+      targetX: width / 2,
+      targetY: height / 2
     };
 
     let animationFrame: number;
@@ -135,26 +137,32 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.arc(width / 2, height / 2, 25, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Ball Physics
+      // Ball Physics & Possession AI
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
         ball.x = p.x + (p.team === 'user' ? 4 : -4);
         ball.y = p.y;
         
-        // Move towards target goal
-        const targetX = p.team === 'user' ? width - 10 : 10;
-        const dx = targetX - p.x;
-        const dy = (height / 2) - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        // Attacking behavior: Move towards goal
+        const attackTargetX = p.team === 'user' ? width - 15 : 15;
+        const adx = attackTargetX - p.x;
+        const ady = (height / 2) - p.y;
+        const adist = Math.sqrt(adx * adx + ady * ady);
         
-        p.vx = (dx / dist) * 1.5;
-        p.vy = (dy / dist) * 1.5 + (Math.random() - 0.5) * 0.4;
+        p.vx = (adx / adist) * 1.8;
+        p.vy = (ady / adist) * 1.8 + (Math.random() - 0.5) * 0.5;
 
-        // Pass or Shot
-        if (Math.random() < 0.05) {
+        // Passing Logic: Every ~2 seconds (random chance)
+        if (Math.random() < 0.04) {
           ball.possessorIndex = -1;
-          ball.vx = (p.team === 'user' ? 6 : -6) + (Math.random() - 0.5) * 2;
-          ball.vy = (Math.random() - 0.5) * 4;
+          const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
+          const target = teammates[Math.floor(Math.random() * teammates.length)];
+          
+          const pdx = target.x - p.x;
+          const pdy = target.y - p.y;
+          const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
+          ball.vx = (pdx / pdist) * 5;
+          ball.vy = (pdy / pdist) * 5;
         }
       } else {
         ball.x += ball.vx;
@@ -165,7 +173,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Acquisition
+        // Acquisition: Nearest player grabs it
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
@@ -174,7 +182,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Player Movement
+      // Realistic Formation Movement
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
           const dxBall = ball.x - p.x;
@@ -184,8 +192,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           let tx = p.baseX;
           let ty = p.baseY;
 
-          // Chase ball if close or if attacking/defending
-          if (distToBall < 50) {
+          // Reactive behavior: Chase ball if it enters tactical zone
+          if (distToBall < 60) {
             tx = ball.x;
             ty = ball.y;
           }
@@ -195,17 +203,17 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dDist = Math.sqrt(dtx * dtx + dty * dty);
           
           if (dDist > 1) {
-            p.vx = (dtx / dDist) * 1.3;
-            p.vy = (dty / dDist) * 1.3;
+            p.vx = (dtx / dDist) * 1.4;
+            p.vy = (dty / dDist) * 1.4;
           } else {
-            p.vx *= 0.2; p.vy *= 0.2;
+            p.vx *= 0.1; p.vy *= 0.1;
           }
         }
 
         p.x += p.vx;
         p.y += p.vy;
 
-        // Draw Dots
+        // Render Dots
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
@@ -215,7 +223,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.stroke();
       });
 
-      // Draw Ball
+      // Render Yellow Ball
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 2, 0, Math.PI * 2);
@@ -307,12 +315,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
                 </div>
               </>
             )}
-          </div>
-        )}
-
-        {!showFinal && (
-          <div className="absolute top-2 right-3 font-headline text-white/40 text-[8px] font-black uppercase tracking-[0.1em]">
-            {timer}S
           </div>
         )}
       </div>

@@ -49,7 +49,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
       aggression: Math.min(1, Math.max(0.05, state.aggression + (impact.aggression || 0))),
       cardsSeen: newCardsSeen,
-      history: [...state.history, currentScenario.scenario],
+      history: [...state.history, currentScenario.originalScenarioText],
     };
 
     if (newState.boardSupport <= 0.05 || newState.fanSupport <= 0.05) {

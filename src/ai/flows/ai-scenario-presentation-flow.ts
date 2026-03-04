@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for generating dynamic, context-aware scenarios.
@@ -36,6 +37,7 @@ const AiScenarioPresentationOutputSchema = z.object({
   impactRight: ImpactSchema,
   imageCategory: z.string(),
   isBreaking: z.boolean(),
+  originalScenarioText: z.string(),
 });
 
 export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentationOutputSchema>;
@@ -71,7 +73,9 @@ const aiScenarioPresentationPrompt = ai.definePrompt({
   Right Impact: Board {{{impactRight.board}}}, Fans {{{impactRight.fans}}}, Squad {{{impactRight.squad}}}, Aggression {{{impactRight.aggression}}}
   
   Image Category: {{{imageCategory}}}
-  Is Breaking: {{{isBreaking}}}`,
+  Is Breaking: {{{isBreaking}}}
+  
+  IMPORTANT: Set "originalScenarioText" to exactly: {{{baseScenario}}}`,
 });
 
 export async function getAiScenarioPresentation(
@@ -124,7 +128,8 @@ export async function getAiScenarioPresentation(
       impactLeft: { board: card.boardImpact, fans: card.fanImpact, squad: card.dressingRoomImpact, aggression: card.aggressionImpact },
       impactRight: { board: -card.boardImpact, fans: -card.fanImpact, squad: -card.dressingRoomImpact, aggression: -card.aggressionImpact },
       imageCategory: card.imageCategory,
-      isBreaking: card.isBreaking
+      isBreaking: card.isBreaking,
+      originalScenarioText: card.scenarioText
     };
   }
 }
