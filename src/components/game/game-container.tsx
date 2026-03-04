@@ -384,7 +384,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
         <div className="bg-destructive/10 border-t border-white/5 h-10 flex items-center overflow-hidden relative">
           <div className="bg-destructive text-white text-[10px] font-headline font-black px-4 py-1.5 z-20 absolute left-0 uppercase tracking-tighter flex items-center h-full">Breaking</div>
-          <div className="animate-ticker flex items-center gap-20 pl-[100px]" style={{ animationDuration: '80s' }}>
+          <div className="animate-ticker flex items-center gap-20 pl-[100px]" style={{ animationDuration: '160s' }}>
             {newsItems.map((item, idx) => (
               <span key={idx} className="text-[11px] font-headline uppercase tracking-[0.2em] text-white/90 whitespace-nowrap font-black italic">{item}</span>
             ))}

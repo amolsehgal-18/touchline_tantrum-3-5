@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -81,5 +82,5 @@
 .animate-ticker {
   display: inline-block;
   white-space: nowrap;
-  animation: ticker 80s linear infinite;
+  animation: ticker 160s linear infinite;
 }
