@@ -1,8 +1,9 @@
+
 "use client"
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Shield, Target, Search } from 'lucide-react';
+import { Shield, Target } from 'lucide-react';
 import { SlantedButton } from './slanted-elements';
 
 interface MatchRadarProps {
@@ -27,8 +28,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [timer, setTimer] = useState(5);
   const [showFinal, setShowFinal] = useState(false);
-  const [isVARing, setIsVARing] = useState(false);
-  const [varDecision, setVarDecision] = useState<string | null>(null);
 
   const score = useMemo(() => {
     if (result === 'win') {
@@ -52,18 +51,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     if (t > 1) return "75': CHANCE! A thunderous strike at goal!";
     if (t > 0) return "89': DRAMATIC FINISH: Bodies on the line!";
     return "90'+3': FULL TIME: The whistle echoes!";
-  };
-
-  const handleVARRequest = () => {
-    setIsVARing(true);
-    setVarDecision("CHECKING VAR...");
-    setTimeout(() => {
-      setVarDecision("DECISION: NO GOAL");
-      setTimeout(() => {
-        setIsVARing(false);
-        setVarDecision(null);
-      }, 1500);
-    }, 2000);
   };
 
   useEffect(() => {
@@ -263,61 +250,41 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         
         {showFinal && (
           <div className="absolute inset-0 bg-black/98 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 z-50 p-6">
-            {isVARing ? (
-              <div className="flex flex-col items-center gap-4 text-center">
-                 <Search className="w-10 h-10 text-primary animate-bounce" />
-                 <div className="text-[10px] font-headline uppercase tracking-[0.3em] text-primary font-black">VAR PANEL</div>
-                 <div className="text-lg font-headline font-black text-white italic tracking-tighter">{varDecision}</div>
+            <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-accent/60 mb-6 font-black">Full Time</div>
+            
+            <div className="flex items-center justify-between w-full gap-4 mb-8">
+              <div className="flex flex-col items-center gap-3 flex-1 min-w-0">
+                <div className="p-3 bg-destructive/10 rounded-full border border-destructive/20">
+                  <Shield className="w-12 h-12 text-destructive" />
+                </div>
+                <div className="text-xl font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{userTeam}</div>
               </div>
-            ) : (
-              <>
-                <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-accent/60 mb-6 font-black">Full Time</div>
-                
-                <div className="flex items-center justify-between w-full gap-4 mb-8">
-                  <div className="flex flex-col items-center gap-3 flex-1 min-w-0">
-                    <div className="p-3 bg-destructive/10 rounded-full border border-destructive/20">
-                      <Shield className="w-12 h-12 text-destructive" />
-                    </div>
-                    <div className="text-xl font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{userTeam}</div>
-                  </div>
 
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="text-5xl font-headline font-black italic tracking-tighter flex items-center gap-4 text-white">
-                      <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
-                      <span className="text-white/20">-</span>
-                      <span className={cn(result === 'loss' ? "text-primary" : "text-white")}>{score.opp}</span>
-                    </div>
-                    <div className={cn(
-                      "text-[10px] font-headline font-black uppercase px-3 py-1 tracking-widest rounded-full",
-                      result === 'win' ? "bg-green-500/20 text-green-500" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-destructive text-white"
-                    )}>
-                      {result === 'win' ? "WON" : result === 'draw' ? "DRAW" : "LOST"}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-center gap-3 flex-1 min-w-0">
-                    <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
-                      <Target className="w-12 h-12 text-primary" />
-                    </div>
-                    <div className="text-xl font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{opponentTeam}</div>
-                  </div>
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-5xl font-headline font-black italic tracking-tighter flex items-center gap-4 text-white">
+                  <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
+                  <span className="text-white/20">-</span>
+                  <span className={cn(result === 'loss' ? "text-primary" : "text-white")}>{score.opp}</span>
                 </div>
-
-                <div className="flex flex-col gap-3 w-full max-w-[200px]">
-                  {result === 'loss' && (
-                    <button 
-                      onClick={handleVARRequest}
-                      className="w-full py-3 premium-glass slanted-button text-[10px] font-black uppercase tracking-widest text-primary border-primary/40"
-                    >
-                      REQUEST VAR
-                    </button>
-                  )}
-                  <SlantedButton onClick={onComplete} className="w-full py-4 text-sm font-black tracking-[0.3em] bg-white text-black">
-                    PROCEED
-                  </SlantedButton>
+                <div className={cn(
+                  "text-[10px] font-headline font-black uppercase px-3 py-1 tracking-widest rounded-full",
+                  result === 'win' ? "bg-green-500/20 text-green-500" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-destructive text-white"
+                )}>
+                  {result === 'win' ? "WON" : result === 'draw' ? "DRAW" : "LOST"}
                 </div>
-              </>
-            )}
+              </div>
+
+              <div className="flex flex-col items-center gap-3 flex-1 min-w-0">
+                <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
+                  <Target className="w-12 h-12 text-primary" />
+                </div>
+                <div className="text-xl font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{opponentTeam}</div>
+              </div>
+            </div>
+
+            <SlantedButton onClick={onComplete} className="w-full py-4 text-sm font-black tracking-[0.3em] bg-white text-black">
+              PROCEED
+            </SlantedButton>
           </div>
         )}
       </div>
