@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Shield, Target } from 'lucide-react';
+import { Shield, Target, Timer } from 'lucide-react';
 import { SlantedButton } from './slanted-elements';
 
 interface MatchRadarProps {
@@ -24,9 +24,22 @@ interface Player {
   baseY: number;
 }
 
+const COMMENTARY_SNIPPETS = [
+  { time: 0, text: "Kick off! The atmosphere is electric." },
+  { time: 15, text: "A fierce battle in the middle of the park." },
+  { time: 30, text: "Searching for a gap in the defense..." },
+  { time: 45, text: "Half-time instructions being shouted." },
+  { time: 60, text: "The tempo is picking up now." },
+  { time: 75, text: "Tension mounting as the clock ticks down." },
+  { time: 87, text: "87' Squeaky bum time!" },
+  { time: 90, text: "Final whistle is imminent!" }
+];
+
 export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: MatchRadarProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [showFinal, setShowFinal] = useState(false);
+  const [matchTime, setMatchTime] = useState(0);
+  const [commentary, setCommentary] = useState(COMMENTARY_SNIPPETS[0].text);
 
   const score = useMemo(() => {
     if (result === 'win') {
@@ -52,19 +65,19 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const width = canvas.width;
     const height = canvas.height;
 
-    // Tactical 4-4-2 Formations (Anchors for stability)
+    // Fluid 4-4-2 Scattered Formations
     const userFormation = [
-      [0.10, 0.5], // GK
-      [0.25, 0.25], [0.25, 0.42], [0.25, 0.58], [0.25, 0.75], // DEF
-      [0.45, 0.2], [0.45, 0.4], [0.45, 0.6], [0.45, 0.8], // MID
-      [0.60, 0.35], [0.60, 0.65] // FWD
+      [0.08, 0.5], // GK
+      [0.22, 0.25], [0.22, 0.42], [0.22, 0.58], [0.22, 0.75], // DEF
+      [0.42, 0.2], [0.42, 0.4], [0.42, 0.6], [0.42, 0.8], // MID
+      [0.65, 0.35], [0.65, 0.65] // FWD
     ];
 
     const oppFormation = [
-      [0.90, 0.5], // GK
-      [0.75, 0.25], [0.75, 0.42], [0.75, 0.58], [0.75, 0.75], // DEF
-      [0.55, 0.2], [0.55, 0.4], [0.55, 0.6], [0.55, 0.8], // MID
-      [0.40, 0.35], [0.40, 0.65] // FWD
+      [0.92, 0.5], // GK
+      [0.78, 0.25], [0.78, 0.42], [0.78, 0.58], [0.78, 0.75], // DEF
+      [0.58, 0.2], [0.58, 0.4], [0.58, 0.6], [0.58, 0.8], // MID
+      [0.35, 0.35], [0.35, 0.65] // FWD
     ];
 
     const players: Player[] = [
@@ -85,8 +98,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const ball = {
       x: width / 2,
       y: height / 2,
-      vx: (Math.random() - 0.5) * 12,
-      vy: (Math.random() - 0.5) * 12,
+      vx: (Math.random() - 0.5) * 10,
+      vy: (Math.random() - 0.5) * 10,
       possessorIndex: -1,
     };
 
@@ -95,7 +108,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
       
-      // Pitch Grid Backdrop
+      // Pitch Grid
       ctx.fillStyle = 'rgba(255,255,255,0.02)';
       ctx.fillRect(0, 0, width, height);
       ctx.strokeStyle = 'rgba(255,255,255,0.05)';
@@ -106,50 +119,38 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width/2, height-5);
       ctx.stroke();
 
-      // Ball Physics & Possession Logic
+      // Ball Logic
       if (ball.possessorIndex !== -1) {
         const p = players[ball.possessorIndex];
         ball.x = p.x;
         ball.y = p.y;
         
-        // Dribbling towards target goal
-        const targetX = p.team === 'user' ? width * 0.95 : width * 0.05;
-        const targetY = height / 2;
-        const dx = targetX - p.x;
-        const dy = targetY - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist > 10) {
-          p.vx = (dx / dist) * 4;
-          p.vy = (dy / dist) * 1.5;
-        }
-
-        // Passing Logic (8% chance to pass)
-        if (Math.random() < 0.08) {
+        // Passing AI: 12% chance per frame to pass
+        if (Math.random() < 0.12) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const target = teammates[Math.floor(Math.random() * teammates.length)];
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 20; // High speed pass
-          ball.vy = (pdy / pdist) * 20;
+          ball.vx = (pdx / pdist) * 12; 
+          ball.vy = (pdy / pdist) * 12;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.98;
-        ball.vy *= 0.98;
+        ball.vx *= 0.99;
+        ball.vy *= 0.99;
 
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
 
-        // Intersection Logic
+        // Intersection
         players.forEach((p, idx) => {
           const dx = ball.x - p.x;
           const dy = ball.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 8) {
+          if (dist < 6) {
              ball.possessorIndex = idx;
              ball.vx = 0;
              ball.vy = 0;
@@ -157,27 +158,24 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Player Movement (Formation + Reaction)
+      // Fluid Player Reaction
       players.forEach((p, idx) => {
-        if (ball.possessorIndex !== idx) {
-          const dBallX = ball.x - p.x;
-          const dBallY = ball.y - p.y;
-          const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
+        const dBallX = ball.x - p.x;
+        const dBallY = ball.y - p.y;
+        const distToBall = Math.sqrt(dBallX * dBallX + dBallY * dBallY);
 
-          // React faster if ball is close, else stay near base
-          if (distToBall < 50) {
-            p.vx = (dBallX / distToBall) * 3;
-            p.vy = (dBallY / distToBall) * 3;
+        if (distToBall < 40) {
+          p.vx = (dBallX / distToBall) * 2.5;
+          p.vy = (dBallY / distToBall) * 2.5;
+        } else {
+          const dtx = p.baseX - p.x;
+          const dty = p.baseY - p.y;
+          const distToBase = Math.sqrt(dtx * dtx + dty * dty);
+          if (distToBase > 2) {
+            p.vx = (dtx / distToBase) * 1.5;
+            p.vy = (dty / distToBase) * 1.5;
           } else {
-            const dtx = p.baseX - p.x;
-            const dty = p.baseY - p.y;
-            const distToBase = Math.sqrt(dtx * dtx + dty * dty);
-            if (distToBase > 2) {
-              p.vx = (dtx / distToBase) * 2.5;
-              p.vy = (dty / distToBase) * 2.5;
-            } else {
-              p.vx *= 0.3; p.vy *= 0.3;
-            }
+            p.vx *= 0.5; p.vy *= 0.5;
           }
         }
 
@@ -187,20 +185,19 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         // Render Player
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-        ctx.lineWidth = 1;
         ctx.stroke();
       });
 
-      // Render Yellow Ball (Elite Visibility)
+      // Render Yellow Soccer Ball
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       animationFrame = requestAnimationFrame(animate);
@@ -210,17 +207,37 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     return () => cancelAnimationFrame(animationFrame);
   }, [showFinal]);
 
+  // Match Clock & Commentary Timer
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowFinal(true);
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (showFinal) return;
+
+    const totalDuration = 5000;
+    const start = Date.now();
+
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(elapsed / totalDuration, 1);
+      const currentTime = Math.floor(progress * 90);
+      setMatchTime(currentTime);
+
+      const snippet = [...COMMENTARY_SNIPPETS].reverse().find(s => currentTime >= s.time);
+      if (snippet) setCommentary(snippet.text);
+
+      if (progress >= 1) {
+        clearInterval(timer);
+        setShowFinal(true);
+      }
+    }, 50);
+
+    return () => clearInterval(timer);
+  }, [showFinal]);
 
   if (showFinal) {
     return (
       <div className="relative premium-glass p-5 slanted-container w-full max-w-[280px] border-white/10 shadow-2xl bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-        <div className="flex items-center justify-between w-full gap-2 mb-4">
+        <div className="text-[9px] font-headline font-black uppercase text-accent mb-4 tracking-[0.2em] italic">Full Time Result</div>
+        
+        <div className="flex items-center justify-between w-full gap-2 mb-6">
           <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
             <Shield className="w-6 h-6 text-primary" />
             <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{userTeam}</div>
@@ -246,20 +263,33 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           </div>
         </div>
 
-        <SlantedButton onClick={onComplete} className="w-full py-2 text-[10px] font-black tracking-[0.3em] bg-white text-black">
-          CONTINUE
+        <SlantedButton onClick={onComplete} className="w-full py-2.5 text-[9px] font-black tracking-[0.2em] bg-white text-black">
+          PROCEED TO NEXT MATCH
         </SlantedButton>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full h-full justify-center">
-      <div className="text-[10px] font-headline text-accent animate-pulse uppercase font-black tracking-[0.2em] italic">
-        Match In Progress
+    <div className="flex flex-col items-center gap-3 w-full h-full justify-center px-4">
+      <div className="w-full max-w-[300px] flex justify-between items-center px-2">
+        <div className="flex items-center gap-2">
+          <Timer className="w-3.5 h-3.5 text-accent animate-pulse" />
+          <span className="text-xl font-headline font-black italic text-white">{matchTime}'</span>
+        </div>
+        <div className="text-[9px] font-headline text-accent/80 uppercase font-black tracking-widest italic animate-pulse">
+          Matchday Live
+        </div>
       </div>
-      <div className="relative premium-glass p-0.5 slanted-container w-full max-w-[300px] aspect-[4/3] border-white/10 overflow-hidden bg-black/40">
+      
+      <div className="relative premium-glass p-0.5 slanted-container w-full max-w-[300px] aspect-[4/3] border-white/10 overflow-hidden bg-black/40 shadow-inner">
         <canvas ref={canvasRef} width={300} height={225} className="w-full h-full rounded" />
+      </div>
+
+      <div className="w-full max-w-[300px] bg-white/5 border border-white/5 p-3 rounded-md text-center">
+        <p className="text-[10px] font-headline font-bold text-white/90 italic uppercase tracking-tight">
+          "{commentary}"
+        </p>
       </div>
     </div>
   );
