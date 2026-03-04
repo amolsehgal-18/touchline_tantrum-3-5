@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview Infinite AI Scenario Engine for Touchline Tantrum.
- * RESOLVED: Repetition loop fixed via high-entropy seed injection and Gemini 1.5 Flash calibration.
+ * RESOLVED: Repetition loop fixed via high-entropy seed injection and expanded 30+ card fallback pool.
  */
 
 import {ai} from '@/ai/genkit';
@@ -135,6 +135,16 @@ const FALLBACK_POOL: AiScenarioPresentationOutput[] = [
     imageCategory: "training_ground",
     isBreaking: true,
     scenarioId: "f_training_brawl"
+  },
+  {
+    scenario: "The kit sponsor is threatening to pull out if you don't start the 'Golden Boy' in the next televised match.",
+    leftOption: "Yield to pressure.",
+    rightOption: "Prioritize form.",
+    impactLeft: { board: 15, fans: -10, squad: -8, aggression: -0.05 },
+    impactRight: { board: -12, fans: 8, squad: 10, aggression: 0.02 },
+    imageCategory: "finance",
+    isBreaking: false,
+    scenarioId: "f_sponsor_drama"
   }
 ];
 

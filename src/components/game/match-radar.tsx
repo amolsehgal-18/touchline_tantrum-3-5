@@ -115,7 +115,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ball.y += (dy / dist) * speed;
       }
 
-      // Player Movement - Zero Jitter
+      // Player Movement - Drifting
       players.forEach((p) => {
         const dtx = p.baseX - p.x;
         const dty = p.baseY - p.y;
