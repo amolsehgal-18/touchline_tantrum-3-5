@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -49,7 +48,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
       aggression: Math.min(1, Math.max(0.05, state.aggression + (impact.aggression || 0))),
       cardsSeen: newCardsSeen,
-      history: [...state.history, currentScenario.originalScenarioText], // Track the original text for variety
+      history: [...state.history, currentScenario.originalScenarioText], // Track the base text to prevent repeat
     };
 
     if (newState.boardSupport <= 0.05 || newState.fanSupport <= 0.05) {
@@ -77,7 +76,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     }
   }, [currentScenario, state]);
 
-  // Decision Timer Logic
   useEffect(() => {
     if (!currentScenario || isSimulating || matchIntro || loading || error || state?.isSacked || state?.isSeasonEnd) return;
 
@@ -327,7 +325,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         </div>
       </div>
 
-      {/* Layered Dashboard row - Layered behind cards with low z-index */}
       <div className="px-4 py-2 flex justify-around items-center bg-transparent z-10 border-b border-white/5 relative -mb-4">
         <div className="flex-1 flex justify-center scale-95 opacity-80"><TensionArcs board={state.boardSupport} fans={state.fanSupport} /></div>
         <div className="flex-1 flex justify-center scale-95 opacity-80"><ManagerMoodView mood={mood} /></div>
@@ -366,7 +363,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
       </div>
 
-      {/* Bottom Ticker and Stats Bar */}
       <div className="bg-black/95 border-t border-white/10 z-[100]">
         <div className="p-4 py-3 space-y-2">
           <div className="flex justify-between items-end px-1">
