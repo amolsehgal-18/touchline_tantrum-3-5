@@ -111,7 +111,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         const teammates = players.filter((_, idx) => idx !== ball.targetPlayerIndex);
         ball.targetPlayerIndex = players.indexOf(teammates[Math.floor(Math.random() * teammates.length)]);
       } else {
-        const speed = 15; // Fast tactical passing
+        const speed = 12; // Adjusted speed for better visibility
         ball.x += (dx / dist) * speed;
         ball.y += (dy / dist) * speed;
       }

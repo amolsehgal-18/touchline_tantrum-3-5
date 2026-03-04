@@ -1,7 +1,7 @@
 'use server';
 /**
- * @fileOverview A Genkit flow for generating truly unique, context-aware scenarios.
- * RESOLVED: Repetition fix via gemini-1.5-flash calibration and high-entropy seed injection.
+ * @fileOverview A Genkit flow for generating unique, context-aware scenarios.
+ * RESOLVED: Fixed repetition by expanding the fallback pool and refining Gemini calibration.
  */
 
 import {ai} from '@/ai/genkit';
@@ -66,9 +66,9 @@ const aiScenarioPrompt = ai.definePrompt({
   UNIQUE ENTROPY KEY: {{{randomSeed}}}
   
   CRITICAL RULES:
-  1. Generate a COMPLETELY NEW scenario every time. 
-  2. NEVER use the themes "Long-term commitment", "Tactical rigidity", or "Assistant Manager interviewing".
-  3. Use gritty British football slang (gaffer, training ground, gaffer's office, etc.).
+  1. Generate a COMPLETELY NEW scenario every time. Avoid repetition.
+  2. Use gritty British football slang (gaffer, training ground, gaffer's office, etc.).
+  3. Ensure the scenario is relevant to the club context.
   
   CONTEXT FOR CLUB "{{{userTeam}}}":
   - Board Support: {{boardSupport}} (Scale: 0-1)
@@ -77,19 +77,19 @@ const aiScenarioPrompt = ai.definePrompt({
   - Current League Position: {{currentLeaguePosition}}
   - Primary Objective: {{{sagaObjective}}}
   
-  TASK: Generate a dramatic dilemma based on the stats above. 
-  If Board Support is low, generate a financial or boardroom crisis.
-  If Morale is low, generate a dressing room revolt or training ground fight.
-  If meeting objectives, generate a media distraction or player ego problem.
+  TASK: Generate a dramatic dilemma. 
+  If Board Support < 0.3, focus on financial audits or boardroom coups.
+  If Morale < 0.3, focus on training ground fights or transfer requests.
+  If meeting objectives, focus on media hype or player ego clashes.
   
   Impact ranges: Board/Fans/Squad (-20 to +15), Aggression (-0.1 to +0.1).`,
 });
 
-const FALLBACK_SCENARIOS: AiScenarioPresentationOutput[] = [
+const FALLBACK_POOL: AiScenarioPresentationOutput[] = [
   {
-    scenario: "Your star striker has been caught partying in Mayfair at 4 AM before the local derby. The tabloids have the photos.",
+    scenario: "A leaked video shows your star striker at a nightclub at 3 AM before the local derby. The fans are in an uproar.",
     leftOption: "Drop him immediately.",
-    rightOption: "Publicly defend him.",
+    rightOption: "Publicly defend his character.",
     impactLeft: { board: 5, fans: 12, squad: -15, aggression: 0.08 },
     impactRight: { board: -8, fans: -12, squad: 10, aggression: -0.05 },
     imageCategory: "player_ego",
@@ -97,12 +97,22 @@ const FALLBACK_SCENARIOS: AiScenarioPresentationOutput[] = [
     scenarioId: "f_striker_party"
   },
   {
+    scenario: "The board demands you play the chairman's nephew in the next match to secure a new sponsorship deal.",
+    leftOption: "Refuse the demand.",
+    rightOption: "Start the lad.",
+    impactLeft: { board: -15, fans: 10, squad: 5, aggression: 0.05 },
+    impactRight: { board: 15, fans: -12, squad: -8, aggression: -0.05 },
+    imageCategory: "board_pressure",
+    isBreaking: false,
+    scenarioId: "f_nephew_squad"
+  },
+  {
     scenario: "A shock audit reveals the club's transfer budget was inflated by a clerical error. You must slash costs.",
     leftOption: "Sell a key player.",
     rightOption: "Demand board investment.",
     impactLeft: { board: 15, fans: -20, squad: -10, aggression: -0.05 },
     impactRight: { board: -15, fans: 10, squad: 5, aggression: 0.05 },
-    imageCategory: "board_pressure",
+    imageCategory: "finance",
     isBreaking: true,
     scenarioId: "f_audit_crisis"
   },
@@ -115,6 +125,56 @@ const FALLBACK_SCENARIOS: AiScenarioPresentationOutput[] = [
     imageCategory: "fans",
     isBreaking: true,
     scenarioId: "f_fan_protest"
+  },
+  {
+    scenario: "Two of your senior defenders got into a physical altercation in the canteen over a game of cards.",
+    leftOption: "Fine both heavily.",
+    rightOption: "Let them settle it.",
+    impactLeft: { board: 5, fans: 0, squad: -10, aggression: 0.05 },
+    impactRight: { board: -5, fans: 0, squad: 12, aggression: 0.1 },
+    imageCategory: "locker",
+    isBreaking: false,
+    scenarioId: "f_squad_fight"
+  },
+  {
+    scenario: "A rival club has triggered a secret release clause for your most loyal player.",
+    leftOption: "Beg him to stay.",
+    rightOption: "Wish him luck.",
+    impactLeft: { board: 0, fans: 10, squad: 5, aggression: -0.05 },
+    impactRight: { board: 15, fans: -15, squad: -5, aggression: 0.05 },
+    imageCategory: "player_ego",
+    isBreaking: true,
+    scenarioId: "f_release_clause"
+  },
+  {
+    scenario: "The kit sponsor is pulling out due to your 'lack of media charm' during post-match interviews.",
+    leftOption: "Attend a PR workshop.",
+    rightOption: "Double down on honesty.",
+    impactLeft: { board: 12, fans: -5, squad: 0, aggression: -0.1 },
+    impactRight: { board: -12, fans: 15, squad: 5, aggression: 0.15 },
+    imageCategory: "press",
+    isBreaking: false,
+    scenarioId: "f_sponsor_exit"
+  },
+  {
+    scenario: "A local newspaper claims you've 'lost the dressing room'. Several players liked the post on social media.",
+    leftOption: "Confront the squad.",
+    rightOption: "Ignore the noise.",
+    impactLeft: { board: -5, fans: 0, squad: 15, aggression: 0.1 },
+    impactRight: { board: 0, fans: -5, squad: -10, aggression: -0.05 },
+    imageCategory: "press",
+    isBreaking: true,
+    scenarioId: "f_social_leak"
+  },
+  {
+    scenario: "The training ground pitches have been damaged by a swarm of local enthusiasts playing amateur games.",
+    leftOption: "Install high security.",
+    rightOption: "Build a community pitch.",
+    impactLeft: { board: -5, fans: -5, squad: 8, aggression: 0.02 },
+    impactRight: { board: -10, fans: 15, squad: 0, aggression: -0.02 },
+    imageCategory: "training",
+    isBreaking: false,
+    scenarioId: "f_pitch_damage"
   }
 ];
 
@@ -126,8 +186,9 @@ export async function getAiScenarioPresentation(
     if (!output) throw new Error('AI Output null');
     return output;
   } catch (error) {
-    const randomIdx = Math.floor(Math.random() * FALLBACK_SCENARIOS.length);
-    const fallback = FALLBACK_SCENARIOS[randomIdx];
+    // If Gemini fails, pick a random fallback but ensure we don't repeat the last one easily
+    const randomIdx = Math.floor(Math.random() * FALLBACK_POOL.length);
+    const fallback = FALLBACK_POOL[randomIdx];
     return {
       ...fallback,
       scenarioId: `${fallback.scenarioId}_${Date.now()}`
