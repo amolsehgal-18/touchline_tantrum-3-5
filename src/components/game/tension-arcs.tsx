@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from 'react';
@@ -52,11 +53,11 @@ export const TensionArcs = ({ board, fans }: TensionArcsProps) => {
       <div className="grid grid-cols-2 gap-3 text-[11px] font-headline uppercase tracking-wider mt-2 w-full px-2 font-black">
         <div className="flex flex-col items-center border-r border-white/10">
           <span className="text-primary brightness-150">{Math.round(board * 100)}%</span>
-          <span className="text-white opacity-90 text-[9px]">Board</span>
+          <span className="text-white brightness-200 text-[9px] uppercase tracking-widest font-bold">Board</span>
         </div>
         <div className="flex flex-col items-center">
           <span className="text-[#ef4444] brightness-150">{Math.round(fans * 100)}%</span>
-          <span className="text-white opacity-90 text-[9px]">Fans</span>
+          <span className="text-white brightness-200 text-[9px] uppercase tracking-widest font-bold">Fans</span>
         </div>
       </div>
     </div>
