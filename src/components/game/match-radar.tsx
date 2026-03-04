@@ -64,16 +64,16 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     // Tactical 4-4-2 Formations
     const userFormation = [
       [0.08, 0.5], // GK
-      [0.2, 0.2], [0.2, 0.4], [0.2, 0.6], [0.2, 0.8], // DEF
-      [0.35, 0.15], [0.35, 0.38], [0.35, 0.62], [0.35, 0.85], // MID
-      [0.48, 0.4], [0.48, 0.6] // FWD
+      [0.2, 0.25], [0.2, 0.42], [0.2, 0.58], [0.2, 0.75], // DEF
+      [0.35, 0.15], [0.35, 0.4], [0.35, 0.6], [0.35, 0.85], // MID
+      [0.46, 0.4], [0.46, 0.6] // FWD
     ];
 
     const oppFormation = [
       [0.92, 0.5], // GK
-      [0.8, 0.2], [0.8, 0.4], [0.8, 0.6], [0.8, 0.8], // DEF
-      [0.65, 0.15], [0.65, 0.38], [0.65, 0.62], [0.65, 0.85], // MID
-      [0.52, 0.4], [0.52, 0.6] // FWD
+      [0.8, 0.25], [0.8, 0.42], [0.8, 0.58], [0.8, 0.75], // DEF
+      [0.65, 0.15], [0.65, 0.4], [0.65, 0.6], [0.65, 0.85], // MID
+      [0.54, 0.4], [0.54, 0.6] // FWD
     ];
 
     const players: Player[] = [
@@ -107,7 +107,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       // Pitch Render
       ctx.fillStyle = 'rgba(255,255,255,0.03)';
       ctx.fillRect(0, 0, width, height);
-      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
       ctx.lineWidth = 1;
       
       // Markings
@@ -117,7 +117,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width / 2, height - 5);
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(width / 2, height / 2, 25, 0, Math.PI * 2);
+      ctx.arc(width / 2, height / 2, 20, 0, Math.PI * 2);
       ctx.stroke();
 
       // Ball Physics & Possession AI
@@ -132,12 +132,12 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         const ady = (height / 2) - p.y;
         const adist = Math.sqrt(adx * adx + ady * ady);
         
-        // Dribbling speed
-        p.vx = (adx / adist) * 1.8;
-        p.vy = (ady / adist) * 1.8 + (Math.random() - 0.5) * 0.5;
+        // Controlled Dribbling
+        p.vx = (adx / adist) * 1.5;
+        p.vy = (ady / adist) * 1.2 + (Math.random() - 0.5) * 0.4;
 
-        // Passing Logic: Random chance to switch possessor to a teammate in front
-        if (Math.random() < 0.04) {
+        // Passing Logic: Random chance to switch possessor to a forward teammate
+        if (Math.random() < 0.05) {
           ball.possessorIndex = -1;
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
           const forwardTeammates = teammates.filter(t => p.team === 'user' ? t.x > p.x : t.x < p.x);
@@ -146,14 +146,14 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const pdx = target.x - p.x;
           const pdy = target.y - p.y;
           const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-          ball.vx = (pdx / pdist) * 5;
-          ball.vy = (pdy / pdist) * 5;
+          ball.vx = (pdx / pdist) * 6;
+          ball.vy = (pdy / pdist) * 6;
         }
       } else {
         ball.x += ball.vx;
         ball.y += ball.vy;
-        ball.vx *= 0.98;
-        ball.vy *= 0.98;
+        ball.vx *= 0.985;
+        ball.vy *= 0.985;
 
         if (ball.x < 10 || ball.x > width - 10) ball.vx *= -1;
         if (ball.y < 10 || ball.y > height - 10) ball.vy *= -1;
@@ -167,7 +167,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Realistic Formation Movement
+      // Tactical Movement
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
           const dxBall = ball.x - p.x;
@@ -177,8 +177,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           let tx = p.baseX;
           let ty = p.baseY;
 
-          // Tactical Zone: Players chase ball if it enters their immediate area
-          if (distToBall < 60) {
+          // React to ball if it's near
+          if (distToBall < 50) {
             tx = ball.x;
             ty = ball.y;
           }
@@ -188,10 +188,10 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dDist = Math.sqrt(dtx * dtx + dty * dty);
           
           if (dDist > 1) {
-            p.vx = (dtx / dDist) * 1.4;
-            p.vy = (dty / dDist) * 1.4;
+            p.vx = (dtx / dDist) * 1.2;
+            p.vy = (dty / dDist) * 1.2;
           } else {
-            p.vx *= 0.1; p.vy *= 0.1;
+            p.vx *= 0.2; p.vy *= 0.2;
           }
         }
 
@@ -208,10 +208,10 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.stroke();
       });
 
-      // Render Yellow Soccer Ball (High visibility)
+      // Render Soccer Ball (High-Visibility Yellow)
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 3.5, 0, Math.PI * 2);
+      ctx.arc(ball.x, ball.y, 4, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 1;
@@ -249,39 +249,39 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         
         {showFinal && (
           <div className="absolute inset-0 bg-black/98 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 z-50 p-6">
-            <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-accent/60 mb-6 font-black">Full Time</div>
+            <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-accent/60 mb-5 font-black">Full Time</div>
             
             <div className="flex items-center justify-between w-full gap-4 mb-8">
-              <div className="flex flex-col items-center gap-3 flex-1 min-w-0">
-                <div className="p-3 bg-destructive/10 rounded-full border border-destructive/20">
-                  <Shield className="w-12 h-12 text-destructive" />
+              <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                <div className="p-2 bg-destructive/10 rounded-full border border-destructive/20">
+                  <Shield className="w-8 h-8 text-destructive" />
                 </div>
-                <div className="text-xl font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{userTeam}</div>
+                <div className="text-sm font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{userTeam}</div>
               </div>
 
               <div className="flex flex-col items-center gap-1">
-                <div className="text-5xl font-headline font-black italic tracking-tighter flex items-center gap-4 text-white">
+                <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-3 text-white">
                   <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
                   <span className="text-white/20">-</span>
                   <span className={cn(result === 'loss' ? "text-primary" : "text-white")}>{score.opp}</span>
                 </div>
                 <div className={cn(
-                  "text-[10px] font-headline font-black uppercase px-3 py-1 tracking-widest rounded-full",
+                  "text-[9px] font-headline font-black uppercase px-2.5 py-0.5 tracking-widest rounded-full",
                   result === 'win' ? "bg-green-500/20 text-green-500" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-destructive text-white"
                 )}>
                   {result === 'win' ? "WON" : result === 'draw' ? "DRAW" : "LOST"}
                 </div>
               </div>
 
-              <div className="flex flex-col items-center gap-3 flex-1 min-w-0">
-                <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
-                  <Target className="w-12 h-12 text-primary" />
+              <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
+                  <Target className="w-8 h-8 text-primary" />
                 </div>
-                <div className="text-xl font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{opponentTeam}</div>
+                <div className="text-sm font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{opponentTeam}</div>
               </div>
             </div>
 
-            <SlantedButton onClick={onComplete} className="w-full py-4 text-sm font-black tracking-[0.3em] bg-white text-black">
+            <SlantedButton onClick={onComplete} className="w-full py-4 text-xs font-black tracking-[0.3em] bg-white text-black">
               PROCEED
             </SlantedButton>
           </div>
