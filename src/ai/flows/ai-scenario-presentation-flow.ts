@@ -82,6 +82,7 @@ export async function getAiScenarioPresentation(
 ): Promise<AiScenarioPresentationOutput> {
   const excludedIds = input.excludedScenarioIds || [];
   
+  // Logic to pick a scenario that hasn't been seen yet
   let eligible = SCENARIO_CARDS.filter(c => !excludedIds.includes(c.id));
   
   if (eligible.length === 0) {
@@ -125,7 +126,7 @@ export async function getAiScenarioPresentation(
     };
   } catch (error) {
     console.error('AI Flow Error:', error);
-    // Hard fallback to ensure game continues
+    // Hard fallback to ensure game continues even if AI fails
     return {
       scenario: card.scenarioText,
       leftOption: card.leftOptionText,
