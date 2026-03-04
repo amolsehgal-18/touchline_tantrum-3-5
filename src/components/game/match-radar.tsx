@@ -222,12 +222,12 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.stroke();
       });
 
-      // Render Yellow Soccer Ball (Increased visibility)
-      ctx.fillStyle = '#facc15'; // Bright Yellow
+      // Render Yellow Soccer Ball (High visibility)
+      ctx.fillStyle = '#facc15';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 3.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#000'; // High contrast outline
+      ctx.strokeStyle = '#000';
       ctx.lineWidth = 1;
       ctx.stroke();
 
@@ -289,7 +289,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
                     </div>
                     <div className={cn(
                       "text-[10px] font-headline font-black uppercase px-3 py-1 tracking-widest rounded-full",
-                      result === 'win' ? "bg-accent text-accent-foreground" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-primary text-white"
+                      result === 'win' ? "bg-green-500/20 text-green-500" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-destructive text-white"
                     )}>
                       {result === 'win' ? "WON" : result === 'draw' ? "DRAW" : "LOST"}
                     </div>
