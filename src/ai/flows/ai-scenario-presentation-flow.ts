@@ -92,9 +92,10 @@ export async function getAiScenarioPresentation(
     if (!output) throw new Error('AI Output null');
     return output;
   } catch (error) {
+    // Fallback for network issues - removed REF code to clean up UI if AI fails
     const timestamp = Date.now();
     return {
-      scenario: `Your chief scout has identified a promising talent in the lower leagues, but the board is hesitant to release funds due to a recent audit. [REF:${timestamp}]`,
+      scenario: `Your chief scout has identified a promising talent in the lower leagues, but the board is hesitant to release funds due to a recent audit.`,
       leftOption: "Demand the investment.",
       rightOption: "Accept the budget.",
       impactLeft: { board: -12, fans: 8, squad: 4, aggression: 0.05 },

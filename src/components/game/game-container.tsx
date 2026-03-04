@@ -100,7 +100,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     setError(null);
 
     try {
-      // Force unique results with high-entropy seed
       const uniqueSeed = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
       
       const result = await getAiScenarioPresentation({
