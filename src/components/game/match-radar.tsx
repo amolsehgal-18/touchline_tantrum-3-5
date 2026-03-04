@@ -54,7 +54,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || showFinal) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -222,7 +222,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
     animate();
     return () => cancelAnimationFrame(animationFrame);
-  }, []);
+  }, [showFinal]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -244,49 +244,49 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         {showFinal ? "Full Time" : "Match In Progress"}
       </div>
       
-      <div className="relative premium-glass p-0.5 slanted-container w-full max-w-[280px] aspect-[4/3] border-white/10 overflow-hidden shadow-2xl bg-black/40">
-        <canvas ref={canvasRef} width={280} height={210} className="w-full h-full rounded" />
-        
-        {showFinal && (
-          <div className="absolute inset-0 bg-black/98 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 z-50 p-6">
-            <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-accent/60 mb-5 font-black">Full Time</div>
-            
-            <div className="flex items-center justify-between w-full gap-4 mb-8">
-              <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                <div className="p-2 bg-destructive/10 rounded-full border border-destructive/20">
-                  <Shield className="w-8 h-8 text-destructive" />
-                </div>
-                <div className="text-sm font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{userTeam}</div>
+      {showFinal ? (
+        <div className="relative premium-glass p-6 slanted-container w-full max-w-[300px] border-white/10 overflow-hidden shadow-2xl bg-black/98 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+          <div className="text-[9px] font-headline uppercase tracking-[0.4em] text-accent/60 mb-5 font-black">Full Time</div>
+          
+          <div className="flex items-center justify-between w-full gap-2 mb-8">
+            <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+              <div className="p-1.5 bg-destructive/10 rounded-full border border-destructive/20">
+                <Shield className="w-6 h-6 text-destructive" />
               </div>
+              <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{userTeam}</div>
+            </div>
 
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-3 text-white">
-                  <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
-                  <span className="text-white/20">-</span>
-                  <span className={cn(result === 'loss' ? "text-primary" : "text-white")}>{score.opp}</span>
-                </div>
-                <div className={cn(
-                  "text-[9px] font-headline font-black uppercase px-2.5 py-0.5 tracking-widest rounded-full",
-                  result === 'win' ? "bg-green-500/20 text-green-500" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-destructive text-white"
-                )}>
-                  {result === 'win' ? "WON" : result === 'draw' ? "DRAW" : "LOST"}
-                </div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-2xl font-headline font-black italic tracking-tighter flex items-center gap-2 text-white">
+                <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
+                <span className="text-white/20">-</span>
+                <span className={cn(result === 'loss' ? "text-primary" : "text-white")}>{score.opp}</span>
               </div>
-
-              <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
-                  <Target className="w-8 h-8 text-primary" />
-                </div>
-                <div className="text-sm font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{opponentTeam}</div>
+              <div className={cn(
+                "text-[8px] font-headline font-black uppercase px-2 py-0.5 tracking-widest rounded-full",
+                result === 'win' ? "bg-green-600/80 text-white" : result === 'draw' ? "bg-white/10 text-white/60" : "bg-red-600/80 text-white"
+              )}>
+                {result === 'win' ? "WON" : result === 'draw' ? "DRAW" : "LOST"}
               </div>
             </div>
 
-            <SlantedButton onClick={onComplete} className="w-full py-4 text-xs font-black tracking-[0.3em] bg-white text-black">
-              PROCEED
-            </SlantedButton>
+            <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+              <div className="p-1.5 bg-primary/10 rounded-full border border-primary/20">
+                <Target className="w-6 h-6 text-primary" />
+              </div>
+              <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{opponentTeam}</div>
+            </div>
           </div>
-        )}
-      </div>
+
+          <SlantedButton onClick={onComplete} className="w-full py-3 text-[10px] font-black tracking-[0.3em] bg-white text-black">
+            PROCEED
+          </SlantedButton>
+        </div>
+      ) : (
+        <div className="relative premium-glass p-0.5 slanted-container w-full max-w-[280px] aspect-[4/3] border-white/10 overflow-hidden shadow-2xl bg-black/40">
+          <canvas ref={canvasRef} width={280} height={210} className="w-full h-full rounded" />
+        </div>
+      )}
       
       <div className="text-center min-h-[40px] px-2 flex items-center justify-center">
         <p className="text-[11px] font-headline tracking-widest text-white/90 uppercase font-black italic animate-in fade-in duration-300">

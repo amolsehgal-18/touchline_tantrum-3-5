@@ -41,6 +41,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     const impact = side === 'left' ? currentScenario.impactLeft : currentScenario.impactRight;
     const newCardsSeen = state.cardsSeen + 1;
     
+    // CRITICAL: Record the base text in history to prevent repetition
     const newState: GameState = {
       ...state,
       boardSupport: Math.min(1, Math.max(0, state.boardSupport + (impact.board / 100))),
@@ -48,7 +49,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
       aggression: Math.min(1, Math.max(0.05, state.aggression + (impact.aggression || 0))),
       cardsSeen: newCardsSeen,
-      history: [...state.history, currentScenario.originalScenarioText], // Track the base text to prevent repeat
+      history: [...state.history, currentScenario.originalScenarioText],
     };
 
     if (newState.boardSupport <= 0.05 || newState.fanSupport <= 0.05) {
