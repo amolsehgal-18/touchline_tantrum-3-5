@@ -48,7 +48,7 @@ export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentation
 
 const aiScenarioPrompt = ai.definePrompt({
   name: 'aiScenarioPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'gemini-1.5-flash',
   input: {
     schema: AiScenarioPresentationInputSchema
   },
@@ -81,7 +81,7 @@ const aiScenarioPrompt = ai.definePrompt({
   
   OUTPUT: Generate a dramatic, punchy scenario and two options with mathematical impacts.
   Impact ranges: Board/Fans/Squad (-20 to +15), Aggression (-0.1 to +0.1).
-  scenarioId must be a completely unique identifier.`,
+  scenarioId must be a completely unique identifier based on the content.`,
 });
 
 export async function getAiScenarioPresentation(
@@ -94,14 +94,14 @@ export async function getAiScenarioPresentation(
   } catch (error) {
     const timestamp = Date.now();
     return {
-      scenario: `[INTEL ${timestamp}] Your chief scout has identified a promising talent in the lower leagues, but the board is hesitant to release funds due to a recent audit.`,
+      scenario: `Your chief scout has identified a promising talent in the lower leagues, but the board is hesitant to release funds due to a recent audit. [REF:${timestamp}]`,
       leftOption: "Demand the investment.",
       rightOption: "Accept the budget.",
       impactLeft: { board: -12, fans: 8, squad: 4, aggression: 0.05 },
       impactRight: { board: 6, fans: -10, squad: -4, aggression: -0.05 },
       imageCategory: "scouting",
       isBreaking: true,
-      scenarioId: `fallback_${timestamp}`
+      scenarioId: `fallback_scout_${timestamp}`
     };
   }
 }

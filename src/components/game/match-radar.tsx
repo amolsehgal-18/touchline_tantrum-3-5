@@ -107,17 +107,16 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       const dy = target.y - ball.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < 5) {
+      if (dist < 8) {
         // Player reached. Hold briefly then pass.
-        if (Math.random() < 0.15) {
-          const teammates = players.filter((_, idx) => idx !== ball.targetPlayerIndex);
-          ball.targetPlayerIndex = players.indexOf(teammates[Math.floor(Math.random() * teammates.length)]);
-          ball.isTraveling = true;
-        }
-      } else if (dist > 0) {
-        // High-speed travel
-        ball.x += (dx / dist) * 12;
-        ball.y += (dy / dist) * 12;
+        const teammates = players.filter((_, idx) => idx !== ball.targetPlayerIndex);
+        ball.targetPlayerIndex = players.indexOf(teammates[Math.floor(Math.random() * teammates.length)]);
+        ball.isTraveling = true;
+      } else {
+        // High-speed travel with min speed guarantee
+        const speed = 14;
+        ball.x += (dx / dist) * speed;
+        ball.y += (dy / dist) * speed;
       }
 
       // Draw Players & zonal drift
@@ -129,15 +128,16 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
         ctx.stroke();
       });
 
       // Draw Persistent Yellow Ball
       ctx.fillStyle = '#facc15'; 
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 12;
       ctx.shadowColor = '#facc15';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 5, 0, Math.PI * 2);
@@ -151,7 +151,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
 
     animate();
     return () => cancelAnimationFrame(animationFrame);
-  }, [showFinal]);
+  }, [showFinal, players]);
 
   useEffect(() => {
     if (showFinal) return;
@@ -168,7 +168,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       setCommentary(currentEvent.text);
       if (elapsed >= 5) {
         clearInterval(timer);
-        setTimeout(() => setShowFinal(true), 500);
+        setTimeout(() => setShowFinal(true), 400);
       }
     }, 100);
     return () => clearInterval(timer);
