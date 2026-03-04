@@ -71,6 +71,7 @@ const aiScenarioPrompt = ai.definePrompt({
   - Fan Support: {{fanSupport}} (Current state: 0-1)
   - Morale: {{dressingRoom}} (Current state: 0-1)
   - Objective: {{{sagaObjective}}}
+  - League Position: {{currentLeaguePosition}}
   
   TASK: Generate a dramatic boardroom, training ground, or media dilemma. 
   Use British football slang (gaffer, training ground, gaffer's office, etc.).
