@@ -43,15 +43,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     }
   }, [result]);
 
-  const getCommentary = (t: number) => {
-    if (t > 4) return "01': KICK OFF: Teams are in formation!";
-    if (t > 3) return "24': Possession battle in the middle third.";
-    if (t > 2) return "52': Tactical push! The defense is stretched.";
-    if (t > 1) return "75': CHANCE! A thunderous strike at goal!";
-    if (t > 0) return "89': DRAMATIC FINISH: Bodies on the line!";
-    return "90'+3': FULL TIME: The whistle echoes!";
-  };
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || showFinal) return;
@@ -116,9 +107,6 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.moveTo(width / 2, 5);
       ctx.lineTo(width / 2, height - 5);
       ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(width / 2, height / 2, 20, 0, Math.PI * 2);
-      ctx.stroke();
 
       // Ball Physics & Possession Logic
       if (ball.possessorIndex !== -1) {
@@ -126,25 +114,19 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ball.x = p.x + (p.team === 'user' ? 4 : -4);
         ball.y = p.y;
         
-        // Midfield play: Occasional drive to goal, mostly localized movement
-        const driveProb = 0.05;
-        if (Math.random() < driveProb) {
-          const attackTargetX = p.team === 'user' ? width - 15 : 15;
-          const adx = attackTargetX - p.x;
-          const ady = (height / 2) - p.y;
-          const adist = Math.sqrt(adx * adx + ady * ady);
-          p.vx = (adx / adist) * 1.5;
-          p.vy = (ady / adist) * 1.2 + (Math.random() - 0.5) * 0.4;
-        } else {
-          p.vx *= 0.8;
-          p.vy *= 0.8;
-        }
+        // Possessor drives towards opponent half
+        const targetX = p.team === 'user' ? width * 0.8 : width * 0.2;
+        const dx = targetX - p.x;
+        const dy = (height / 2) - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        p.vx = (dx / dist) * 1.5;
+        p.vy = (dy / dist) * 0.5 + (Math.random() - 0.5) * 0.2;
 
         // Random Passing Chance
-        if (Math.random() < 0.04) {
+        if (Math.random() < 0.03) {
           const teammates = players.filter((pl, idx) => pl.team === p.team && idx !== ball.possessorIndex);
-          const forwardTeammates = teammates.filter(t => p.team === 'user' ? t.x > p.x : t.x < p.x);
-          const target = (forwardTeammates.length > 0 && Math.random() > 0.4 ? forwardTeammates : teammates)[Math.floor(Math.random() * (forwardTeammates.length || teammates.length))];
+          const target = teammates[Math.floor(Math.random() * teammates.length)];
           
           ball.possessorIndex = -1;
           const pdx = target.x - p.x;
@@ -171,20 +153,20 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         });
       }
 
-      // Tactical Formation AI
+      // Tactical Formation AI - Players stay in their blocks
       players.forEach((p, idx) => {
         if (ball.possessorIndex !== idx) {
           const dxBall = ball.x - p.x;
           const dyBall = ball.y - p.y;
           const distToBall = Math.sqrt(dxBall * dxBall + dyBall * dyBall);
 
+          // Return to base position with slight magnetism to ball if close
           let tx = p.baseX;
           let ty = p.baseY;
 
-          // Reaction: If ball is near your zone, close down
-          if (distToBall < 60) {
-            tx = ball.x;
-            ty = ball.y;
+          if (distToBall < 50) {
+            tx = p.baseX + (ball.x - p.baseX) * 0.3;
+            ty = p.baseY + (ball.y - p.baseY) * 0.3;
           }
 
           const dtx = tx - p.x;
@@ -192,10 +174,10 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           const dDist = Math.sqrt(dtx * dtx + dty * dty);
           
           if (dDist > 1) {
-            p.vx = (dtx / dDist) * 1.2;
-            p.vy = (dty / dDist) * 1.2;
+            p.vx = (dtx / dDist) * 1.0;
+            p.vy = (dty / dDist) * 1.0;
           } else {
-            p.vx *= 0.2; p.vy *= 0.2;
+            p.vx *= 0.1; p.vy *= 0.1;
           }
         }
 
@@ -212,7 +194,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
         ctx.stroke();
       });
 
-      // Render Yellow Soccer Ball
+      // Render Ball
       ctx.fillStyle = '#facc15';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, 3.5, 0, Math.PI * 2);
@@ -233,7 +215,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       setTimer(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          setTimeout(() => setShowFinal(true), 800);
+          setTimeout(() => setShowFinal(true), 500);
           return 0;
         }
         return prev - 1;
@@ -249,19 +231,17 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       </div>
       
       {showFinal ? (
-        <div className="relative premium-glass p-6 slanted-container w-full max-w-[280px] border-white/10 overflow-hidden shadow-2xl bg-black/98 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-          <div className="text-[9px] font-headline uppercase tracking-[0.3em] text-accent/60 mb-2 font-black">Full Time</div>
+        <div className="relative premium-glass p-5 slanted-container w-full max-w-[260px] border-white/10 overflow-hidden shadow-2xl bg-black/95 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+          <div className="text-[9px] font-headline uppercase tracking-[0.2em] opacity-40 mb-4 font-black">Full Time</div>
           
           <div className="flex items-center justify-between w-full gap-2 mb-6">
-            <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-              <div className="p-1.5 bg-destructive/10 rounded-full border border-destructive/20">
-                <Shield className="w-6 h-6 text-destructive" />
-              </div>
-              <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{userTeam}</div>
+            <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+              <Shield className="w-6 h-6 text-destructive" />
+              <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight">{userTeam}</div>
             </div>
 
             <div className="flex flex-col items-center gap-1">
-              <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-2 text-white">
+              <div className="text-3xl font-headline font-black italic tracking-tighter flex items-center gap-2">
                 <span className={cn(result === 'win' ? "text-accent" : "text-white")}>{score.user}</span>
                 <span className="text-white/20">-</span>
                 <span className={cn(result === 'loss' ? "text-primary" : "text-white")}>{score.opp}</span>
@@ -274,11 +254,9 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-              <div className="p-1.5 bg-primary/10 rounded-full border border-primary/20">
-                <Target className="w-6 h-6 text-primary" />
-              </div>
-              <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight text-white">{opponentTeam}</div>
+            <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+              <Target className="w-6 h-6 text-primary" />
+              <div className="text-[11px] font-headline font-black uppercase text-center truncate w-full tracking-tight">{opponentTeam}</div>
             </div>
           </div>
 
@@ -295,7 +273,7 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       <div className="text-center min-h-[40px] px-2 flex items-center justify-center">
         {!showFinal && (
           <p className="text-[11px] font-headline tracking-widest text-white/90 uppercase font-black italic animate-in fade-in duration-300">
-            {getCommentary(timer)}
+             {timer > 3 ? "Kick off!" : timer > 1 ? "Tactical push..." : "Final whistles near!"}
           </p>
         )}
       </div>
