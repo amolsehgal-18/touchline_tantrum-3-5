@@ -79,8 +79,8 @@ const aiScenarioPrompt = ai.definePrompt({
   
   TASK: Generate a dramatic dilemma. 
   If Board Support < 0.3, focus on financial audits or boardroom coups.
-  If Morale < 0.3, focus on training ground fights or transfer requests.
-  If meeting objectives, focus on media hype or player ego clashes.
+  If Morale < 0.3, focus on training ground fights or player revolt.
+  If meeting objectives, focus on media hype, player ego clashes, or sudden transfer requests.
   
   Impact ranges: Board/Fans/Squad (-20 to +15), Aggression (-0.1 to +0.1).`,
 });
@@ -115,6 +115,126 @@ const FALLBACK_POOL: AiScenarioPresentationOutput[] = [
     imageCategory: "finance",
     isBreaking: true,
     scenarioId: "f_audit_crisis"
+  },
+  {
+    scenario: "Your assistant manager is rumored to be interviewing for a head coach role at a rival club mid-season.",
+    leftOption: "Wish him well.",
+    rightOption: "Block the move.",
+    impactLeft: { board: 0, fans: -5, squad: -10, aggression: -0.02 },
+    impactRight: { board: -5, fans: 5, squad: 5, aggression: 0.05 },
+    imageCategory: "board_pressure",
+    isBreaking: false,
+    scenarioId: "f_assistant_exit"
+  },
+  {
+    scenario: "A training ground brawl between your captain and a youth prospect has made the back pages.",
+    leftOption: "Fine both heavily.",
+    rightOption: "Defend the captain.",
+    impactLeft: { board: 10, fans: 5, squad: -15, aggression: 0.1 },
+    impactRight: { board: -5, fans: -5, squad: 12, aggression: 0.05 },
+    imageCategory: "training_ground",
+    isBreaking: true,
+    scenarioId: "f_training_brawl"
+  },
+  {
+    scenario: "The mascot was caught making an offensive gesture at rival fans during the last match.",
+    leftOption: "Sack the mascot.",
+    rightOption: "Issue an apology.",
+    impactLeft: { board: 5, fans: -10, squad: 0, aggression: 0 },
+    impactRight: { board: -5, fans: 10, squad: 0, aggression: 0 },
+    imageCategory: "fans",
+    isBreaking: false,
+    scenarioId: "f_mascot_gate"
+  },
+  {
+    scenario: "A legendary former manager publicly criticizes your 'lack of tactical identity' on a sports podcast.",
+    leftOption: "Fire back at him.",
+    rightOption: "Acknowledge his wisdom.",
+    impactLeft: { board: -5, fans: 15, squad: 5, aggression: 0.15 },
+    impactRight: { board: 5, fans: -15, squad: -5, aggression: -0.1 },
+    imageCategory: "press",
+    isBreaking: false,
+    scenarioId: "f_legend_critique"
+  },
+  {
+    scenario: "Fans are planning a minute's silence... for the death of your tactical ambition.",
+    leftOption: "Attack the fans.",
+    rightOption: "Promise better football.",
+    impactLeft: { board: -10, fans: -20, squad: 10, aggression: 0.2 },
+    impactRight: { board: 5, fans: 15, squad: -5, aggression: -0.1 },
+    imageCategory: "fans",
+    isBreaking: true,
+    scenarioId: "f_tactical_protest"
+  },
+  {
+    scenario: "Your star keeper has been caught smoking in the showers after a heavy defeat.",
+    leftOption: "Drop him.",
+    rightOption: "Fine him privately.",
+    impactLeft: { board: 10, fans: 5, squad: -12, aggression: 0.05 },
+    impactRight: { board: -5, fans: -5, squad: 8, aggression: -0.02 },
+    imageCategory: "locker",
+    isBreaking: false,
+    scenarioId: "f_keeper_smoke"
+  },
+  {
+    scenario: "A local billionaire wants to buy the club, but only if you are replaced by a 'big name' manager.",
+    leftOption: "Rally the players.",
+    rightOption: "Seek board reassurances.",
+    impactLeft: { board: -15, fans: 10, squad: 15, aggression: 0.1 },
+    impactRight: { board: 10, fans: -5, squad: -10, aggression: -0.05 },
+    imageCategory: "finance",
+    isBreaking: true,
+    scenarioId: "f_takeover_threat"
+  },
+  {
+    scenario: "The training ground pitch is waterlogged, and the board refuses to pay for repairs.",
+    leftOption: "Pay for it yourself.",
+    rightOption: "Train in the mud.",
+    impactLeft: { board: -10, fans: 15, squad: 10, aggression: -0.05 },
+    impactRight: { board: 5, fans: -5, squad: -15, aggression: 0.15 },
+    imageCategory: "training_ground",
+    isBreaking: false,
+    scenarioId: "f_mud_training"
+  },
+  {
+    scenario: "A player's agent is seen having lunch with the sporting director of your biggest rival.",
+    leftOption: "Confront the agent.",
+    rightOption: "Bust the player's balls.",
+    impactLeft: { board: 5, fans: -2, squad: -5, aggression: 0.05 },
+    impactRight: { board: -5, fans: 5, squad: -12, aggression: 0.1 },
+    imageCategory: "press",
+    isBreaking: false,
+    scenarioId: "f_agent_lunch"
+  },
+  {
+    scenario: "The team bus was egged by your own fans after the last away trip.",
+    leftOption: "Confront the fans.",
+    rightOption: "Ignore the noise.",
+    impactLeft: { board: -5, fans: -15, squad: 10, aggression: 0.2 },
+    impactRight: { board: 5, fans: 5, squad: -5, aggression: -0.05 },
+    imageCategory: "fans",
+    isBreaking: true,
+    scenarioId: "f_bus_egg"
+  },
+  {
+    scenario: "The kit manufacturer has leaked the new home shirt. It's hideous, and the fans are fuming.",
+    leftOption: "Join the criticism.",
+    rightOption: "Defend the design.",
+    impactLeft: { board: -15, fans: 20, squad: 0, aggression: 0 },
+    impactRight: { board: 15, fans: -20, squad: 0, aggression: 0 },
+    imageCategory: "finance",
+    isBreaking: false,
+    scenarioId: "f_kit_leak"
+  },
+  {
+    scenario: "A star player is late for the team bus for the third time this month.",
+    leftOption: "Leave him behind.",
+    rightOption: "Wait for him.",
+    impactLeft: { board: 5, fans: 2, squad: -10, aggression: 0.05 },
+    impactRight: { board: -5, fans: -5, squad: 12, aggression: -0.05 },
+    imageCategory: "locker",
+    isBreaking: false,
+    scenarioId: "f_bus_late"
   }
 ];
 
@@ -126,8 +246,11 @@ export async function getAiScenarioPresentation(
     if (!output) throw new Error('AI Output null');
     return output;
   } catch (error) {
-    const randomIdx = Math.floor(Math.random() * FALLBACK_POOL.length);
-    const fallback = FALLBACK_POOL[randomIdx];
+    // Enhanced local variety engine: pick a random fallback that isn't in the recent history
+    const filteredPool = FALLBACK_POOL.filter(f => !input.excludedScenarioIds.includes(f.scenarioId));
+    const pool = filteredPool.length > 0 ? filteredPool : FALLBACK_POOL;
+    const randomIdx = Math.floor(Math.random() * pool.length);
+    const fallback = pool[randomIdx];
     return {
       ...fallback,
       scenarioId: `${fallback.scenarioId}_${Date.now()}`
