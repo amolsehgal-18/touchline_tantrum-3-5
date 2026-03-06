@@ -44,7 +44,7 @@ export type AiScenarioPresentationOutput = z.infer<typeof AiScenarioPresentation
 
 const aiScenarioPrompt = ai.definePrompt({
   name: 'aiScenarioPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'googleai/gemini-2.0-flash',
   input: {
     schema: AiScenarioPresentationInputSchema
   },
@@ -196,7 +196,7 @@ export async function getAiScenarioPresentation(
     if (!output) throw new Error('AI Output null');
     return output;
   } catch (error) {
-    // Fallback logic for variety
+    console.error('[AI SCENARIO ERROR]', error);
     const filteredPool = FALLBACK_POOL.filter(f => !input.excludedScenarioIds.includes(f.scenarioId));
     const pool = filteredPool.length > 0 ? filteredPool : FALLBACK_POOL;
     const randomIdx = Math.floor(Math.random() * pool.length);

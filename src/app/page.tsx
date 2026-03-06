@@ -49,7 +49,7 @@ function MainMenuContent() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-[url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center relative">
+    <main className="min-h-dvh flex flex-col items-center justify-center p-6 bg-[url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center relative" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))', paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       
       <div className="relative z-10 w-full max-w-sm flex flex-col gap-12 text-center">

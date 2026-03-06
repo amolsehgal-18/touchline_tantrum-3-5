@@ -105,8 +105,15 @@ export const INITIAL_STATE = (
   const startGW = config.startGW - 1;
   const startingPoints = Math.max(0, Math.floor(getPPGForPosition(startPos) * startGW));
 
+  const id = typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+
   return {
-    id: crypto.randomUUID(),
+    id,
     managerName,
     userTeam,
     mode,

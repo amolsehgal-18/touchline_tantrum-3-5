@@ -56,8 +56,13 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const width = canvas.width;
-    const height = canvas.height;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const width = rect.width || 300;
+    const height = rect.height || 225;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
 
     // Tactical 4-4-2 Formations
     const userFormation = [
@@ -100,27 +105,28 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
       ctx.lineTo(width/2, height - 5);
       ctx.stroke();
 
-      // Ball Physics - High-Speed Target-Based Passing
+      // Ball Physics - Realistic Pass Speed
       const target = players[ball.targetPlayerIndex];
       const dx = target.x - ball.x;
       const dy = target.y - ball.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < 8) {
+      if (dist < 6) {
         const teammates = players.filter((_, idx) => idx !== ball.targetPlayerIndex);
         ball.targetPlayerIndex = players.indexOf(teammates[Math.floor(Math.random() * teammates.length)]);
       } else {
-        const speed = 15; 
+        // Decelerate as ball approaches target for a natural feel
+        const speed = Math.min(4, dist * 0.12);
         ball.x += (dx / dist) * speed;
         ball.y += (dy / dist) * speed;
       }
 
-      // Player Movement - Drifting
+      // Player Movement - Slow organic drift
       players.forEach((p) => {
         const dtx = p.baseX - p.x;
         const dty = p.baseY - p.y;
-        p.x += dtx * 0.05 + (Math.random() - 0.5) * 1.5;
-        p.y += dty * 0.05 + (Math.random() - 0.5) * 1.5;
+        p.x += dtx * 0.02 + (Math.random() - 0.5) * 0.6;
+        p.y += dty * 0.02 + (Math.random() - 0.5) * 0.6;
 
         ctx.fillStyle = p.color;
         ctx.beginPath();

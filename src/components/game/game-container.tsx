@@ -8,9 +8,9 @@ import { MatchRadar } from './match-radar';
 import { TensionArcs } from './tension-arcs';
 import { SwipeCard } from './swipe-card';
 import { SeasonSummary } from './season-summary';
-import { getAiScenarioPresentation } from '@/ai/flows/ai-scenario-presentation-flow';
 import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { RefreshCw, AlertTriangle, Zap, ArrowRight } from 'lucide-react';
+import { getLocalScenario } from '@/lib/scenario-engine';
+import { AlertTriangle, Zap, ArrowRight, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
@@ -91,16 +91,14 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     return () => clearInterval(interval);
   }, [currentScenario, isSimulating, matchIntro, loading, error, state?.isSacked, state?.isSeasonEnd, handleDecision]);
 
-  const fetchScenario = useCallback(async () => {
+  const fetchScenario = useCallback(() => {
     if (!state || state.isSacked || state.isSeasonEnd || isFetchingRef.current || isSimulating || matchIntro) return;
-    
+
     isFetchingRef.current = true;
-    setLoading(true);
     setError(null);
 
     try {
-      const uniqueSeed = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-      const result = await getAiScenarioPresentation({
+      const result = getLocalScenario({
         boardSupport: state.boardSupport,
         fanSupport: state.fanSupport,
         dressingRoom: state.dressingRoom,
@@ -109,23 +107,21 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         currentLeaguePosition: state.currentLeaguePosition,
         sagaObjective: CAREER_MODES[state.mode].name,
         objectiveMet: state.currentLeaguePosition <= activeConfig!.target,
-        excludedScenarioIds: state.history.slice(-20), 
-        randomSeed: uniqueSeed,
+        excludedScenarioIds: state.history.slice(-50),
       });
       setCurrentScenario(result);
-    } catch (err) {
-      setError("Intel transmission interrupted.");
+    } catch {
+      setError("Scenario load failed. Tap to retry.");
     } finally {
-      setLoading(false);
       isFetchingRef.current = false;
     }
   }, [state, activeConfig, isSimulating, matchIntro]);
 
   useEffect(() => {
-    if (state && !currentScenario && !isSimulating && !matchIntro && !state.isSacked && !state.isSeasonEnd && !loading && !error) {
+    if (state && !currentScenario && !isSimulating && !matchIntro && !state.isSacked && !state.isSeasonEnd && !error) {
       fetchScenario();
     }
-  }, [state, currentScenario, isSimulating, matchIntro, loading, error, fetchScenario]);
+  }, [state, currentScenario, isSimulating, matchIntro, error, fetchScenario]);
 
   const onMatchComplete = () => {
     if (!state || !activeConfig || !pendingResult) return;
@@ -186,7 +182,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   if (!state) {
     return (
-      <div className="flex flex-col h-screen max-md:max-w-md md:max-w-md mx-auto bg-background p-6 items-center justify-center relative overflow-hidden">
+      <div className="flex flex-col h-dvh max-md:max-w-md md:max-w-md mx-auto bg-background p-6 items-center justify-center relative overflow-hidden">
         <div className="absolute inset-0 bg-primary/5 blur-[100px] pointer-events-none" />
         
         {setupStep === 0 && (
@@ -258,12 +254,16 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
               ))}
             </div>
             <div className="space-y-4">
-              <SlantedButton 
+              <SlantedButton
                 onClick={() => {
-                  const s = INITIAL_STATE(setupMode, setupDuration, setupName, setupTeam);
-                  setState(s);
-                  saveGameLocally(s);
-                }} 
+                  try {
+                    const s = INITIAL_STATE(setupMode, setupDuration, setupName, setupTeam);
+                    setState(s);
+                    saveGameLocally(s);
+                  } catch (e) {
+                    console.error('Sign Contract failed:', e);
+                  }
+                }}
                 className="w-full py-5 text-base font-black tracking-widest uppercase bg-white text-black"
               >
                 Sign Contract
@@ -284,8 +284,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const currentGW = activeConfig ? activeConfig.startGW + state.matchesPlayed : 0;
 
   return (
-    <div className="flex flex-col h-screen max-md:max-w-md md:max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
-      <div className="bg-black/95 py-2.5 border-b border-white/10 text-center z-[100]">
+    <div className="flex flex-col h-dvh max-md:max-w-md md:max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
+      <div className="bg-black/95 py-2.5 border-b border-white/10 text-center z-[100]" style={{ paddingTop: 'max(10px, env(safe-area-inset-top))' }}>
         <span className="text-white text-[11px] font-headline font-black uppercase tracking-[0.4em]">
           {CAREER_MODES[state.mode].name} | GW {currentGW}
         </span>
@@ -338,16 +338,11 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           <MatchRadar userTeam={state.userTeam} opponentTeam={opponentName} result={pendingResult} onComplete={onMatchComplete} />
         ) : (
           <div className="w-full h-full flex items-center justify-center relative">
-            {loading ? (
-              <div className="text-center space-y-3">
-                <RefreshCw className="w-10 h-10 animate-spin text-primary mx-auto" />
-                <p className="text-[10px] font-headline uppercase tracking-[0.3em] opacity-40 font-black">Syncing Intel...</p>
-              </div>
-            ) : error ? (
+            {error ? (
               <div className="text-center space-y-3">
                 <AlertTriangle className="w-10 h-10 text-destructive mx-auto" />
                 <p className="text-xs uppercase font-headline opacity-60 font-black">{error}</p>
-                <SlantedButton onClick={fetchScenario} className="text-[10px] py-2">Retry Feed</SlantedButton>
+                <SlantedButton onClick={fetchScenario} className="text-[10px] py-2">Retry</SlantedButton>
               </div>
             ) : currentScenario ? (
               <SwipeCard scenario={currentScenario} onDecision={handleDecision} />
@@ -375,7 +370,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           </div>
         </div>
 
-        <div className="bg-destructive/10 border-t border-white/5 h-10 flex items-center overflow-hidden relative">
+        <div className="bg-destructive/10 border-t border-white/5 flex items-center overflow-hidden relative" style={{ height: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="bg-destructive text-white text-[10px] font-headline font-black px-4 py-1.5 z-20 absolute left-0 uppercase tracking-tighter flex items-center h-full">Breaking</div>
           <div className="flex items-center animate-ticker">
             {[...newsItems, ...newsItems].map((item, idx) => (

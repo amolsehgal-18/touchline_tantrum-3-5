@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { GameState, CAREER_MODES } from '@/lib/game-logic';
 import { SlantedContainer, SlantedButton } from './slanted-elements';
-import { Trophy, XCircle, Users, Briefcase, Heart, CloudUpload } from 'lucide-react';
+import { Trophy, XCircle, Users, Briefcase, Heart, CloudUpload, Share2 } from 'lucide-react';
 import { getSeasonFeedback, type FeedbackOutput } from '@/ai/flows/season-feedback-flow';
 import { useFirestore, useUser, setDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -14,6 +14,7 @@ export const SeasonSummary = ({ state, onRestart }: { state: GameState, onRestar
   const [feedback, setFeedback] = useState<FeedbackOutput | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
+  const [shareLabel, setShareLabel] = useState<'idle' | 'copied'>('idle');
   const { firestore } = useFirestore();
   const { user } = useUser();
   
@@ -46,6 +47,35 @@ export const SeasonSummary = ({ state, onRestart }: { state: GameState, onRestar
     fetchFeedback();
   }, [state, config, isSuccess]);
 
+  const shareResult = async () => {
+    const result = isSuccess ? '✅ OBJECTIVE MET' : '❌ CONTRACT TERMINATED';
+    const text = [
+      `🏟️ TOUCHLINE TANTRUM`,
+      `${result}`,
+      ``,
+      `👔 ${state.managerName} · ${state.userTeam}`,
+      `🏆 Final: P${state.currentLeaguePosition} · ${state.points}pts`,
+      `📊 ${state.wins}W ${state.draws}D ${state.losses}L`,
+      `🎯 ${config.name}`,
+      ``,
+      `Think you can beat that? Play free 👇`,
+      `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://touchlinetantrum.web.app'}`,
+      `#TouchlineTantrum #FootballManager`
+    ].join('\n');
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        setShareLabel('copied');
+        setTimeout(() => setShareLabel('idle'), 2500);
+      }
+    } catch {
+      // user dismissed share sheet — do nothing
+    }
+  };
+
   const submitToLeaderboard = () => {
     if (!firestore || !user || submitted) return;
 
@@ -63,7 +93,7 @@ export const SeasonSummary = ({ state, onRestart }: { state: GameState, onRestar
   };
 
   return (
-    <div className="min-h-screen bg-background p-6 flex flex-col items-center justify-center gap-6 overflow-y-auto">
+    <div className="min-h-dvh bg-background p-6 flex flex-col items-center justify-center gap-6 overflow-y-auto" style={{ paddingBottom: 'max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 0px)))' }}>
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
           {isSuccess ? (
@@ -125,7 +155,15 @@ export const SeasonSummary = ({ state, onRestart }: { state: GameState, onRestar
         </SlantedContainer>
 
         <div className="flex flex-col gap-3">
-          <SlantedButton 
+          <SlantedButton
+            onClick={shareResult}
+            className="w-full flex items-center justify-center gap-2 py-4 bg-accent text-black font-black"
+          >
+            <Share2 className="w-4 h-4" />
+            {shareLabel === 'copied' ? 'COPIED TO CLIPBOARD!' : 'SHARE YOUR RESULT'}
+          </SlantedButton>
+
+          <SlantedButton
             onClick={submitToLeaderboard}
             disabled={submitted || !user}
             className={cn(
@@ -133,10 +171,10 @@ export const SeasonSummary = ({ state, onRestart }: { state: GameState, onRestar
               submitted ? "bg-green-500/20 text-green-500 border border-green-500/30" : "bg-primary text-white"
             )}
           >
-            <CloudUpload className="w-4 h-4" /> 
+            <CloudUpload className="w-4 h-4" />
             {submitted ? "RANKED ON BOARD" : "POST TO LEADERBOARD"}
           </SlantedButton>
-          
+
           <SlantedButton onClick={onRestart} className="w-full bg-white text-black py-4 font-black">
             START NEW CHAPTER
           </SlantedButton>

@@ -29,7 +29,7 @@ export type FeedbackOutput = z.infer<typeof FeedbackOutputSchema>;
 
 const seasonFeedbackPrompt = ai.definePrompt({
   name: 'seasonFeedbackPrompt',
-  model: 'gemini-1.5-flash',
+  model: 'googleai/gemini-2.0-flash',
   input: { schema: FeedbackInputSchema },
   output: { schema: FeedbackOutputSchema },
   prompt: `You are a football club's press officer. Provide three punchy, one-sentence feedback snippets after the season ends.
