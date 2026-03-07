@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getMatchOdds, getLeagueTable, CAREER_MODES, CareerMode, calculateMatchResult } from '@/lib/game-logic';
+import { GameState, INITIAL_STATE, calculateMood, saveGameLocally, getLeagueTable, CAREER_MODES, CareerMode, calculateMatchResult } from '@/lib/game-logic';
 import { SlantedButton } from './slanted-elements';
 import { ManagerMoodView } from './manager-mood';
 import { MatchRadar } from './match-radar';
@@ -10,7 +10,7 @@ import { SwipeCard } from './swipe-card';
 import { SeasonSummary } from './season-summary';
 import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
 import { getLocalScenario } from '@/lib/scenario-engine';
-import { AlertTriangle, Zap, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Zap, ArrowRight, Wifi } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
@@ -32,6 +32,30 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [setupTeam, setSetupTeam] = useState("United FC");
 
   const isFetchingRef = useRef(false);
+
+  // ── Live news ticker ─────────────────────────────────────────
+  const DEFAULT_NEWS = [
+    "Guardiola dismisses talk of Man City crisis after Champions League exit",
+    "Slot hails Liverpool pressing intensity ahead of title run-in",
+    "Arteta calls for calm as Arsenal face pivotal week in Premier League",
+    "Tuchel plots England formation overhaul for Nations League campaign",
+    "Simeone extends Atlético contract amid reported board tensions",
+    "Conte admits Napoli squad depth will be tested in final stretch",
+    "Mourinho breaks silence on Roma dismissal: 'I'll be back'",
+    "Flick credits Barcelona youth academy after comeback win",
+    "Amorim sets strict training protocols after Man United's poor run",
+  ];
+  const [newsItems, setNewsItems] = useState<string[]>(DEFAULT_NEWS);
+  const [newsSource, setNewsSource] = useState<'live' | 'fallback' | null>(null);
+
+  useEffect(() => {
+    fetch('/api/news')
+      .then(r => r.json())
+      .then(({ items, source }: { items: string[]; source: 'live' | 'fallback' }) => {
+        if (items?.length >= 3) { setNewsItems(items); setNewsSource(source); }
+      })
+      .catch(() => {});
+  }, []);
 
   const activeConfig = state ? CAREER_MODES[state.mode].durations[state.durationIndex] : null;
 
@@ -152,17 +176,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     return fullTable.slice(start, end);
   }, [state]);
 
-  const odds = state ? getMatchOdds(state) : { win: '0.33', draw: '0.25', loss: '0.42' };
-
-  const newsItems = [
-    "Protests outside stadium following tactical leaks",
-    "Board considers emergency budget cut amid poor results",
-    "Star striker in talks with rival clubs",
-    "Manager faces vote of no confidence from supporters",
-    "Training ground incident sparks squad unrest",
-    "Mystery consortium interested in club acquisition",
-    "Scouting reports suggest lack of depth in defensive areas",
-  ];
 
   // ── Setup screen ────────────────────────────────────────────
   if (!state) {
@@ -246,9 +259,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   const mood      = calculateMood(state);
   const currentGW = activeConfig ? activeConfig.startGW + state.matchesPlayed : 0;
-  const winPct    = Math.round(parseFloat(odds.win)  * 100);
-  const drawPct   = Math.round(parseFloat(odds.draw) * 100);
-  const lossPct   = Math.round(parseFloat(odds.loss) * 100);
 
   return (
     <div className="flex flex-col h-dvh max-md:max-w-md md:max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
@@ -350,59 +360,29 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         )}
       </div>
 
-      {/* Thin amber divider */}
-      <div className="mx-3 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(251,177,60,0.12),transparent)' }} />
-
-      {/* ── Match odds bar ── */}
-      <div className="px-3 pt-1.5 pb-1 z-[100]">
-        {/* "NEXT MATCH ODDS" — three words above three chips */}
-        <div className="flex justify-around mb-0.5" style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', color: '#FFFFFF', letterSpacing: '1px' }}>
-          <span className="font-headline">Next</span>
-          <span className="font-headline">Match</span>
-          <span className="font-headline">Odds</span>
-        </div>
-        <div className="flex items-start justify-between mb-1">
-          <div className="flex-1 text-center">
-            <div className="font-headline font-black leading-none" style={{ fontSize: '18px', color: '#218380' }}>{winPct}%</div>
-            <div className="font-code text-[7px] uppercase tracking-[1.5px] text-white mt-0.5">Win</div>
-          </div>
-          <div className="text-xs self-start mt-0.5" style={{ color: 'rgba(255,255,255,0.1)' }}>|</div>
-          <div className="flex-1 text-center">
-            <div className="font-headline font-black leading-none" style={{ fontSize: '18px', color: '#5A6878' }}>{drawPct}%</div>
-            <div className="font-code text-[7px] uppercase tracking-[1.5px] text-white mt-0.5">Draw</div>
-          </div>
-          <div className="text-xs self-start mt-0.5" style={{ color: 'rgba(255,255,255,0.1)' }}>|</div>
-          <div className="flex-1 text-center">
-            <div className="font-headline font-black leading-none" style={{ fontSize: '18px', color: '#D81159' }}>{lossPct}%</div>
-            <div className="font-code text-[7px] uppercase tracking-[1.5px] text-white mt-0.5">Loss</div>
-          </div>
-        </div>
-        {/* Win probability track */}
-        <div className="h-[2px] rounded-sm overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-          <div className="h-full rounded-sm transition-all duration-1000" style={{ width: `${winPct}%`, background: 'linear-gradient(90deg,#218380,rgba(33,131,128,0.4))' }} />
-        </div>
-      </div>
-
-      {/* ── Breaking news ticker — amber bg, black text ── */}
+      {/* ── Breaking news ticker — amber bg, black text, sits right below the card ── */}
       <div
         className="overflow-hidden flex-shrink-0 relative z-[100]"
         style={{
           background: '#FBB13C',
-          paddingTop: '7px',
-          paddingBottom: 'max(7px, env(safe-area-inset-bottom, 0px))',
+          paddingTop: '6px',
+          paddingBottom: 'max(6px, env(safe-area-inset-bottom, 0px))',
         }}
       >
+        {/* BREAKING badge */}
         <div
-          className="absolute left-0 top-0 bottom-0 z-10 flex items-center px-2.5 font-headline font-black text-[10px] uppercase text-black whitespace-nowrap"
-          style={{ background: 'rgba(0,0,0,0.25)', borderRight: '1px solid rgba(0,0,0,0.15)', letterSpacing: '3px' }}
+          className="absolute left-0 top-0 bottom-0 z-10 flex items-center gap-1 px-2.5 font-headline font-black text-[9px] uppercase text-black whitespace-nowrap"
+          style={{ background: 'rgba(0,0,0,0.22)', borderRight: '1px solid rgba(0,0,0,0.12)', letterSpacing: '2.5px' }}
         >
+          {newsSource === 'live' && <Wifi className="w-2.5 h-2.5" />}
           Breaking
         </div>
-        <div className="animate-ticker pl-24 flex items-center">
+        {/* Scrolling headlines */}
+        <div className="animate-ticker pl-[88px] flex items-center">
           {[...newsItems, ...newsItems].map((item, idx) => (
             <React.Fragment key={idx}>
-              <span className="font-headline font-black text-black" style={{ fontSize: '13px', letterSpacing: '0.5px' }}>{item}</span>
-              <span className="inline-block w-1 h-1 rounded-full mx-3 align-middle flex-shrink-0" style={{ background: 'rgba(0,0,0,0.3)' }} />
+              <span className="font-headline font-black text-black" style={{ fontSize: '12px', letterSpacing: '0.3px' }}>{item}</span>
+              <span className="inline-block w-1 h-1 rounded-full mx-3 flex-shrink-0" style={{ background: 'rgba(0,0,0,0.3)' }} />
             </React.Fragment>
           ))}
         </div>
