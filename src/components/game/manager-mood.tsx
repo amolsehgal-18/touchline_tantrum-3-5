@@ -18,7 +18,7 @@ export const ManagerMoodView = ({ mood }: { mood: ManagerMood }) => {
   return (
     <div className="flex flex-col items-center gap-1 bg-transparent">
       {/* Portrait with plum mood-ring glow */}
-      <div className="relative w-[74px] h-[74px]">
+      <div className="relative w-[56px] h-[56px]">
         {/* Rotating plum ring — sits behind the portrait */}
         <div
           className="absolute rounded-full mood-ring-spin"
@@ -46,7 +46,7 @@ export const ManagerMoodView = ({ mood }: { mood: ManagerMood }) => {
 
       {/* Mood badge — colour matches mood */}
       <div
-        className="text-[10px] font-headline font-black uppercase tracking-[2px] px-3 py-[3px] rounded"
+        className="text-[9px] font-headline font-black uppercase tracking-[2px] px-2 py-[2px] rounded"
         style={{
           background: badge.bg,
           color: badge.color,

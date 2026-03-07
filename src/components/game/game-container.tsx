@@ -255,9 +255,9 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
       {/* ── Header band ── */}
       <div
-        className="mx-3 mt-2 mb-2 flex items-center justify-between z-[100]"
+        className="mx-3 mt-1 mb-1 flex items-center justify-between z-[100]"
         style={{
-          paddingTop: 'max(8px, env(safe-area-inset-top))',
+          paddingTop: 'max(6px, env(safe-area-inset-top))',
           background: 'linear-gradient(135deg, rgba(251,177,60,0.13) 0%, rgba(251,177,60,0.04) 60%, transparent 100%)',
           border: '1px solid rgba(251,177,60,0.22)',
           borderLeft: '3px solid #FBB13C',
@@ -265,54 +265,54 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%)',
         }}
       >
-        <div className="py-2 pl-3 pr-2 min-w-0">
-          <div className="text-[9px] font-headline font-black uppercase tracking-[3px] mb-0.5" style={{ color: '#FBB13C' }}>
+        <div className="py-1.5 pl-3 pr-2 min-w-0">
+          <div className="text-[8px] font-headline font-black uppercase tracking-[3px] mb-0.5" style={{ color: '#FBB13C' }}>
             {CAREER_MODES[state.mode].name}
           </div>
-          <div className="text-[21px] font-headline font-black uppercase leading-none text-white truncate">
+          <div className="text-[17px] font-headline font-black uppercase leading-none text-white truncate">
             {state.userTeam}
           </div>
-          <div className="font-code text-[9px] mt-0.5 opacity-60" style={{ letterSpacing: '1px' }}>
+          <div className="font-code text-[8px] mt-0.5 opacity-60" style={{ letterSpacing: '1px' }}>
             W{state.wins} D{state.draws} L{state.losses}
           </div>
         </div>
-        <div className="py-2 pl-3 pr-5 text-center flex-shrink-0">
-          <div className="font-code text-[8px] uppercase tracking-[2px] opacity-50">Game Week</div>
-          <div className="text-[32px] font-headline font-black leading-none" style={{ color: '#FBB13C', letterSpacing: '-1px' }}>
+        <div className="py-1.5 pl-3 pr-5 text-center flex-shrink-0">
+          <div className="font-code text-[7px] uppercase tracking-[2px] opacity-50">GW</div>
+          <div className="text-[24px] font-headline font-black leading-none" style={{ color: '#FBB13C', letterSpacing: '-1px' }}>
             {currentGW}
           </div>
         </div>
       </div>
 
       {/* ── Live standings ── */}
-      <div className="mx-3 mb-2 rounded-lg overflow-hidden z-[90]" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="flex justify-between items-center px-3 py-1.5 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-          <div className="flex items-center gap-1.5 text-[10px] font-headline font-black uppercase tracking-[2.5px]" style={{ color: '#FBB13C' }}>
-            <div className="w-1.5 h-1.5 rounded-full blink-dot" style={{ background: '#FBB13C' }} />
+      <div className="mx-3 mb-1 rounded-lg overflow-hidden z-[90]" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="flex justify-between items-center px-3 py-1 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+          <div className="flex items-center gap-1.5 text-[9px] font-headline font-black uppercase tracking-[2.5px]" style={{ color: '#FBB13C' }}>
+            <div className="w-1 h-1 rounded-full blink-dot" style={{ background: '#FBB13C' }} />
             Live Standings
           </div>
-          <span className="font-code text-[9px] tracking-[1px] opacity-50">Matchday {currentGW}</span>
+          <span className="font-code text-[8px] tracking-[1px] opacity-50">MD {currentGW}</span>
         </div>
-        <div className="grid px-3 py-0.5 text-[8px] font-code uppercase tracking-[2px] border-b opacity-30" style={{ gridTemplateColumns: '26px 1fr 32px 38px', borderColor: 'rgba(255,255,255,0.07)' }}>
+        <div className="grid px-3 text-[7px] font-code uppercase tracking-[2px] border-b opacity-30" style={{ gridTemplateColumns: '22px 1fr 28px 34px', borderColor: 'rgba(255,255,255,0.07)' }}>
           <span>#</span><span>Club</span><span className="text-center">G</span><span className="text-right">Pts</span>
         </div>
         {windowedLeagueTable.map((team) => (
-          <div key={team.team} className="grid items-center px-3 py-[7px] relative" style={{
-            gridTemplateColumns: '26px 1fr 32px 38px',
+          <div key={team.team} className="grid items-center px-3 py-[4px] relative" style={{
+            gridTemplateColumns: '22px 1fr 28px 34px',
             borderTop: team.isUser ? '1px solid rgba(115,210,222,0.15)' : '1px solid rgba(255,255,255,0.04)',
             background: team.isUser ? 'linear-gradient(90deg,rgba(115,210,222,0.10) 0%,rgba(115,210,222,0.03) 80%,transparent 100%)' : 'transparent',
           }}>
             {team.isUser && <div className="absolute left-0 top-1 bottom-1 w-0.5 rounded-r" style={{ background: '#73D2DE' }} />}
-            <div className="text-[13px] font-headline font-black text-center" style={{ color: team.isUser ? '#73D2DE' : '#5A6878' }}>{team.pos}</div>
-            <div className="text-[15px] font-headline font-black uppercase truncate" style={{ color: team.isUser ? '#73D2DE' : '#EDF2FF' }}>{team.team}</div>
-            <div className="font-code text-[11px] text-center opacity-50">{team.gp}</div>
-            <div className="text-[18px] font-headline font-black text-right" style={{ color: team.isUser ? '#73D2DE' : '#EDF2FF' }}>{team.pts}</div>
+            <div className="text-[11px] font-headline font-black text-center" style={{ color: team.isUser ? '#73D2DE' : '#5A6878' }}>{team.pos}</div>
+            <div className="text-[12px] font-headline font-black uppercase truncate" style={{ color: team.isUser ? '#73D2DE' : '#EDF2FF' }}>{team.team}</div>
+            <div className="font-code text-[10px] text-center opacity-50">{team.gp}</div>
+            <div className="text-[14px] font-headline font-black text-right" style={{ color: team.isUser ? '#73D2DE' : '#EDF2FF' }}>{team.pts}</div>
           </div>
         ))}
       </div>
 
       {/* ── Tension triangle + Manager portrait ── */}
-      <div className="flex items-center px-3 pb-1 gap-3 z-10">
+      <div className="flex items-center px-3 pb-0 gap-3 z-10">
         <TensionArcs board={state.boardSupport} fans={state.fanSupport} dressing={state.dressingRoom} />
         <div className="ml-auto flex-shrink-0">
           <ManagerMoodView mood={mood} />
@@ -354,31 +354,31 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       <div className="mx-3 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(251,177,60,0.12),transparent)' }} />
 
       {/* ── Match odds bar ── */}
-      <div className="px-3 pt-2 pb-1.5 z-[100]">
+      <div className="px-3 pt-1.5 pb-1 z-[100]">
         {/* "NEXT MATCH ODDS" — three words above three chips */}
-        <div className="flex justify-around mb-1" style={{ fontSize: '20px', fontFamily: 'inherit', fontWeight: 800, textTransform: 'uppercase', color: '#FFFFFF', letterSpacing: '1px' }}>
+        <div className="flex justify-around mb-0.5" style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', color: '#FFFFFF', letterSpacing: '1px' }}>
           <span className="font-headline">Next</span>
           <span className="font-headline">Match</span>
           <span className="font-headline">Odds</span>
         </div>
-        <div className="flex items-start justify-between mb-1.5">
+        <div className="flex items-start justify-between mb-1">
           <div className="flex-1 text-center">
-            <div className="font-headline font-black leading-none" style={{ fontSize: '26px', color: '#218380' }}>{winPct}%</div>
-            <div className="font-code text-[8px] uppercase tracking-[1.5px] text-white mt-0.5">Win</div>
+            <div className="font-headline font-black leading-none" style={{ fontSize: '18px', color: '#218380' }}>{winPct}%</div>
+            <div className="font-code text-[7px] uppercase tracking-[1.5px] text-white mt-0.5">Win</div>
           </div>
-          <div className="text-sm self-start mt-1" style={{ color: 'rgba(255,255,255,0.1)' }}>|</div>
+          <div className="text-xs self-start mt-0.5" style={{ color: 'rgba(255,255,255,0.1)' }}>|</div>
           <div className="flex-1 text-center">
-            <div className="font-headline font-black leading-none" style={{ fontSize: '26px', color: '#5A6878' }}>{drawPct}%</div>
-            <div className="font-code text-[8px] uppercase tracking-[1.5px] text-white mt-0.5">Draw</div>
+            <div className="font-headline font-black leading-none" style={{ fontSize: '18px', color: '#5A6878' }}>{drawPct}%</div>
+            <div className="font-code text-[7px] uppercase tracking-[1.5px] text-white mt-0.5">Draw</div>
           </div>
-          <div className="text-sm self-start mt-1" style={{ color: 'rgba(255,255,255,0.1)' }}>|</div>
+          <div className="text-xs self-start mt-0.5" style={{ color: 'rgba(255,255,255,0.1)' }}>|</div>
           <div className="flex-1 text-center">
-            <div className="font-headline font-black leading-none" style={{ fontSize: '26px', color: '#D81159' }}>{lossPct}%</div>
-            <div className="font-code text-[8px] uppercase tracking-[1.5px] text-white mt-0.5">Loss</div>
+            <div className="font-headline font-black leading-none" style={{ fontSize: '18px', color: '#D81159' }}>{lossPct}%</div>
+            <div className="font-code text-[7px] uppercase tracking-[1.5px] text-white mt-0.5">Loss</div>
           </div>
         </div>
         {/* Win probability track */}
-        <div className="h-[3px] rounded-sm overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+        <div className="h-[2px] rounded-sm overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
           <div className="h-full rounded-sm transition-all duration-1000" style={{ width: `${winPct}%`, background: 'linear-gradient(90deg,#218380,rgba(33,131,128,0.4))' }} />
         </div>
       </div>

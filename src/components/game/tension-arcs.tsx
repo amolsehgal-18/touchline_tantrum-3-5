@@ -46,11 +46,11 @@ export const TensionArcs = ({ board, fans, dressing }: TensionArcsProps) => {
   const values = [board, fans, dressing];
 
   return (
-    <div className="flex flex-col items-center" style={{ width: 168 }}>
+    <div className="flex flex-col items-center" style={{ width: 130 }}>
       <svg
         viewBox="0 0 168 88"
-        width={168}
-        height={88}
+        width={130}
+        height={68}
         style={{ display: 'block', overflow: 'visible' }}
       >
         {ARCS.map((arc, i) => {
@@ -96,12 +96,12 @@ export const TensionArcs = ({ board, fans, dressing }: TensionArcsProps) => {
               style={{ background: arc.color }}
             />
             <span
-              className="text-[18px] font-headline font-black leading-none"
+              className="text-[13px] font-headline font-black leading-none"
               style={{ color: arc.color }}
             >
               {Math.round(values[i] * 100)}%
             </span>
-            <span className="font-code text-[8px] uppercase tracking-[1.5px] text-white mt-0.5">
+            <span className="font-code text-[7px] uppercase tracking-[1.5px] mt-0.5" style={{ color: arc.color }}>
               {arc.label}
             </span>
           </div>
