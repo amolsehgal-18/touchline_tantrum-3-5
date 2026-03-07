@@ -10,9 +10,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Space Grotesk', 'sans-serif'],
-        code: ['monospace'],
+        body: ['Barlow', 'Inter', 'sans-serif'],
+        headline: ['Barlow Condensed', 'sans-serif'],
+        code: ['Share Tech Mono', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
