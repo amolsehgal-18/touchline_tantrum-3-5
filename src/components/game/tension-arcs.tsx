@@ -36,9 +36,9 @@ const ARCS = [
     label: 'Squad',
     path: 'M 42 86 A 42 42 0 0 1 126 86',
     circumference: Math.PI * 42,
-    color: '#73D2DE',
-    trackColor: 'rgba(115,210,222,0.18)',
-    glow: 'rgba(115,210,222,0.45)',
+    color: '#3b82f6',
+    trackColor: 'rgba(59,130,246,0.18)',
+    glow: 'rgba(59,130,246,0.45)',
   },
 ];
 

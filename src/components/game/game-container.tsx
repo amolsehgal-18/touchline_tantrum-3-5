@@ -10,7 +10,7 @@ import { SwipeCard } from './swipe-card';
 import { SeasonSummary } from './season-summary';
 import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
 import { getLocalScenario } from '@/lib/scenario-engine';
-import { AlertTriangle, Zap, ArrowRight, Wifi } from 'lucide-react';
+import { AlertTriangle, Zap, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
@@ -46,13 +46,12 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     "Amorim sets strict training protocols after Man United's poor run",
   ];
   const [newsItems, setNewsItems] = useState<string[]>(DEFAULT_NEWS);
-  const [newsSource, setNewsSource] = useState<'live' | 'fallback' | null>(null);
 
   useEffect(() => {
     fetch('/api/news')
       .then(r => r.json())
-      .then(({ items, source }: { items: string[]; source: 'live' | 'fallback' }) => {
-        if (items?.length >= 3) { setNewsItems(items); setNewsSource(source); }
+      .then(({ items }: { items: string[] }) => {
+        if (items?.length >= 3) { setNewsItems(items); }
       })
       .catch(() => {});
   }, []);
@@ -208,7 +207,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         {setupStep === 1 && (
           <div className="w-full space-y-5 animate-in fade-in slide-in-from-right-4 duration-500 z-50">
             <div className="text-center space-y-1">
-              <h2 className="text-2xl font-headline font-black uppercase italic" style={{ color: '#73D2DE' }}>The Mission</h2>
+              <h2 className="text-2xl font-headline font-black uppercase italic" style={{ color: '#3b82f6' }}>The Mission</h2>
               <p className="text-[9px] font-headline uppercase tracking-[0.3em] opacity-40 font-black">Stage 02: Objectives</p>
             </div>
             <div className="grid gap-2">
@@ -305,14 +304,14 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         {windowedLeagueTable.map((team) => (
           <div key={team.team} className="grid items-center px-3 py-[4px] relative" style={{
             gridTemplateColumns: '22px 1fr 28px 34px',
-            borderTop: team.isUser ? '1px solid rgba(115,210,222,0.15)' : '1px solid rgba(255,255,255,0.04)',
-            background: team.isUser ? 'linear-gradient(90deg,rgba(115,210,222,0.10) 0%,rgba(115,210,222,0.03) 80%,transparent 100%)' : 'transparent',
+            borderTop: team.isUser ? '1px solid rgba(59,130,246,0.15)' : '1px solid rgba(255,255,255,0.04)',
+            background: team.isUser ? 'linear-gradient(90deg,rgba(59,130,246,0.10) 0%,rgba(59,130,246,0.03) 80%,transparent 100%)' : 'transparent',
           }}>
-            {team.isUser && <div className="absolute left-0 top-1 bottom-1 w-0.5 rounded-r" style={{ background: '#73D2DE' }} />}
-            <div className="text-[11px] font-headline font-black text-center" style={{ color: team.isUser ? '#73D2DE' : '#5A6878' }}>{team.pos}</div>
-            <div className="text-[12px] font-headline font-black uppercase truncate" style={{ color: team.isUser ? '#73D2DE' : '#EDF2FF' }}>{team.team}</div>
+            {team.isUser && <div className="absolute left-0 top-1 bottom-1 w-0.5 rounded-r" style={{ background: '#3b82f6' }} />}
+            <div className="text-[11px] font-headline font-black text-center" style={{ color: team.isUser ? '#3b82f6' : '#5A6878' }}>{team.pos}</div>
+            <div className="text-[12px] font-headline font-black uppercase truncate" style={{ color: team.isUser ? '#3b82f6' : '#EDF2FF' }}>{team.team}</div>
             <div className="font-code text-[10px] text-center opacity-50">{team.gp}</div>
-            <div className="text-[14px] font-headline font-black text-right" style={{ color: team.isUser ? '#73D2DE' : '#EDF2FF' }}>{team.pts}</div>
+            <div className="text-[14px] font-headline font-black text-right" style={{ color: team.isUser ? '#3b82f6' : '#EDF2FF' }}>{team.pts}</div>
           </div>
         ))}
       </div>
@@ -367,10 +366,9 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       >
         {/* BREAKING badge */}
         <div
-          className="absolute left-0 top-0 bottom-0 z-10 flex items-center gap-1 px-3 font-headline font-black text-[11px] uppercase text-black whitespace-nowrap"
-          style={{ background: 'rgba(0,0,0,0.22)', borderRight: '1px solid rgba(0,0,0,0.12)', letterSpacing: '2.5px' }}
+          className="absolute left-0 top-0 bottom-0 z-10 flex items-center px-3 font-headline font-black text-[11px] uppercase text-black whitespace-nowrap"
+          style={{ letterSpacing: '2.5px' }}
         >
-          {newsSource === 'live' && <Wifi className="w-2.5 h-2.5" />}
           Breaking
         </div>
         {/* Scrolling headlines */}
