@@ -35,15 +35,20 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   // ── Live news ticker ─────────────────────────────────────────
   const DEFAULT_NEWS = [
-    "Guardiola dismisses talk of Man City crisis after Champions League exit",
-    "Slot hails Liverpool pressing intensity ahead of title run-in",
-    "Arteta calls for calm as Arsenal face pivotal week in Premier League",
-    "Tuchel plots England formation overhaul for Nations League campaign",
-    "Simeone extends Atlético contract amid reported board tensions",
-    "Conte admits Napoli squad depth will be tested in final stretch",
-    "Mourinho breaks silence on Roma dismissal: 'I'll be back'",
-    "Flick credits Barcelona youth academy after comeback win",
-    "Amorim sets strict training protocols after Man United's poor run",
+    "BOMBSHELL: Guardiola considered walking out on Man City mid-season over transfer betrayal",
+    "EXCLUSIVE: Slot handed £200m war chest after secret FSG emergency summit — sources",
+    "MELTDOWN: Arteta confronts Arsenal board in furious 90-minute showdown over squad",
+    "SHOCK: Tuchel demands two England starters sold immediately or threatens to quit",
+    "CRISIS: Simeone told by Atletico board his contract WON'T be renewed past 2027",
+    "FURIOUS: Postecoglou storms out of Spurs training after player refuses to play position",
+    "EXCLUSIVE: Conte secretly interviewed for Premier League role while still in Naples",
+    "CHAOS: Mourinho texts Real Madrid players directly despite being out of work",
+    "BREAKING: Flick reveals Barcelona dressing room split into two factions over star's role",
+    "ULTIMATUM: Ancelotti gives Real Madrid 48 hours to sign striker or he walks in January",
+    "HOT MIC: Amorim caught on camera ranting at Man United board after training session",
+    "STANDOFF: Gasperini locks himself in office as Atalanta crisis deepens — reports",
+    "EXCLUSIVE: Nagelsmann turned down £15m PSG deal to remain with Germany national side",
+    "REVEALED: Kompany privately threatened to resign if Bayern miss Bundesliga title",
   ];
   const [newsItems, setNewsItems] = useState<string[]>(DEFAULT_NEWS);
 
@@ -364,19 +369,24 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           paddingBottom: 'max(9px, env(safe-area-inset-bottom, 0px))',
         }}
       >
-        {/* BREAKING badge */}
+        {/* BREAKING badge — solid amber so scrolling text vanishes cleanly behind it */}
         <div
-          className="absolute left-0 top-0 bottom-0 z-10 flex items-center px-3 font-headline font-black text-[11px] uppercase text-black whitespace-nowrap"
-          style={{ letterSpacing: '2.5px' }}
+          className="absolute left-0 top-0 bottom-0 z-20 flex items-center px-3 font-headline font-black text-[11px] uppercase text-black whitespace-nowrap"
+          style={{ letterSpacing: '2.5px', background: '#FBB13C' }}
         >
-          Breaking
+          BREAKING
         </div>
-        {/* Scrolling headlines */}
-        <div className="animate-ticker pl-[88px] flex items-center">
+        {/* Gradient fade: text fades in smoothly from behind the BREAKING label */}
+        <div
+          className="absolute top-0 bottom-0 z-20 pointer-events-none"
+          style={{ left: '80px', width: '28px', background: 'linear-gradient(to right, #FBB13C, transparent)' }}
+        />
+        {/* Scrolling headlines — no left padding; BREAKING label hides initial text */}
+        <div className="animate-ticker flex items-center">
           {[...newsItems, ...newsItems].map((item, idx) => (
             <React.Fragment key={idx}>
               <span className="font-headline font-black text-black" style={{ fontSize: '14px', letterSpacing: '0.3px' }}>{item}</span>
-              <span className="inline-block w-1 h-1 rounded-full mx-3 flex-shrink-0" style={{ background: 'rgba(0,0,0,0.3)' }} />
+              <span className="inline-block mx-5 flex-shrink-0 font-black text-black" style={{ fontSize: '16px', opacity: 0.35 }}>◆</span>
             </React.Fragment>
           ))}
         </div>

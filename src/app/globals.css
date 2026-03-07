@@ -70,16 +70,17 @@
 }
 
 /* ── Ticker (amber background, black text) ── */
+/* Seamless loop: content duplicated, -50% = one full set width → invisible restart */
 @keyframes ticker {
-  from { transform: translateX(60vw); }
-  to   { transform: translateX(-200%); }
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 .animate-ticker {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
-  animation: ticker 80s linear infinite;
+  animation: ticker 70s linear infinite;
 }
 
 /* ── Mood ring spin ── */

@@ -29,11 +29,22 @@ export const SwipeCard = ({ scenario, onDecision, timeLeft }: SwipeCardProps) =>
     setDragX(currentX - startXRef.current);
   };
 
+  const triggerHaptic = () => {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(40);
+    }
+  };
+
   const handleTouchEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    if (dragX > 60) onDecision('right');
-    else if (dragX < -60) onDecision('left');
+    if (dragX > 60) {
+      triggerHaptic();
+      onDecision('right');
+    } else if (dragX < -60) {
+      triggerHaptic();
+      onDecision('left');
+    }
     setDragX(0);
   };
 
@@ -137,45 +148,45 @@ export const SwipeCard = ({ scenario, onDecision, timeLeft }: SwipeCardProps) =>
               {scenario.scenario}
             </p>
 
-            {/* Choice buttons */}
+            {/* Swipe direction labels — visual only, no tap action */}
             <div className="grid grid-cols-2 gap-2 mt-4">
-              {/* Left choice */}
-              <button
-                onClick={() => onDecision('left')}
+              {/* Left option label */}
+              <div
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 p-3 rounded-xl border text-center transition-all duration-150 active:scale-95",
+                  "flex flex-col items-center justify-center gap-1 p-3 rounded-xl border text-center transition-all duration-150 select-none",
                   isLeft ? "scale-105" : ""
                 )}
                 style={{
                   background: isLeft ? 'rgba(216,17,89,0.2)' : 'rgba(216,17,89,0.08)',
                   borderColor: isLeft ? 'rgba(216,17,89,0.6)' : 'rgba(216,17,89,0.25)',
                   opacity: isRight ? 0.5 : 1,
+                  pointerEvents: 'none',
                 }}
               >
                 <div className="font-headline font-black text-[20px] leading-none" style={{ color: '#D81159' }}>← SWIPE</div>
                 <div className="font-headline font-bold text-[13px] leading-snug" style={{ color: 'rgba(255,255,255,0.68)' }}>
                   {scenario.leftOption}
                 </div>
-              </button>
+              </div>
 
-              {/* Right choice */}
-              <button
-                onClick={() => onDecision('right')}
+              {/* Right option label */}
+              <div
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 p-3 rounded-xl border text-center transition-all duration-150 active:scale-95",
+                  "flex flex-col items-center justify-center gap-1 p-3 rounded-xl border text-center transition-all duration-150 select-none",
                   isRight ? "scale-105" : ""
                 )}
                 style={{
                   background: isRight ? 'rgba(33,131,128,0.2)' : 'rgba(33,131,128,0.08)',
                   borderColor: isRight ? 'rgba(33,131,128,0.6)' : 'rgba(33,131,128,0.25)',
                   opacity: isLeft ? 0.5 : 1,
+                  pointerEvents: 'none',
                 }}
               >
                 <div className="font-headline font-black text-[20px] leading-none" style={{ color: '#218380' }}>SWIPE →</div>
                 <div className="font-headline font-bold text-[13px] leading-snug" style={{ color: 'rgba(255,255,255,0.68)' }}>
                   {scenario.rightOption}
                 </div>
-              </button>
+              </div>
             </div>
 
             {/* Swipe hint when idle */}
