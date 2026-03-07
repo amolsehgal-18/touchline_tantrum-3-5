@@ -2,16 +2,18 @@
 
 import React, { useState, useRef } from 'react';
 import { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
-import { SlantedContainer } from './slanted-elements';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SwipeCardProps {
   scenario: AiScenarioPresentationOutput;
   onDecision: (side: 'left' | 'right') => void;
+  timeLeft: number;
 }
 
-export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
+// Countdown ring: r=12, circumference ≈ 75.4 ≈ 76
+const RING_CIRC = 76;
+
+export const SwipeCard = ({ scenario, onDecision, timeLeft }: SwipeCardProps) => {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const startXRef = useRef(0);
@@ -30,96 +32,160 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
   const handleTouchEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-
-    if (dragX > 60) {
-      onDecision('right');
-    } else if (dragX < -60) {
-      onDecision('left');
-    }
+    if (dragX > 60) onDecision('right');
+    else if (dragX < -60) onDecision('left');
     setDragX(0);
   };
 
-  const rotation = dragX / 10;
-  const swipeProgress = Math.min(Math.abs(dragX) / 15, 1);
-  const isLeft = dragX < 0;
-  const isRight = dragX > 0;
+  const rotation     = dragX / 10;
+  const swipeAmt     = Math.abs(dragX);
+  const isLeft       = dragX < -15;
+  const isRight      = dragX > 15;
+
+  // Countdown ring offset: 0 = full circle, RING_CIRC = empty
+  const ringOffset   = RING_CIRC * (1 - (timeLeft / 15));
+  const timerUrgent  = timeLeft <= 5;
 
   return (
-    <div 
-      className="relative w-full max-w-[340px] h-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing px-2 py-0"
-      onMouseMove={handleTouchMove}
+    <div
+      className="relative w-full max-w-[340px] h-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing px-1"
       onMouseDown={handleTouchStart}
+      onMouseMove={handleTouchMove}
       onMouseUp={handleTouchEnd}
       onMouseLeave={handleTouchEnd}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div 
-        className="w-full transition-transform duration-200 ease-out select-none"
-        style={{ 
+      {/* Ghost cards for depth */}
+      <div className="absolute inset-x-3 bottom-2 rounded-[18px] border border-white/5" style={{ background: 'rgba(255,255,255,0.02)', transform: 'scale(0.88) translateY(16px) rotate(2deg)', zIndex: 0 }} />
+      <div className="absolute inset-x-2 bottom-1 rounded-[18px] border border-white/5" style={{ background: 'rgba(255,255,255,0.02)', transform: 'scale(0.94) translateY(8px) rotate(-1.5deg)', zIndex: 1 }} />
+
+      {/* Main card */}
+      <div
+        className="relative w-full select-none z-10"
+        style={{
           transform: `translateX(${dragX}px) rotate(${rotation}deg)`,
-          touchAction: 'none'
+          transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+          touchAction: 'none',
         }}
       >
-        <SlantedContainer className={cn(
-          "w-full bg-card min-h-[360px] flex flex-col justify-between border-2 transition-all relative group shadow-2xl p-5 pt-7",
-          dragX < -15 ? "border-destructive shadow-[0_0_30px_rgba(239,68,68,0.4)]" : dragX > 15 ? "border-primary shadow-[0_0_30px_rgba(34,107,224,0.4)]" : "border-white/15"
-        )}>
-          {scenario.isBreaking && (
-            <div className="absolute top-0 right-0 bg-destructive text-white text-[9px] font-headline px-4 py-1.5 z-20 skew-x-[-15deg] font-black tracking-widest uppercase">
-              Urgent
-            </div>
-          )}
+        {/* Tint overlays */}
+        <div className="absolute inset-0 rounded-[18px] pointer-events-none z-20 transition-opacity duration-75"
+          style={{ background: 'rgba(255,92,92,0.18)', opacity: isLeft ? Math.min(swipeAmt / 110, 1) : 0, borderRadius: '18px' }} />
+        <div className="absolute inset-0 rounded-[18px] pointer-events-none z-20 transition-opacity duration-75"
+          style={{ background: 'rgba(33,131,128,0.18)', opacity: isRight ? Math.min(swipeAmt / 110, 1) : 0, borderRadius: '18px' }} />
 
-          <div className="space-y-4 mt-4">
-            <p className="text-[13px] leading-relaxed font-headline font-bold text-white tracking-tight">
-              {scenario.scenario}
-            </p>
+        <div
+          className="w-full overflow-hidden"
+          style={{
+            background: 'linear-gradient(150deg,#141820 0%,#0D1016 100%)',
+            border: isLeft  ? '1px solid rgba(216,17,89,0.5)'  :
+                    isRight ? '1px solid rgba(33,131,128,0.5)' :
+                              '1px solid rgba(255,255,255,0.11)',
+            borderRadius: '18px',
+            boxShadow: isLeft  ? '0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(216,17,89,0.15)'  :
+                        isRight ? '0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(33,131,128,0.15)' :
+                                  '0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(251,177,60,0.06), inset 0 1px 0 rgba(255,255,255,0.07)',
+          }}
+        >
+          {/* ── Card topbar: BREAKING + countdown ring ── */}
+          <div
+            className="flex items-center justify-between px-3 py-2"
+            style={{
+              background: 'linear-gradient(90deg,rgba(251,177,60,0.14),rgba(251,177,60,0.03))',
+              borderBottom: '1px solid rgba(251,177,60,0.18)',
+            }}
+          >
+            {/* BREAKING with pulsing dot */}
+            <div className="flex items-center gap-1.5 font-headline font-black text-[10px] uppercase tracking-[2.5px]" style={{ color: '#FBB13C' }}>
+              <div className="w-1.5 h-1.5 rounded-full blink-dot" style={{ background: '#FBB13C' }} />
+              BREAKING
+            </div>
+
+            {/* Countdown ring */}
+            <div className="relative w-[30px] h-[30px]">
+              <svg width={30} height={30} viewBox="0 0 30 30" style={{ transform: 'rotate(-90deg)', display: 'block' }}>
+                <circle cx={15} cy={15} r={12} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={2.5} />
+                <circle
+                  cx={15} cy={15} r={12}
+                  fill="none"
+                  stroke={timerUrgent ? '#D81159' : '#FBB13C'}
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeDasharray={RING_CIRC}
+                  strokeDashoffset={ringOffset}
+                  style={{ transition: 'stroke-dashoffset 0.9s linear, stroke 0.3s' }}
+                />
+              </svg>
+              <div
+                className="absolute inset-0 flex items-center justify-center font-code text-[10px] font-bold"
+                style={{ color: timerUrgent ? '#D81159' : '#FBB13C' }}
+              >
+                {timeLeft}
+              </div>
+            </div>
           </div>
 
-          <div className="mt-6 flex-1 flex flex-col justify-end">
-            <div className="grid grid-cols-2 gap-3 h-28 relative">
-              <div 
+          {/* ── Card body ── */}
+          <div className="px-4 pt-4 pb-3">
+            {/* Scenario text — 23px, 800 weight */}
+            <p
+              className="font-headline font-black text-white leading-snug mb-1"
+              style={{ fontSize: '23px', fontWeight: 800, letterSpacing: '0.2px' }}
+            >
+              {scenario.scenario}
+            </p>
+
+            {/* Choice buttons */}
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              {/* Left choice */}
+              <button
+                onClick={() => onDecision('left')}
                 className={cn(
-                  "flex flex-col justify-center gap-1.5 p-3.5 rounded-lg border transition-all duration-200",
-                  isLeft && dragX < -15 ? "bg-destructive border-white/50 scale-105 z-10" : "bg-white/10 border-transparent"
+                  "flex flex-col items-center justify-center gap-1 p-3 rounded-xl border text-center transition-all duration-150 active:scale-95",
+                  isLeft ? "scale-105" : ""
                 )}
-                style={{ opacity: isLeft ? 0.8 + (swipeProgress * 0.2) : 0.7 }}
+                style={{
+                  background: isLeft ? 'rgba(216,17,89,0.2)' : 'rgba(216,17,89,0.08)',
+                  borderColor: isLeft ? 'rgba(216,17,89,0.6)' : 'rgba(216,17,89,0.25)',
+                  opacity: isRight ? 0.5 : 1,
+                }}
               >
-                <div className="flex items-center gap-1 text-white font-headline uppercase text-[10px] font-black italic">
-                  <ChevronLeft className="w-4 h-4" />
-                </div>
-                <div className="text-[11px] font-headline font-bold text-white leading-tight">
+                <div className="font-headline font-black text-[20px] leading-none" style={{ color: '#D81159' }}>← SWIPE</div>
+                <div className="font-headline font-bold text-[13px] leading-snug" style={{ color: 'rgba(255,255,255,0.68)' }}>
                   {scenario.leftOption}
                 </div>
-              </div>
+              </button>
 
-              <div 
+              {/* Right choice */}
+              <button
+                onClick={() => onDecision('right')}
                 className={cn(
-                  "flex flex-col justify-center gap-1.5 p-3.5 rounded-lg border text-right transition-all duration-200",
-                  isRight && dragX > 15 ? "bg-primary border-white/50 scale-105 z-10" : "bg-white/10 border-transparent"
+                  "flex flex-col items-center justify-center gap-1 p-3 rounded-xl border text-center transition-all duration-150 active:scale-95",
+                  isRight ? "scale-105" : ""
                 )}
-                style={{ opacity: isRight ? 0.8 + (swipeProgress * 0.2) : 0.7 }}
+                style={{
+                  background: isRight ? 'rgba(33,131,128,0.2)' : 'rgba(33,131,128,0.08)',
+                  borderColor: isRight ? 'rgba(33,131,128,0.6)' : 'rgba(33,131,128,0.25)',
+                  opacity: isLeft ? 0.5 : 1,
+                }}
               >
-                <div className="flex items-center gap-1 justify-end text-white font-headline uppercase text-[10px] font-black italic">
-                  <ChevronRight className="w-4 h-4" />
-                </div>
-                <div className="text-[11px] font-headline font-bold text-white leading-tight">
+                <div className="font-headline font-black text-[20px] leading-none" style={{ color: '#218380' }}>SWIPE →</div>
+                <div className="font-headline font-bold text-[13px] leading-snug" style={{ color: 'rgba(255,255,255,0.68)' }}>
                   {scenario.rightOption}
                 </div>
-              </div>
+              </button>
             </div>
 
-            {Math.abs(dragX) < 15 && (
-              <div className="text-center mt-6 flex items-center justify-center gap-3 animate-pulse opacity-30">
-                <ChevronLeft className="w-4 h-4 text-destructive" />
-                <span className="text-[9px] font-headline uppercase tracking-[0.4em] font-black">Decision Pull</span>
-                <ChevronRight className="w-4 h-4 text-primary" />
+            {/* Swipe hint when idle */}
+            {swipeAmt < 15 && (
+              <div className="text-center mt-3 flex items-center justify-center gap-2 opacity-25">
+                <span className="font-headline text-[9px] uppercase tracking-[0.4em] font-black text-white">← swipe to decide →</span>
               </div>
             )}
           </div>
-        </SlantedContainer>
+        </div>
       </div>
     </div>
   );

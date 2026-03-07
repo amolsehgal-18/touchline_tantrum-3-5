@@ -8,51 +8,101 @@ interface TensionArcsProps {
   dressing: number;
 }
 
+// Arc circumferences: π × radius
+// Board  r=68 → π×68 ≈ 213.6
+// Fans   r=56 → π×56 ≈ 175.9
+// Squad  r=42 → π×42 ≈ 131.9
+const ARCS = [
+  {
+    key: 'board',
+    label: 'Board',
+    path: 'M 16 86 A 68 68 0 0 1 152 86',
+    circumference: Math.PI * 68,
+    color: '#1E6B3C',
+    trackColor: 'rgba(27,94,32,0.18)',
+    glow: 'rgba(30,107,60,0.45)',
+  },
+  {
+    key: 'fans',
+    label: 'Fans',
+    path: 'M 28 86 A 56 56 0 0 1 140 86',
+    circumference: Math.PI * 56,
+    color: '#D81159',
+    trackColor: 'rgba(216,17,89,0.18)',
+    glow: 'rgba(216,17,89,0.45)',
+  },
+  {
+    key: 'squad',
+    label: 'Squad',
+    path: 'M 42 86 A 42 42 0 0 1 126 86',
+    circumference: Math.PI * 42,
+    color: '#73D2DE',
+    trackColor: 'rgba(115,210,222,0.18)',
+    glow: 'rgba(115,210,222,0.45)',
+  },
+];
+
 export const TensionArcs = ({ board, fans, dressing }: TensionArcsProps) => {
-  const size = 130;
-  const center = size / 2;
-  const strokeWidth = 9;
-  const radii = [52, 38, 24]; // board outer, fans middle, dressing inner
-  const colors = ['hsl(var(--primary))', '#ef4444', 'hsl(var(--accent))'];
   const values = [board, fans, dressing];
-  const labels = ['Board', 'Fans', 'Dressing'];
-
-  const drawArc = (value: number, radius: number, color: string, label: string) => {
-    const circumference = Math.PI * radius;
-    const dash = value * circumference;
-    const gap = circumference - dash;
-    const pathData = `M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`;
-
-    return (
-      <g key={label}>
-        <path d={pathData} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={strokeWidth} strokeLinecap="round" />
-        <path
-          d={pathData}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeDasharray={`${dash} ${gap + circumference}`}
-          strokeLinecap="round"
-          className="transition-all duration-1000 ease-out"
-          style={{ filter: `drop-shadow(0 0 5px ${color}66)` }}
-        />
-      </g>
-    );
-  };
 
   return (
-    <div className="relative flex flex-col items-center" style={{ width: size }}>
-      <svg width={size} height={size / 2 + 12} className="overflow-visible">
-        {radii.map((r, i) => drawArc(values[i], r, colors[i], labels[i]))}
+    <div className="flex flex-col items-center" style={{ width: 168 }}>
+      <svg
+        viewBox="0 0 168 88"
+        width={168}
+        height={88}
+        style={{ display: 'block', overflow: 'visible' }}
+      >
+        {ARCS.map((arc, i) => {
+          const v = Math.max(0, Math.min(1, values[i]));
+          // strokeDashoffset approach: dasharray = full circumference, offset = (1-v)*circ
+          const circ = arc.circumference;
+          const offset = circ * (1 - v);
+          return (
+            <g key={arc.key}>
+              {/* Track */}
+              <path
+                d={arc.path}
+                fill="none"
+                stroke={arc.trackColor}
+                strokeWidth={5.5}
+                strokeLinecap="round"
+              />
+              {/* Fill */}
+              <path
+                d={arc.path}
+                fill="none"
+                stroke={arc.color}
+                strokeWidth={5.5}
+                strokeLinecap="round"
+                strokeDasharray={circ}
+                strokeDashoffset={offset}
+                style={{
+                  filter: `drop-shadow(0 0 3px ${arc.glow})`,
+                  transition: 'stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)',
+                }}
+              />
+            </g>
+          );
+        })}
       </svg>
-      <div className="grid grid-cols-3 gap-1 text-center mt-1 w-full">
-        {values.map((v, i) => (
-          <div key={labels[i]} className="flex flex-col items-center">
-            <span className="text-[11px] font-headline font-black" style={{ color: colors[i] }}>
-              {Math.round(v * 100)}%
+
+      {/* Legend row below SVG */}
+      <div className="flex justify-between w-full mt-1 px-1">
+        {ARCS.map((arc, i) => (
+          <div key={arc.key} className="flex flex-col items-center flex-1">
+            <div
+              className="w-[5px] h-[5px] rounded-full mb-0.5"
+              style={{ background: arc.color }}
+            />
+            <span
+              className="text-[18px] font-headline font-black leading-none"
+              style={{ color: arc.color }}
+            >
+              {Math.round(values[i] * 100)}%
             </span>
-            <span className="text-[8px] font-headline uppercase tracking-widest text-white/40 font-bold">
-              {labels[i]}
+            <span className="font-code text-[8px] uppercase tracking-[1.5px] text-white mt-0.5">
+              {arc.label}
             </span>
           </div>
         ))}

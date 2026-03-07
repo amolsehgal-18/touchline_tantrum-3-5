@@ -10,7 +10,7 @@ import { SwipeCard } from './swipe-card';
 import { SeasonSummary } from './season-summary';
 import type { AiScenarioPresentationOutput } from '@/ai/flows/ai-scenario-presentation-flow';
 import { getLocalScenario } from '@/lib/scenario-engine';
-import { AlertTriangle, Zap, ArrowRight, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Zap, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
@@ -24,7 +24,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
   const [opponentName, setOpponentName] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(15);
-  
+
   const [setupStep, setSetupStep] = useState(0);
   const [setupMode, setSetupMode] = useState<CareerMode>('season');
   const [setupDuration, setSetupDuration] = useState(0);
@@ -40,11 +40,11 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
     const impact = side === 'left' ? currentScenario.impactLeft : currentScenario.impactRight;
     const newCardsSeen = state.cardsSeen + 1;
-    
+
     const newState: GameState = {
       ...state,
       boardSupport: Math.min(1, Math.max(0, state.boardSupport + (impact.board / 100))),
-      fanSupport: Math.min(1, Math.max(0, state.fanSupport + (impact.fans / 100))),
+      fanSupport:   Math.min(1, Math.max(0, state.fanSupport   + (impact.fans  / 100))),
       dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
       cardsSeen: newCardsSeen,
       history: [...state.history, currentScenario.scenarioId],
@@ -65,7 +65,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       const opp = possibleOpponents[Math.floor(Math.random() * possibleOpponents.length)].team;
       setOpponentName(opp);
       setPendingResult(calculateMatchResult(newState));
-      
+
       setMatchIntro(true);
       setTimeout(() => {
         setMatchIntro(false);
@@ -76,35 +76,28 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   useEffect(() => {
     if (!currentScenario || isSimulating || matchIntro || loading || error || state?.isSacked || state?.isSeasonEnd) return;
-
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleDecision('left');
-          return 15;
-        }
+        if (prev <= 1) { handleDecision('left'); return 15; }
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(interval);
   }, [currentScenario, isSimulating, matchIntro, loading, error, state?.isSacked, state?.isSeasonEnd, handleDecision]);
 
   const fetchScenario = useCallback(() => {
     if (!state || state.isSacked || state.isSeasonEnd || isFetchingRef.current || isSimulating || matchIntro) return;
-
     isFetchingRef.current = true;
     setError(null);
-
     try {
       const result = getLocalScenario({
         boardSupport: state.boardSupport,
-        fanSupport: state.fanSupport,
+        fanSupport:   state.fanSupport,
         dressingRoom: state.dressingRoom,
-        userTeam: state.userTeam,
+        userTeam:     state.userTeam,
         currentLeaguePosition: state.currentLeaguePosition,
         sagaObjective: CAREER_MODES[state.mode].name,
-        objectiveMet: state.currentLeaguePosition <= activeConfig!.target,
+        objectiveMet:  state.currentLeaguePosition <= activeConfig!.target,
         excludedScenarioIds: state.history.slice(-50),
       });
       setCurrentScenario(result);
@@ -123,27 +116,24 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
   const onMatchComplete = () => {
     if (!state || !activeConfig || !pendingResult) return;
-
     setIsSimulating(false);
     const result = pendingResult;
     setPendingResult(null);
-    
+
     const newMatchesPlayed = state.matchesPlayed + 1;
     const ptsEarned = result === 'win' ? 3 : result === 'draw' ? 1 : 0;
-    
     const newState: GameState = {
       ...state,
       matchesPlayed: newMatchesPlayed,
-      wins: result === 'win' ? state.wins + 1 : state.wins,
-      draws: result === 'draw' ? state.draws + 1 : state.draws,
+      wins:   result === 'win'  ? state.wins  + 1 : state.wins,
+      draws:  result === 'draw' ? state.draws + 1 : state.draws,
       losses: result === 'loss' ? state.losses + 1 : state.losses,
       points: state.points + ptsEarned,
-      isSeasonEnd: newMatchesPlayed >= activeConfig.matches
+      isSeasonEnd: newMatchesPlayed >= activeConfig.matches,
     };
 
     const table = getLeagueTable(newState);
     newState.currentLeaguePosition = table.find(t => t.isUser)?.pos || state.currentLeaguePosition;
-
     if (newState.isSeasonEnd && newState.currentLeaguePosition > activeConfig.target) {
       newState.isSacked = true;
     }
@@ -156,37 +146,34 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     if (!state) return [];
     const fullTable = getLeagueTable(state);
     const userIndex = fullTable.findIndex(t => t.isUser);
-    
     let start = Math.max(0, userIndex - 1);
-    let end = start + 3;
-    
-    if (end > fullTable.length) {
-      end = fullTable.length;
-      start = Math.max(0, end - 3);
-    }
-    
+    let end   = start + 3;
+    if (end > fullTable.length) { end = fullTable.length; start = Math.max(0, end - 3); }
     return fullTable.slice(start, end);
   }, [state]);
 
   const odds = state ? getMatchOdds(state) : { win: '0.33', draw: '0.25', loss: '0.42' };
-  
+
   const newsItems = [
-    "BREAKING: Fans plan protest outside stadium following tactical leaks.",
-    "EXCLUSIVE: Board considering alternative options if results don't improve.",
-    "RUMOR: Star striker linked with shock move to rivals.",
-    "TAKEOVER: Mystery consortium interested in club acquisition.",
-    "MARKET: Scouting reports suggest lack of depth in defensive areas."
+    "Protests outside stadium following tactical leaks",
+    "Board considers emergency budget cut amid poor results",
+    "Star striker in talks with rival clubs",
+    "Manager faces vote of no confidence from supporters",
+    "Training ground incident sparks squad unrest",
+    "Mystery consortium interested in club acquisition",
+    "Scouting reports suggest lack of depth in defensive areas",
   ];
 
+  // ── Setup screen ────────────────────────────────────────────
   if (!state) {
     return (
       <div className="flex flex-col h-dvh max-md:max-w-md md:max-w-md mx-auto bg-background p-6 items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-primary/5 blur-[100px] pointer-events-none" />
-        
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 40% at 50% 100%, rgba(251,177,60,0.08) 0%, transparent 70%)' }} />
+
         {setupStep === 0 && (
           <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-center z-50">
             <div className="space-y-1">
-              <h1 className="text-3xl font-headline font-black text-accent uppercase italic">Gaffer Protocol</h1>
+              <h1 className="text-3xl font-headline font-black uppercase italic" style={{ color: '#FBB13C' }}>Gaffer Protocol</h1>
               <p className="text-[9px] font-headline uppercase tracking-[0.4em] opacity-40 font-black">Initialization Stage 01</p>
             </div>
             <div className="space-y-4">
@@ -208,20 +195,14 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         {setupStep === 1 && (
           <div className="w-full space-y-5 animate-in fade-in slide-in-from-right-4 duration-500 z-50">
             <div className="text-center space-y-1">
-              <h2 className="text-2xl font-headline font-black text-primary uppercase italic">The Mission</h2>
+              <h2 className="text-2xl font-headline font-black uppercase italic" style={{ color: '#73D2DE' }}>The Mission</h2>
               <p className="text-[9px] font-headline uppercase tracking-[0.3em] opacity-40 font-black">Stage 02: Objectives</p>
             </div>
             <div className="grid gap-2">
               {(Object.keys(CAREER_MODES) as CareerMode[]).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => {
-                    setSetupMode(mode);
-                    setSetupStep(2);
-                  }}
-                  className="flex flex-col p-3 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left group"
-                >
-                  <span className="font-headline font-black uppercase text-xs group-hover:text-primary">{CAREER_MODES[mode].name}</span>
+                <button key={mode} onClick={() => { setSetupMode(mode); setSetupStep(2); }}
+                  className="flex flex-col p-3 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left group">
+                  <span className="font-headline font-black uppercase text-xs group-hover:text-accent">{CAREER_MODES[mode].name}</span>
                   <span className="text-[9px] opacity-60 mt-0.5 leading-tight">{CAREER_MODES[mode].description}</span>
                 </button>
               ))}
@@ -232,38 +213,23 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
         {setupStep === 2 && (
           <div className="w-full space-y-6 animate-in fade-in slide-in-from-right-4 duration-500 z-50">
-             <div className="text-center space-y-1">
-              <h2 className="text-2xl font-headline font-black text-accent uppercase italic">Final Prep</h2>
+            <div className="text-center space-y-1">
+              <h2 className="text-2xl font-headline font-black uppercase italic" style={{ color: '#FBB13C' }}>Final Prep</h2>
               <p className="text-[9px] font-headline uppercase tracking-[0.3em] opacity-40 font-black">Stage 03: Season Length</p>
             </div>
             <div className="grid gap-2">
               {CAREER_MODES[setupMode].durations.map((d, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSetupDuration(idx)}
-                  className={cn(
-                    "flex justify-between items-center p-4 rounded border transition-all",
-                    setupDuration === idx ? "bg-accent text-black border-accent" : "bg-white/5 border-white/10 opacity-60"
-                  )}
-                >
+                <button key={idx} onClick={() => setSetupDuration(idx)}
+                  className={cn("flex justify-between items-center p-4 rounded border transition-all", setupDuration === idx ? "text-black border-transparent" : "bg-white/5 border-white/10 opacity-60")}
+                  style={setupDuration === idx ? { background: '#FBB13C' } : {}}>
                   <span className="font-headline font-black uppercase text-[11px]">{d.label}</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               ))}
             </div>
             <div className="space-y-4">
-              <SlantedButton
-                onClick={() => {
-                  try {
-                    const s = INITIAL_STATE(setupMode, setupDuration, setupName, setupTeam);
-                    setState(s);
-                    saveGameLocally(s);
-                  } catch (e) {
-                    console.error('Sign Contract failed:', e);
-                  }
-                }}
-                className="w-full py-5 text-base font-black tracking-widest uppercase bg-white text-black"
-              >
+              <SlantedButton onClick={() => { try { const s = INITIAL_STATE(setupMode, setupDuration, setupName, setupTeam); setState(s); saveGameLocally(s); } catch(e) { console.error('Sign Contract failed:', e); } }}
+                className="w-full py-5 text-base font-black tracking-widest uppercase bg-white text-black">
                 Sign Contract
               </SlantedButton>
               <button onClick={() => setSetupStep(1)} className="text-[9px] font-headline uppercase opacity-40 mx-auto block font-black tracking-widest">Re-select Objective</button>
@@ -278,60 +244,95 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     return <SeasonSummary state={state} onRestart={() => setState(null)} />;
   }
 
-  const mood = calculateMood(state);
+  const mood      = calculateMood(state);
   const currentGW = activeConfig ? activeConfig.startGW + state.matchesPlayed : 0;
+  const winPct    = Math.round(parseFloat(odds.win)  * 100);
+  const drawPct   = Math.round(parseFloat(odds.draw) * 100);
+  const lossPct   = Math.round(parseFloat(odds.loss) * 100);
 
   return (
     <div className="flex flex-col h-dvh max-md:max-w-md md:max-w-md mx-auto relative overflow-hidden bg-background shadow-2xl border-x border-white/5">
-      <div className="bg-black/95 py-2.5 border-b border-white/10 text-center z-[100]" style={{ paddingTop: 'max(10px, env(safe-area-inset-top))' }}>
-        <span className="text-white text-[11px] font-headline font-black uppercase tracking-[0.4em]">
-          {CAREER_MODES[state.mode].name} | GW {currentGW}
-        </span>
+
+      {/* ── Header band ── */}
+      <div
+        className="mx-3 mt-2 mb-2 flex items-center justify-between z-[100]"
+        style={{
+          paddingTop: 'max(8px, env(safe-area-inset-top))',
+          background: 'linear-gradient(135deg, rgba(251,177,60,0.13) 0%, rgba(251,177,60,0.04) 60%, transparent 100%)',
+          border: '1px solid rgba(251,177,60,0.22)',
+          borderLeft: '3px solid #FBB13C',
+          borderRadius: '4px 10px 10px 4px',
+          clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%)',
+        }}
+      >
+        <div className="py-2 pl-3 pr-2 min-w-0">
+          <div className="text-[9px] font-headline font-black uppercase tracking-[3px] mb-0.5" style={{ color: '#FBB13C' }}>
+            {CAREER_MODES[state.mode].name}
+          </div>
+          <div className="text-[21px] font-headline font-black uppercase leading-none text-white truncate">
+            {state.userTeam}
+          </div>
+          <div className="font-code text-[9px] mt-0.5 opacity-60" style={{ letterSpacing: '1px' }}>
+            W{state.wins} D{state.draws} L{state.losses}
+          </div>
+        </div>
+        <div className="py-2 pl-3 pr-5 text-center flex-shrink-0">
+          <div className="font-code text-[8px] uppercase tracking-[2px] opacity-50">Game Week</div>
+          <div className="text-[32px] font-headline font-black leading-none" style={{ color: '#FBB13C', letterSpacing: '-1px' }}>
+            {currentGW}
+          </div>
+        </div>
       </div>
 
-      <div className="bg-black/60 border-b border-white/5 p-2 z-[90] backdrop-blur-xl">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-headline uppercase tracking-widest text-accent flex items-center gap-1 font-black">
-            <RefreshCw className="w-3 h-3 animate-spin" /> Live Standings
-          </span>
-          <span className="text-[9px] font-headline uppercase opacity-40 font-black">Matchday {currentGW}</span>
+      {/* ── Live standings ── */}
+      <div className="mx-3 mb-2 rounded-lg overflow-hidden z-[90]" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="flex justify-between items-center px-3 py-1.5 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+          <div className="flex items-center gap-1.5 text-[10px] font-headline font-black uppercase tracking-[2.5px]" style={{ color: '#FBB13C' }}>
+            <div className="w-1.5 h-1.5 rounded-full blink-dot" style={{ background: '#FBB13C' }} />
+            Live Standings
+          </div>
+          <span className="font-code text-[9px] tracking-[1px] opacity-50">Matchday {currentGW}</span>
         </div>
-        <div className="flex justify-between items-center px-2 py-0.5 text-[8px] font-headline uppercase opacity-40 border-b border-white/10 mb-1 font-black">
-          <div className="flex gap-4"><span className="w-3">#</span><span>Name</span></div>
-          <div className="flex gap-4 pr-1"><span className="w-3 text-center">G</span><span className="w-4 text-right">P</span></div>
+        <div className="grid px-3 py-0.5 text-[8px] font-code uppercase tracking-[2px] border-b opacity-30" style={{ gridTemplateColumns: '26px 1fr 32px 38px', borderColor: 'rgba(255,255,255,0.07)' }}>
+          <span>#</span><span>Club</span><span className="text-center">G</span><span className="text-right">Pts</span>
         </div>
-        <div className="flex flex-col gap-0.5">
-          {windowedLeagueTable.map((team) => (
-            <div key={team.team} className={cn("flex justify-between items-center px-2 py-1 rounded text-[10px] transition-colors", team.isUser ? "bg-primary/20 border-l-2 border-primary" : "bg-white/5")}>
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="font-headline opacity-40 w-3 font-black">{team.pos}</span>
-                <span className={cn("font-black truncate max-w-[120px] uppercase tracking-tight text-[11px]", team.isUser ? "text-primary" : "text-white")}>{team.team}</span>
-              </div>
-              <div className="flex items-center gap-4 pr-1 font-headline font-black">
-                <span className="opacity-40 w-3 text-center">{team.gp}</span>
-                <span className="font-black w-4 text-right">{team.pts}</span>
-              </div>
-            </div>
-          ))}
+        {windowedLeagueTable.map((team) => (
+          <div key={team.team} className="grid items-center px-3 py-[7px] relative" style={{
+            gridTemplateColumns: '26px 1fr 32px 38px',
+            borderTop: team.isUser ? '1px solid rgba(115,210,222,0.15)' : '1px solid rgba(255,255,255,0.04)',
+            background: team.isUser ? 'linear-gradient(90deg,rgba(115,210,222,0.10) 0%,rgba(115,210,222,0.03) 80%,transparent 100%)' : 'transparent',
+          }}>
+            {team.isUser && <div className="absolute left-0 top-1 bottom-1 w-0.5 rounded-r" style={{ background: '#73D2DE' }} />}
+            <div className="text-[13px] font-headline font-black text-center" style={{ color: team.isUser ? '#73D2DE' : '#5A6878' }}>{team.pos}</div>
+            <div className="text-[15px] font-headline font-black uppercase truncate" style={{ color: team.isUser ? '#73D2DE' : '#EDF2FF' }}>{team.team}</div>
+            <div className="font-code text-[11px] text-center opacity-50">{team.gp}</div>
+            <div className="text-[18px] font-headline font-black text-right" style={{ color: team.isUser ? '#73D2DE' : '#EDF2FF' }}>{team.pts}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Tension triangle + Manager portrait ── */}
+      <div className="flex items-center px-3 pb-1 gap-3 z-10">
+        <TensionArcs board={state.boardSupport} fans={state.fanSupport} dressing={state.dressingRoom} />
+        <div className="ml-auto flex-shrink-0">
+          <ManagerMoodView mood={mood} />
         </div>
       </div>
 
-      <div className="px-4 py-2 flex justify-around items-center bg-transparent z-10 border-b border-white/5 relative -mb-4">
-        <div className="flex-1 flex justify-center scale-95 opacity-80"><TensionArcs board={state.boardSupport} fans={state.fanSupport} dressing={state.dressingRoom} /></div>
-        <div className="flex-1 flex justify-center scale-95 opacity-80"><ManagerMoodView mood={mood} /></div>
-      </div>
+      {/* Thin amber divider */}
+      <div className="mx-3 my-1 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(251,177,60,0.12),transparent)' }} />
 
-      <div className="flex-1 flex flex-col items-center justify-center p-2 relative overflow-hidden z-[80]">
+      {/* ── Scenario area ── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-1 relative overflow-hidden z-[80]">
         {matchIntro && (
           <div className="absolute inset-0 z-[120] flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-500">
-             <div className="space-y-2 text-center">
-                <Zap className="w-10 h-10 text-accent mx-auto animate-bounce" />
-                <h2 className="text-4xl font-headline font-black uppercase italic text-white tracking-tighter">MATCHDAY</h2>
-                <div className="text-[10px] font-headline uppercase tracking-[0.4em] text-accent/80 font-black">Deploying Tactics</div>
-             </div>
+            <div className="space-y-2 text-center">
+              <Zap className="w-10 h-10 mx-auto animate-bounce" style={{ color: '#FBB13C' }} />
+              <h2 className="text-4xl font-headline font-black uppercase italic text-white tracking-tighter">MATCHDAY</h2>
+              <div className="text-[10px] font-headline font-black uppercase tracking-[0.4em]" style={{ color: '#FBB13C' }}>Deploying Tactics</div>
+            </div>
           </div>
         )}
-
         {isSimulating ? (
           <MatchRadar userTeam={state.userTeam} opponentTeam={opponentName} result={pendingResult} onComplete={onMatchComplete} />
         ) : (
@@ -343,36 +344,70 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
                 <SlantedButton onClick={fetchScenario} className="text-[10px] py-2">Retry</SlantedButton>
               </div>
             ) : currentScenario ? (
-              <SwipeCard scenario={currentScenario} onDecision={handleDecision} />
+              <SwipeCard scenario={currentScenario} onDecision={handleDecision} timeLeft={timeLeft} />
             ) : null}
           </div>
         )}
       </div>
 
-      <div className="bg-black/95 border-t border-white/10 z-[100]">
-        <div className="p-4 py-3 space-y-2">
-          <div className="flex flex-col gap-0.5 px-1">
-            <div className="text-[9px] font-headline uppercase opacity-40 font-black tracking-widest">Next Match Odds</div>
-            <div className="text-[13px] font-headline font-black text-white/90 tracking-tighter">
-              W: {Math.round(parseFloat(odds.win)*100)}% | D: {Math.round(parseFloat(odds.draw)*100)}% | L: {Math.round(parseFloat(odds.loss)*100)}%
-            </div>
+      {/* Thin amber divider */}
+      <div className="mx-3 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(251,177,60,0.12),transparent)' }} />
+
+      {/* ── Match odds bar ── */}
+      <div className="px-3 pt-2 pb-1.5 z-[100]">
+        {/* "NEXT MATCH ODDS" — three words above three chips */}
+        <div className="flex justify-around mb-1" style={{ fontSize: '20px', fontFamily: 'inherit', fontWeight: 800, textTransform: 'uppercase', color: '#FFFFFF', letterSpacing: '1px' }}>
+          <span className="font-headline">Next</span>
+          <span className="font-headline">Match</span>
+          <span className="font-headline">Odds</span>
+        </div>
+        <div className="flex items-start justify-between mb-1.5">
+          <div className="flex-1 text-center">
+            <div className="font-headline font-black leading-none" style={{ fontSize: '26px', color: '#218380' }}>{winPct}%</div>
+            <div className="font-code text-[8px] uppercase tracking-[1.5px] text-white mt-0.5">Win</div>
           </div>
-          <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-            <div className={cn("h-full transition-all duration-1000 ease-linear", timeLeft <= 5 ? "bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "bg-primary")} style={{ width: `${(timeLeft / 15) * 100}%` }} />
+          <div className="text-sm self-start mt-1" style={{ color: 'rgba(255,255,255,0.1)' }}>|</div>
+          <div className="flex-1 text-center">
+            <div className="font-headline font-black leading-none" style={{ fontSize: '26px', color: '#5A6878' }}>{drawPct}%</div>
+            <div className="font-code text-[8px] uppercase tracking-[1.5px] text-white mt-0.5">Draw</div>
+          </div>
+          <div className="text-sm self-start mt-1" style={{ color: 'rgba(255,255,255,0.1)' }}>|</div>
+          <div className="flex-1 text-center">
+            <div className="font-headline font-black leading-none" style={{ fontSize: '26px', color: '#D81159' }}>{lossPct}%</div>
+            <div className="font-code text-[8px] uppercase tracking-[1.5px] text-white mt-0.5">Loss</div>
           </div>
         </div>
-
-        <div className="bg-destructive/10 border-t border-white/5 flex items-center overflow-hidden relative" style={{ height: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          <div className="bg-destructive text-white text-[10px] font-headline font-black px-4 py-1.5 z-20 absolute left-0 uppercase tracking-tighter flex items-center h-full">Breaking</div>
-          <div className="flex items-center animate-ticker">
-            {[...newsItems, ...newsItems].map((item, idx) => (
-              <span key={idx} className="text-[11px] font-headline uppercase tracking-[0.2em] text-white/90 whitespace-nowrap font-black italic px-10">
-                {item}
-              </span>
-            ))}
-          </div>
+        {/* Win probability track */}
+        <div className="h-[3px] rounded-sm overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+          <div className="h-full rounded-sm transition-all duration-1000" style={{ width: `${winPct}%`, background: 'linear-gradient(90deg,#218380,rgba(33,131,128,0.4))' }} />
         </div>
       </div>
+
+      {/* ── Breaking news ticker — amber bg, black text ── */}
+      <div
+        className="overflow-hidden flex-shrink-0 relative z-[100]"
+        style={{
+          background: '#FBB13C',
+          paddingTop: '7px',
+          paddingBottom: 'max(7px, env(safe-area-inset-bottom, 0px))',
+        }}
+      >
+        <div
+          className="absolute left-0 top-0 bottom-0 z-10 flex items-center px-2.5 font-headline font-black text-[10px] uppercase text-black whitespace-nowrap"
+          style={{ background: 'rgba(0,0,0,0.25)', borderRight: '1px solid rgba(0,0,0,0.15)', letterSpacing: '3px' }}
+        >
+          Breaking
+        </div>
+        <div className="animate-ticker pl-24 flex items-center">
+          {[...newsItems, ...newsItems].map((item, idx) => (
+            <React.Fragment key={idx}>
+              <span className="font-headline font-black text-black" style={{ fontSize: '13px', letterSpacing: '0.5px' }}>{item}</span>
+              <span className="inline-block w-1 h-1 rounded-full mx-3 align-middle flex-shrink-0" style={{ background: 'rgba(0,0,0,0.3)' }} />
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 };

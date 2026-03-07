@@ -5,25 +5,34 @@
 
 @layer base {
   :root {
-    --background: 210 12% 8%;
-    --foreground: 0 0% 100%;
-    --card: 210 12% 10%;
-    --card-foreground: 0 0% 100%;
-    --popover: 210 12% 8%;
-    --popover-foreground: 0 0% 100%;
+    /* ── Touchline Tantrum palette ── */
+    --tt-amber:  #FBB13C;   /* primary accent, header, ticker  */
+    --tt-pink:   #D81159;   /* fans arc, loss, danger           */
+    --tt-teal:   #218380;   /* win, happy mood                  */
+    --tt-cyan:   #73D2DE;   /* squad arc, standings highlight   */
+    --tt-plum:   #8F2D56;   /* mood ring, stressed badge        */
+    --tt-board:  #1E6B3C;   /* board arc, dark money green      */
+
+    /* ── shadcn / Tailwind tokens ── */
+    --background: 210 12% 5%;
+    --foreground: 0 0% 95%;
+    --card: 220 14% 9%;
+    --card-foreground: 0 0% 95%;
+    --popover: 210 12% 7%;
+    --popover-foreground: 0 0% 95%;
     --primary: 217 76% 51%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 12% 15%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 12% 12%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 38 100% 56%;
-    --accent-foreground: 210 12% 8%;
-    --destructive: 0 84% 60%;
+    --muted: 210 12% 13%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 38 96% 60%;        /* amber #FBB13C */
+    --accent-foreground: 210 12% 5%;
+    --destructive: 337 85% 45%;  /* pink #D81159  */
     --destructive-foreground: 0 0% 100%;
-    --border: 210 12% 20%;
-    --input: 210 12% 20%;
-    --ring: 217 76% 51%;
+    --border: 210 12% 18%;
+    --input: 210 12% 18%;
+    --ring: 38 96% 60%;
     --radius: 0.75rem;
   }
 }
@@ -35,8 +44,9 @@
   body {
     @apply bg-background text-foreground font-body;
     background-image:
-      radial-gradient(circle at 50% 0%, rgba(34, 107, 224, 0.15) 0%, transparent 50%),
-      linear-gradient(to bottom, #111315, #0a0b0c);
+      radial-gradient(ellipse 110% 30% at 50% 100%, rgba(251,177,60,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 80% 40% at 20% 60%,  rgba(33,131,128,0.04) 0%, transparent 60%),
+      linear-gradient(180deg, #08090F 0%, #0B0D15 45%, #070910 100%);
     min-height: 100dvh;
     overflow: hidden;
     height: 100dvh;
@@ -59,15 +69,40 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* ── Ticker (amber background, black text) ── */
 @keyframes ticker {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  from { transform: translateX(60vw); }
+  to   { transform: translateX(-200%); }
 }
 
 .animate-ticker {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   white-space: nowrap;
-  animation: ticker 60s linear infinite;
+  animation: ticker 30s linear infinite;
+}
+
+/* ── Mood ring spin ── */
+@keyframes ringRot {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.mood-ring-spin {
+  animation: ringRot 4s linear infinite;
+}
+
+/* ── Breaking dot blink ── */
+@keyframes blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.6); }
+}
+.blink-dot {
+  animation: blink 0.8s infinite;
+}
+
+/* ── Countdown ring ── */
+@keyframes cdown {
+  to { stroke-dashoffset: 76; }
 }
 
 @keyframes scanline {
@@ -82,7 +117,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: rgba(34, 107, 224, 0.3);
+  background: rgba(251, 177, 60, 0.2);
   animation: scanline 4s linear infinite;
   pointer-events: none;
 }
