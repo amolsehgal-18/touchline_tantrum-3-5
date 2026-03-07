@@ -148,7 +148,7 @@ export const SwipeCard = ({ scenario, onDecision, timeLeft }: SwipeCardProps) =>
               {scenario.scenario}
             </p>
 
-            {/* Option cards — visual only, no tap action */}
+            {/* Option cards — amber glow on active swipe, dim idle */}
             <div className="grid grid-cols-2 gap-2 mt-4">
               {/* Left option */}
               <div
@@ -157,13 +157,14 @@ export const SwipeCard = ({ scenario, onDecision, timeLeft }: SwipeCardProps) =>
                   isLeft ? "scale-105" : ""
                 )}
                 style={{
-                  background: isLeft ? 'rgba(216,17,89,0.2)' : 'rgba(216,17,89,0.08)',
-                  borderColor: isLeft ? 'rgba(216,17,89,0.6)' : 'rgba(216,17,89,0.25)',
-                  opacity: isRight ? 0.5 : 1,
+                  background: isLeft ? 'rgba(251,177,60,0.22)' : 'rgba(251,177,60,0.04)',
+                  borderColor: isLeft ? 'rgba(251,177,60,0.75)' : 'rgba(251,177,60,0.10)',
+                  boxShadow: isLeft ? '0 0 12px rgba(251,177,60,0.18)' : 'none',
+                  opacity: isRight ? 0.4 : 1,
                   pointerEvents: 'none',
                 }}
               >
-                <div className="font-headline font-black text-[13px] leading-snug text-white">
+                <div className={cn("font-headline font-black text-[13px] leading-snug transition-colors duration-150", isLeft ? "text-white" : "text-white/50")}>
                   {scenario.leftOption}
                 </div>
               </div>
@@ -175,13 +176,14 @@ export const SwipeCard = ({ scenario, onDecision, timeLeft }: SwipeCardProps) =>
                   isRight ? "scale-105" : ""
                 )}
                 style={{
-                  background: isRight ? 'rgba(30,107,60,0.2)' : 'rgba(30,107,60,0.08)',
-                  borderColor: isRight ? 'rgba(30,107,60,0.6)' : 'rgba(30,107,60,0.25)',
-                  opacity: isLeft ? 0.5 : 1,
+                  background: isRight ? 'rgba(251,177,60,0.22)' : 'rgba(251,177,60,0.04)',
+                  borderColor: isRight ? 'rgba(251,177,60,0.75)' : 'rgba(251,177,60,0.10)',
+                  boxShadow: isRight ? '0 0 12px rgba(251,177,60,0.18)' : 'none',
+                  opacity: isLeft ? 0.4 : 1,
                   pointerEvents: 'none',
                 }}
               >
-                <div className="font-headline font-black text-[13px] leading-snug text-white">
+                <div className={cn("font-headline font-black text-[13px] leading-snug transition-colors duration-150", isRight ? "text-white" : "text-white/50")}>
                   {scenario.rightOption}
                 </div>
               </div>
