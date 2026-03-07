@@ -282,9 +282,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
           <div className="text-[17px] font-headline font-black uppercase leading-none text-white truncate">
             {state.userTeam}
           </div>
-          <div className="font-code text-[8px] mt-0.5 opacity-60" style={{ letterSpacing: '1px' }}>
-            W{state.wins} D{state.draws} L{state.losses}
-          </div>
         </div>
         <div className="py-1.5 pl-3 pr-5 text-center flex-shrink-0">
           <div className="font-code text-[7px] uppercase tracking-[2px] opacity-50">GW</div>
@@ -301,9 +298,8 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
             <div className="w-1 h-1 rounded-full blink-dot" style={{ background: '#FBB13C' }} />
             Live Standings
           </div>
-          <span className="font-code text-[8px] tracking-[1px] opacity-50">MD {currentGW}</span>
         </div>
-        <div className="grid px-3 text-[7px] font-code uppercase tracking-[2px] border-b opacity-30" style={{ gridTemplateColumns: '22px 1fr 28px 34px', borderColor: 'rgba(255,255,255,0.07)' }}>
+        <div className="grid px-3 text-[7px] font-code uppercase tracking-[2px] border-b text-white" style={{ gridTemplateColumns: '22px 1fr 28px 34px', borderColor: 'rgba(255,255,255,0.07)' }}>
           <span>#</span><span>Club</span><span className="text-center">G</span><span className="text-right">Pts</span>
         </div>
         {windowedLeagueTable.map((team) => (
@@ -365,13 +361,13 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         className="overflow-hidden flex-shrink-0 relative z-[100]"
         style={{
           background: '#FBB13C',
-          paddingTop: '6px',
-          paddingBottom: 'max(6px, env(safe-area-inset-bottom, 0px))',
+          paddingTop: '9px',
+          paddingBottom: 'max(9px, env(safe-area-inset-bottom, 0px))',
         }}
       >
         {/* BREAKING badge */}
         <div
-          className="absolute left-0 top-0 bottom-0 z-10 flex items-center gap-1 px-2.5 font-headline font-black text-[9px] uppercase text-black whitespace-nowrap"
+          className="absolute left-0 top-0 bottom-0 z-10 flex items-center gap-1 px-3 font-headline font-black text-[11px] uppercase text-black whitespace-nowrap"
           style={{ background: 'rgba(0,0,0,0.22)', borderRight: '1px solid rgba(0,0,0,0.12)', letterSpacing: '2.5px' }}
         >
           {newsSource === 'live' && <Wifi className="w-2.5 h-2.5" />}
@@ -381,7 +377,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         <div className="animate-ticker pl-[88px] flex items-center">
           {[...newsItems, ...newsItems].map((item, idx) => (
             <React.Fragment key={idx}>
-              <span className="font-headline font-black text-black" style={{ fontSize: '12px', letterSpacing: '0.3px' }}>{item}</span>
+              <span className="font-headline font-black text-black" style={{ fontSize: '14px', letterSpacing: '0.3px' }}>{item}</span>
               <span className="inline-block w-1 h-1 rounded-full mx-3 flex-shrink-0" style={{ background: 'rgba(0,0,0,0.3)' }} />
             </React.Fragment>
           ))}

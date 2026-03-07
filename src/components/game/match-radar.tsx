@@ -219,8 +219,8 @@ export const MatchRadar = ({ userTeam, opponentTeam, result, onComplete }: Match
           </div>
         </div>
       </div>
-      <div className="w-full max-w-[300px] text-center min-h-[32px] flex items-center justify-center">
-        <span className="text-[11px] font-headline font-black uppercase tracking-tight text-white/90 italic leading-tight">
+      <div className="w-full max-w-[300px] text-center min-h-[40px] flex items-center justify-center px-2">
+        <span className="text-[17px] font-headline font-black uppercase tracking-tight text-white italic leading-tight">
           {commentary}
         </span>
       </div>
