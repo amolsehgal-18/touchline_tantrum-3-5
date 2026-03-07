@@ -72,7 +72,7 @@ export const SwipeCard = ({ scenario, onDecision }: SwipeCardProps) => {
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
             <p className="text-[13px] leading-relaxed font-headline font-bold text-white tracking-tight">
               {scenario.scenario}
             </p>

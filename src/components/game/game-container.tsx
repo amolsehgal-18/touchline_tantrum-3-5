@@ -46,7 +46,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       boardSupport: Math.min(1, Math.max(0, state.boardSupport + (impact.board / 100))),
       fanSupport: Math.min(1, Math.max(0, state.fanSupport + (impact.fans / 100))),
       dressingRoom: Math.min(1, Math.max(0, state.dressingRoom + (impact.squad / 100))),
-      aggression: Math.min(1, Math.max(0.05, state.aggression + (impact.aggression || 0))),
       cardsSeen: newCardsSeen,
       history: [...state.history, currentScenario.scenarioId],
     };
@@ -102,7 +101,6 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
         boardSupport: state.boardSupport,
         fanSupport: state.fanSupport,
         dressingRoom: state.dressingRoom,
-        aggression: state.aggression,
         userTeam: state.userTeam,
         currentLeaguePosition: state.currentLeaguePosition,
         sagaObjective: CAREER_MODES[state.mode].name,
@@ -170,7 +168,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
     return fullTable.slice(start, end);
   }, [state]);
 
-  const odds = state ? getMatchOdds(state.aggression) : { win: '0.33', draw: '0.33', loss: '0.34' };
+  const odds = state ? getMatchOdds(state) : { win: '0.33', draw: '0.25', loss: '0.42' };
   
   const newsItems = [
     "BREAKING: Fans plan protest outside stadium following tactical leaks.",
@@ -319,7 +317,7 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
       </div>
 
       <div className="px-4 py-2 flex justify-around items-center bg-transparent z-10 border-b border-white/5 relative -mb-4">
-        <div className="flex-1 flex justify-center scale-95 opacity-80"><TensionArcs board={state.boardSupport} fans={state.fanSupport} /></div>
+        <div className="flex-1 flex justify-center scale-95 opacity-80"><TensionArcs board={state.boardSupport} fans={state.fanSupport} dressing={state.dressingRoom} /></div>
         <div className="flex-1 flex justify-center scale-95 opacity-80"><ManagerMoodView mood={mood} /></div>
       </div>
 
@@ -353,16 +351,10 @@ export const GameContainer = ({ initialState }: { initialState?: GameState }) =>
 
       <div className="bg-black/95 border-t border-white/10 z-[100]">
         <div className="p-4 py-3 space-y-2">
-          <div className="flex justify-between items-end px-1">
-            <div className="flex flex-col gap-0.5">
-              <div className="text-[9px] font-headline uppercase opacity-40 font-black tracking-widest">Next Match Odds</div>
-              <div className="text-[13px] font-headline font-black text-white/90 tracking-tighter">
-                W: {Math.round(parseFloat(odds.win)*100)}% | D: {Math.round(parseFloat(odds.draw)*100)}% | L: {Math.round(parseFloat(odds.loss)*100)}%
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-0.5">
-              <div className="text-[9px] font-headline uppercase opacity-40 font-black tracking-widest">Squad Aggression</div>
-              <div className="text-[13px] font-headline font-black text-accent tracking-tighter">{Math.round(state.aggression * 100)}%</div>
+          <div className="flex flex-col gap-0.5 px-1">
+            <div className="text-[9px] font-headline uppercase opacity-40 font-black tracking-widest">Next Match Odds</div>
+            <div className="text-[13px] font-headline font-black text-white/90 tracking-tighter">
+              W: {Math.round(parseFloat(odds.win)*100)}% | D: {Math.round(parseFloat(odds.draw)*100)}% | L: {Math.round(parseFloat(odds.loss)*100)}%
             </div>
           </div>
           <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
