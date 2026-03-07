@@ -85,18 +85,18 @@ export const SwipeCard = ({ scenario, onDecision, timeLeft }: SwipeCardProps) =>
         <div className="absolute inset-0 rounded-[18px] pointer-events-none z-20 transition-opacity duration-75"
           style={{ background: 'rgba(255,92,92,0.18)', opacity: isLeft ? Math.min(swipeAmt / 110, 1) : 0, borderRadius: '18px' }} />
         <div className="absolute inset-0 rounded-[18px] pointer-events-none z-20 transition-opacity duration-75"
-          style={{ background: 'rgba(33,131,128,0.18)', opacity: isRight ? Math.min(swipeAmt / 110, 1) : 0, borderRadius: '18px' }} />
+          style={{ background: 'rgba(30,107,60,0.18)', opacity: isRight ? Math.min(swipeAmt / 110, 1) : 0, borderRadius: '18px' }} />
 
         <div
           className="w-full overflow-hidden"
           style={{
             background: 'linear-gradient(150deg,#141820 0%,#0D1016 100%)',
             border: isLeft  ? '1px solid rgba(216,17,89,0.5)'  :
-                    isRight ? '1px solid rgba(33,131,128,0.5)' :
+                    isRight ? '1px solid rgba(30,107,60,0.5)'  :
                               '1px solid rgba(255,255,255,0.11)',
             borderRadius: '18px',
             boxShadow: isLeft  ? '0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(216,17,89,0.15)'  :
-                        isRight ? '0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(33,131,128,0.15)' :
+                        isRight ? '0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(30,107,60,0.15)'  :
                                   '0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(251,177,60,0.06), inset 0 1px 0 rgba(255,255,255,0.07)',
           }}
         >
@@ -148,9 +148,9 @@ export const SwipeCard = ({ scenario, onDecision, timeLeft }: SwipeCardProps) =>
               {scenario.scenario}
             </p>
 
-            {/* Swipe direction labels — visual only, no tap action */}
+            {/* Option cards — visual only, no tap action */}
             <div className="grid grid-cols-2 gap-2 mt-4">
-              {/* Left option label */}
+              {/* Left option */}
               <div
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 p-3 rounded-xl border text-center transition-all duration-150 select-none",
@@ -163,36 +163,36 @@ export const SwipeCard = ({ scenario, onDecision, timeLeft }: SwipeCardProps) =>
                   pointerEvents: 'none',
                 }}
               >
-                <div className="font-headline font-black text-[20px] leading-none" style={{ color: '#D81159' }}>← SWIPE</div>
-                <div className="font-headline font-bold text-[13px] leading-snug" style={{ color: 'rgba(255,255,255,0.68)' }}>
+                <div className="font-headline font-black text-[13px] leading-snug text-white">
                   {scenario.leftOption}
                 </div>
               </div>
 
-              {/* Right option label */}
+              {/* Right option */}
               <div
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 p-3 rounded-xl border text-center transition-all duration-150 select-none",
                   isRight ? "scale-105" : ""
                 )}
                 style={{
-                  background: isRight ? 'rgba(33,131,128,0.2)' : 'rgba(33,131,128,0.08)',
-                  borderColor: isRight ? 'rgba(33,131,128,0.6)' : 'rgba(33,131,128,0.25)',
+                  background: isRight ? 'rgba(30,107,60,0.2)' : 'rgba(30,107,60,0.08)',
+                  borderColor: isRight ? 'rgba(30,107,60,0.6)' : 'rgba(30,107,60,0.25)',
                   opacity: isLeft ? 0.5 : 1,
                   pointerEvents: 'none',
                 }}
               >
-                <div className="font-headline font-black text-[20px] leading-none" style={{ color: '#218380' }}>SWIPE →</div>
-                <div className="font-headline font-bold text-[13px] leading-snug" style={{ color: 'rgba(255,255,255,0.68)' }}>
+                <div className="font-headline font-black text-[13px] leading-snug text-white">
                   {scenario.rightOption}
                 </div>
               </div>
             </div>
 
-            {/* Swipe hint when idle */}
+            {/* Swipe hint when idle — white text, red ← and board-green → */}
             {swipeAmt < 15 && (
-              <div className="text-center mt-3 flex items-center justify-center gap-2 opacity-25">
-                <span className="font-headline text-[9px] uppercase tracking-[0.4em] font-black text-white">← swipe to decide →</span>
+              <div className="text-center mt-3 flex items-center justify-center gap-1.5">
+                <span className="font-headline font-black text-[11px]" style={{ color: '#D81159' }}>←</span>
+                <span className="font-headline font-black text-[9px] uppercase tracking-[0.4em] text-white opacity-60">swipe to decide</span>
+                <span className="font-headline font-black text-[11px]" style={{ color: '#1E6B3C' }}>→</span>
               </div>
             )}
           </div>
